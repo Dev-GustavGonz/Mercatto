@@ -5,6 +5,7 @@ import VendorsTable from '../components/admin/VendorsTable'
 import CategoryManager from '../components/admin/CategoryManager'
 import CouponManager from '../components/admin/CouponManager'
 import Spinner from '../components/common/Spinner'
+import { useToast } from '../hooks/useToast'
 import { Shield, Store, Users, Grid, Tag } from 'lucide-react'
 
 export const PanelAdmin = () => {
@@ -13,23 +14,41 @@ export const PanelAdmin = () => {
   const [vendedores, setVendedores] = useState([])
   const [usuarios, setUsuarios] = useState([])
   const [loading, setLoading] = useState(true)
+  const { error: mostrarError } = useToast()
 
   const cargarDatos = async () => {
     setLoading(true)
-    try {
-      const [st, vends, usrs] = await Promise.all([
-        adminService.obtenerEstadisticas(),
-        adminService.listarVendedores(),
-        adminService.listarUsuarios(),
-      ])
-      setStats(st || {})
-      setVendedores(vends.content || [])
-      setUsuarios(usrs.content || [])
-    } catch {
-      // Manejado
-    } finally {
-      setLoading(false)
+
+    // allSettled: si /stats falla, igual queremos ver la tabla de vendedores (y viceversa).
+    const [stRes, vendsRes, usrsRes] = await Promise.allSettled([
+      adminService.obtenerEstadisticas(),
+      adminService.listarVendedores({ tamano: 500 }),
+      adminService.listarUsuarios({ tamano: 500 }),
+    ])
+
+    if (stRes.status === 'fulfilled') {
+      setStats(stRes.value || {})
+    } else {
+      console.error('Error cargando estadísticas del admin:', stRes.reason)
     }
+
+    if (vendsRes.status === 'fulfilled') {
+      setVendedores(vendsRes.value?.content || [])
+    } else {
+      console.error('Error cargando vendedores:', vendsRes.reason)
+      mostrarError(
+        vendsRes.reason?.response?.data?.mensaje ||
+          `No se pudieron cargar los vendedores (${vendsRes.reason?.response?.status || 'error de red'})`
+      )
+    }
+
+    if (usrsRes.status === 'fulfilled') {
+      setUsuarios(usrsRes.value?.content || [])
+    } else {
+      console.error('Error cargando usuarios:', usrsRes.reason)
+    }
+
+    setLoading(false)
   }
 
   useEffect(() => {

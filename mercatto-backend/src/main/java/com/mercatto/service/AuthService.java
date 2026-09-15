@@ -89,13 +89,15 @@ public class AuthService {
             res.put("pendiente", true);
             res.put("mensaje", "Solicitud enviada. El administrador la revisará pronto.");
         } else {
+            boolean recordarme = !Boolean.FALSE.equals(datos.get("recordarme"));
             String accessToken  = jwtUtil.generarAccessToken(email, rolStr);
             String refreshToken = jwtUtil.generarRefreshToken(email);
-            guardarRefreshToken(guardado, refreshToken);
+            guardarRefreshToken(guardado, refreshToken, recordarme);
 
             res.put("exito", true);
             res.put("accessToken", accessToken);
-            res.put("refreshToken", refreshToken);
+            res.put("refreshToken", refreshToken); // el controller la mueve a una cookie httpOnly
+            res.put("recordarme", recordarme);
             res.put("usuario", usuarioAMapa(guardado));
             res.put("mensaje", "¡Bienvenido a Mercatto!");
         }
@@ -104,7 +106,7 @@ public class AuthService {
 
     // ── LOGIN ─────────────────────────────────────────────────────
     @Transactional
-    public Map<String, Object> login(String email, String password) {
+    public Map<String, Object> login(String email, String password, boolean recordarme) {
         Map<String, Object> res = new HashMap<>();
 
         if (estaBloqueado(email)) {
@@ -149,18 +151,19 @@ public class AuthService {
 
         String accessToken  = jwtUtil.generarAccessToken(email, usuario.getRol().name());
         String refreshToken = jwtUtil.generarRefreshToken(email);
-        guardarRefreshToken(usuario, refreshToken);
+        guardarRefreshToken(usuario, refreshToken, recordarme);
 
         res.put("exito", true);
         res.put("accessToken", accessToken);
         res.put("refreshToken", refreshToken);
+        res.put("recordarme", recordarme);
         res.put("usuario", usuarioAMapa(usuario));
         return res;
     }
 
     // ── LOGIN / REGISTRO CON GOOGLE ──────────────────────────────────
     @Transactional
-    public Map<String, Object> loginConGoogle(String idToken) {
+    public Map<String, Object> loginConGoogle(String idToken, boolean recordarme) {
         Map<String, Object> res = new HashMap<>();
 
         GoogleTokenService.GooglePayload datos = googleTokenService.verificar(idToken);
@@ -210,20 +213,29 @@ public class AuthService {
 
         String accessToken  = jwtUtil.generarAccessToken(usuario.getEmail(), usuario.getRol().name());
         String refreshToken = jwtUtil.generarRefreshToken(usuario.getEmail());
-        guardarRefreshToken(usuario, refreshToken);
+        guardarRefreshToken(usuario, refreshToken, recordarme);
 
         res.put("exito", true);
         res.put("accessToken", accessToken);
         res.put("refreshToken", refreshToken);
+        res.put("recordarme", recordarme);
         res.put("usuario", usuarioAMapa(usuario));
         res.put("mensaje", "¡Bienvenido a Mercatto!");
         return res;
     }
 
     // ── REFRESH TOKEN ─────────────────────────────────────────────
+    // El refreshToken llega desde la cookie httpOnly (ver AuthController).
+    // Si es null (no hay cookie / sesión no "recordada"), simplemente no hay sesión que restaurar.
     @Transactional
     public Map<String, Object> refresh(String refreshToken) {
         Map<String, Object> res = new HashMap<>();
+        if (refreshToken == null) {
+            res.put("exito", false);
+            res.put("mensaje", "No hay sesión activa.");
+            return res;
+        }
+
         Optional<RefreshToken> opt = refreshRepo.findByToken(refreshToken);
 
         if (opt.isEmpty() || !opt.get().esValido()) {
@@ -238,6 +250,7 @@ public class AuthService {
 
         res.put("exito", true);
         res.put("accessToken", nuevoAccess);
+        res.put("usuario", usuarioAMapa(usuario));
         return res;
     }
 
@@ -249,11 +262,13 @@ public class AuthService {
     }
 
     // ── Helpers ───────────────────────────────────────────────────
-    private void guardarRefreshToken(Usuario usuario, String token) {
+    // Si "recordarme" está marcado, el refresh token (y su cookie) dura 30 días.
+    // Si no, dura solo 1 día: al cerrar el navegador la cookie de sesión desaparece igual.
+    private void guardarRefreshToken(Usuario usuario, String token, boolean recordarme) {
         RefreshToken rt = new RefreshToken();
         rt.setUsuario(usuario);
         rt.setToken(token);
-        rt.setExpiracion(LocalDateTime.now().plusDays(7));
+        rt.setExpiracion(LocalDateTime.now().plusDays(recordarme ? 30 : 1));
         refreshRepo.save(rt);
     }
 

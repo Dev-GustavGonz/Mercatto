@@ -18,7 +18,9 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const verificarSesion = async () => {
       const storedToken = localStorage.getItem('mercatto_token')
+
       if (storedToken) {
+        // Ya hay un access token en esta pestaña: solo confirmamos que siga vigente.
         try {
           const me = await authService.getMe()
           if (me?.exito) {
@@ -29,7 +31,21 @@ export const AuthProvider = ({ children }) => {
             }))
           }
         } catch {
-          // Token inválido
+          // Token inválido, intentamos refrescar más abajo con la cookie
+        }
+      } else {
+        // No hay access token (pestaña nueva / navegador reabierto): si el usuario
+        // marcó "Recordarme", la cookie httpOnly sigue viva y podemos restaurar la sesión sin pedirle nada.
+        try {
+          const res = await authService.refrescarSesion()
+          if (res?.exito && res?.accessToken) {
+            localStorage.setItem('mercatto_token', res.accessToken)
+            if (res.usuario) localStorage.setItem('mercatto_user', JSON.stringify(res.usuario))
+            setToken(res.accessToken)
+            setUsuario(res.usuario)
+          }
+        } catch {
+          // No hay cookie o ya expiró: sigue deslogueado, normal.
         }
       }
       setCargando(false)
@@ -37,11 +53,10 @@ export const AuthProvider = ({ children }) => {
     verificarSesion()
   }, [])
 
-  const login = async (email, password) => {
-    const res = await authService.login(email, password)
+  const login = async (email, password, recordarme = false) => {
+    const res = await authService.login(email, password, recordarme)
     if (res?.exito && res?.accessToken) {
       localStorage.setItem('mercatto_token', res.accessToken)
-      if (res.refreshToken) localStorage.setItem('mercatto_refresh_token', res.refreshToken)
       localStorage.setItem('mercatto_user', JSON.stringify(res.usuario))
       setToken(res.accessToken)
       setUsuario(res.usuario)
@@ -55,7 +70,6 @@ export const AuthProvider = ({ children }) => {
       const res = await authService.loginGoogle(credential)
       if (res?.exito && res?.accessToken) {
         localStorage.setItem('mercatto_token', res.accessToken)
-        if (res.refreshToken) localStorage.setItem('mercatto_refresh_token', res.refreshToken)
         localStorage.setItem('mercatto_user', JSON.stringify(res.usuario))
         setToken(res.accessToken)
         setUsuario(res.usuario)
@@ -74,7 +88,6 @@ export const AuthProvider = ({ children }) => {
     const res = await authService.registro(datos)
     if (res?.exito && res?.accessToken) {
       localStorage.setItem('mercatto_token', res.accessToken)
-      if (res.refreshToken) localStorage.setItem('mercatto_refresh_token', res.refreshToken)
       localStorage.setItem('mercatto_user', JSON.stringify(res.usuario))
       setToken(res.accessToken)
       setUsuario(res.usuario)

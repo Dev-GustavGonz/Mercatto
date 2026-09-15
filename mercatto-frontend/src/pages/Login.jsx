@@ -10,6 +10,7 @@ import { Mail, Lock, LogIn } from 'lucide-react'
 export const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [recordarme, setRecordarme] = useState(false)
   const [loading, setLoading] = useState(false)
   const { login, loginGoogle } = useAuth()
   const { success, error } = useToast()
@@ -30,7 +31,7 @@ export const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    const res = await login(email.trim(), password)
+    const res = await login(email.trim(), password, recordarme)
     setLoading(false)
 
     if (res?.exito) {
@@ -83,6 +84,16 @@ export const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
+          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={recordarme}
+              onChange={(e) => setRecordarme(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            Recordarme
+          </label>
 
           <Button type="submit" variant="primary" size="lg" className="w-full font-bold" loading={loading}>
             <LogIn size={18} className="mr-2" />

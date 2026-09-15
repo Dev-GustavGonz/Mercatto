@@ -11,8 +11,9 @@ export const VendorsTable = ({ vendedores = [], onActualizado }) => {
       await adminService.cambiarEstadoVendedor(id, estado)
       success(`Tienda actualizada a estado: ${estado}`)
       if (onActualizado) onActualizado()
-    } catch {
-      error('No se pudo actualizar el estado')
+    } catch (err) {
+      console.error('Error cambiando estado del vendedor:', err)
+      error(err?.response?.data?.mensaje || 'No se pudo actualizar el estado')
     }
   }
 

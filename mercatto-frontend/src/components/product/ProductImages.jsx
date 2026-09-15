@@ -29,7 +29,7 @@ export const ProductImages = ({ imagenes = [], titulo = 'Producto' }) => {
         <img
           src={activa}
           alt={titulo}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-contain hover:scale-105 transition-transform duration-500"
         />
       </div>
     </div>
