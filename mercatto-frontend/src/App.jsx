@@ -9,6 +9,7 @@ import CartDrawer from './components/cart/CartDrawer'
 
 // Pages
 import Home from './pages/Home'
+import AboutUs from './pages/AboutUs'
 import Catalogo from './pages/Catalogo'
 import DetalleProducto from './pages/DetalleProducto'
 import Carrito from './pages/Carrito'
@@ -41,6 +42,8 @@ const RutaAdmin = ({ children }) => {
   return children
 }
 
+import Perfil from './pages/Perfil'
+
 // Protected Route Wrapper for Logged-in Buyers
 const RutaProtegida = ({ children }) => {
   const { autenticado, cargando } = useAuth()
@@ -65,6 +68,7 @@ function App() {
                 <Routes>
                   {/* Public Marketplace routes */}
                   <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<AboutUs />} />
                   <Route path="/catalogo" element={<Catalogo />} />
                   <Route path="/producto/:id" element={<DetalleProducto />} />
                   <Route path="/carrito" element={<Carrito />} />
@@ -73,6 +77,14 @@ function App() {
 
                   {/* Buyer protected routes */}
                   <Route path="/checkout" element={<Checkout />} />
+                  <Route
+                    path="/perfil"
+                    element={
+                      <RutaProtegida>
+                        <Perfil />
+                      </RutaProtegida>
+                    }
+                  />
                   <Route
                     path="/mis-pedidos"
                     element={

@@ -22,5 +22,5 @@ ON DUPLICATE KEY UPDATE nombre=VALUES(nombre);
 INSERT INTO cupones (id, codigo, tipo, valor, monto_minimo, descuento_maximo, usos_maximos, usos_actuales, activo) VALUES
 (1, 'MERCATTO10', 'PORCENTAJE', 10.0, 50000.0, 30000.0, 1000, 0, true),
 (2, 'BIENVENIDO20', 'PORCENTAJE', 20.0, 80000.0, 50000.0, 500, 0, true),
-(3, 'ENVIOGRATIS', 'FIJO', 12000.0, 100000.0, 12000.0, 1000, 0, true)
+(3, 'ENVIOGRATIS', 'MONTO_FIJO', 12000.0, 100000.0, 12000.0, 1000, 0, true)
 ON DUPLICATE KEY UPDATE codigo=VALUES(codigo);

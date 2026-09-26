@@ -4,9 +4,8 @@ import { useCart } from '../../hooks/useCart'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
 import productoService from '../../services/productoService'
-import PriceDisplay from './PriceDisplay'
 import StarRating from '../common/StarRating'
-import { ShoppingBag, Heart, Store, MessageSquare } from 'lucide-react'
+import { ShoppingCart, Heart } from 'lucide-react'
 
 export const ProductCard = ({ producto, onContactClick }) => {
   const { agregarItem } = useCart()
@@ -44,90 +43,60 @@ export const ProductCard = ({ producto, onContactClick }) => {
   }
 
   return (
-    <div className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden relative">
-      {/* Favorite Button */}
+    <div className="group bg-mercatto-light rounded-3xl p-5 transition-all duration-300 flex flex-col relative h-[380px] hover:-translate-y-1 cursor-pointer">
+      {/* Favorite Button Top Right */}
       <button
         onClick={handleToggleFavorito}
-        className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm text-slate-400 hover:text-rose-500 hover:scale-110 transition shadow cursor-pointer"
+        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white shadow-sm text-slate-400 hover:text-mercatto-accent hover:scale-110 transition-all cursor-pointer opacity-0 group-hover:opacity-100 sm:opacity-100"
         title="Guardar en favoritos"
       >
-        <Heart size={16} className={esFavorito ? 'text-rose-500 fill-rose-500' : ''} />
+        <Heart size={16} className={esFavorito ? 'text-mercatto-accent fill-mercatto-accent' : ''} />
       </button>
 
+      {/* Rating Badge Top Left */}
+      <div className="absolute top-5 left-5 z-10 bg-white px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
+        <StarRating rating={1} max={1} size={14} className="text-slate-800" />
+        <span className="text-xs font-bold text-slate-800">{producto.calificacion || '4.8'}</span>
+      </div>
+
       {/* Image container */}
-      <Link to={`/producto/${producto.id}`} className="relative aspect-square overflow-hidden bg-slate-50 dark:bg-slate-800">
+      <Link to={`/producto/${producto.id}`} className="relative h-48 w-full flex items-center justify-center mt-6">
         <img
           src={imagenPrincipal}
           alt={producto.titulo}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-md"
           loading="lazy"
         />
-        {producto.destacado && (
-          <span className="absolute top-3 left-3 bg-amber-400 text-slate-950 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded shadow">
-            Destacado
-          </span>
-        )}
       </Link>
 
       {/* Content */}
-      <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+      <div className="mt-auto flex justify-between items-end">
         <div>
-          {/* Vendor Name */}
-          {producto.vendedor && (
-            <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mb-1">
-              <Store size={12} className="text-indigo-500" />
-              <span className="truncate">{producto.vendedor.nombreTienda}</span>
-            </div>
-          )}
-
-          {/* Title */}
           <Link to={`/producto/${producto.id}`}>
-            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 line-clamp-2 hover:text-indigo-600 transition" title={producto.titulo}>
+            <h3 className="text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-mercatto-accent transition-colors" title={producto.titulo}>
               {producto.titulo}
             </h3>
           </Link>
 
-          {/* Rating */}
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <StarRating rating={producto.calificacion || 0} size={13} />
-            <span className="text-xs text-slate-400 font-medium">
-              ({producto.totalResenas || 0})
-            </span>
-          </div>
-        </div>
-
-        {/* Price & Action */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <PriceDisplay
-            precio={producto.precio}
-            precioOferta={producto.precioOferta}
-            size="md"
-          />
-
-          <div className="flex items-center gap-1.5">
-            {onContactClick && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  onContactClick(producto)
-                }}
-                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-600 transition cursor-pointer"
-                title="Consultar al proveedor"
-              >
-                <MessageSquare size={16} />
-              </button>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-sm font-semibold text-slate-800">${producto.precio}</span>
+            {producto.precioOferta && (
+              <span className="text-xs text-slate-400 line-through">${producto.precioOferta}</span>
             )}
-
-            <button
-              onClick={handleAddToCart}
-              className="p-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow hover:shadow-indigo-500/25 transition cursor-pointer"
-              title="Añadir al Carrito"
-            >
-              <ShoppingBag size={16} />
-            </button>
+            {!producto.precioOferta && (
+              <span className="text-xs text-slate-400 line-through">${(producto.precio * 1.1).toFixed(2)}</span>
+            )}
           </div>
         </div>
+
+        {/* Circular Cart Button Bottom Right */}
+        <button
+          onClick={handleAddToCart}
+          className="bg-slate-900 group-hover:bg-mercatto-accent text-white h-10 w-10 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-105"
+          title="Añadir al Carrito"
+        >
+          <ShoppingCart size={18} />
+        </button>
       </div>
     </div>
   )

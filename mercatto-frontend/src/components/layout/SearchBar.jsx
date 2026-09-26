@@ -14,17 +14,20 @@ export const SearchBar = ({ className = '' }) => {
   }
 
   return (
-    <form onSubmit={handleSearch} className={`relative w-full ${className}`}>
+    <form onSubmit={handleSearch} className={`relative w-full flex ${className}`}>
       <input
         type="text"
         value={termino}
         onChange={(e) => setTermino(e.target.value)}
-        placeholder="Buscar productos, marcas y más..."
-        className="w-full pl-11 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-none rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400"
+        placeholder="Search for anything..."
+        className="w-full pl-5 pr-4 py-2.5 bg-slate-100 border border-slate-200 rounded-l-full text-sm focus:outline-none focus:bg-white text-slate-800 placeholder-slate-400 transition-colors"
       />
-      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+      <button 
+        type="submit" 
+        className="bg-mercatto-accent hover:bg-red-600 text-white px-6 rounded-r-full flex items-center justify-center transition-colors shadow-sm hover:shadow-md hover:shadow-gray-300"
+      >
         <Search size={18} />
-      </div>
+      </button>
     </form>
   )
 }

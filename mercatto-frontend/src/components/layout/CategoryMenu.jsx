@@ -18,10 +18,10 @@ export const CategoryMenu = () => {
       <button
         onMouseEnter={() => setIsOpen(true)}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+        className="bg-mercatto-accent text-white px-4 py-2 rounded-md flex items-center gap-2 text-sm font-semibold transition-all duration-200 hover:shadow-md hover:shadow-gray-300 cursor-pointer"
       >
-        <Grid size={18} className="text-indigo-600" />
-        <span>Categorías</span>
+        <Grid size={18} />
+        <span>All Category</span>
       </button>
 
       {isOpen && (
