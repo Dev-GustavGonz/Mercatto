@@ -6,13 +6,15 @@ import CategoryManager from '../components/admin/CategoryManager'
 import CouponManager from '../components/admin/CouponManager'
 import Spinner from '../components/common/Spinner'
 import { useToast } from '../hooks/useToast'
-import { Shield, Store, Users, Grid, Tag } from 'lucide-react'
+import { Shield, Store, Users, Grid, Tag, Search } from 'lucide-react'
 
 export const PanelAdmin = () => {
   const [tab, setTab] = useState('vendedores')
   const [stats, setStats] = useState({})
   const [vendedores, setVendedores] = useState([])
   const [usuarios, setUsuarios] = useState([])
+  const [busquedaUsuario, setBusquedaUsuario] = useState('')
+  const [filtroRolUsuario, setFiltroRolUsuario] = useState('TODOS')
   const [loading, setLoading] = useState(true)
   const { error: mostrarError } = useToast()
 
@@ -120,36 +122,84 @@ export const PanelAdmin = () => {
 
       {/* Tab 4: Users list */}
       {tab === 'usuarios' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-bold border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                  <th className="p-3.5">Nombre</th>
-                  <th className="p-3.5">Email</th>
-                  <th className="p-3.5">Rol</th>
-                  <th className="p-3.5">Estado</th>
-                  <th className="p-3.5">Registro</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {usuarios.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                    <td className="p-3.5 font-bold text-slate-900 dark:text-white">{u.nombre}</td>
-                    <td className="p-3.5 text-slate-600 dark:text-slate-300">{u.email}</td>
-                    <td className="p-3.5 font-semibold text-indigo-600">{u.rol}</td>
-                    <td className="p-3.5">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${u.activo ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-                        {u.activo ? 'Activo' : 'Suspendido'}
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-slate-400">
-                      {u.fechaRegistro ? new Date(u.fechaRegistro).toLocaleDateString('es-CO') : '-'}
-                    </td>
+        <div className="space-y-4">
+          {/* Filtros de Usuarios */}
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={busquedaUsuario}
+                onChange={(e) => setBusquedaUsuario(e.target.value)}
+                placeholder="Buscar usuario por nombre o correo electrónico..."
+                className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-rose-500 shadow-sm"
+              />
+              {busquedaUsuario && (
+                <button
+                  onClick={() => setBusquedaUsuario('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {['TODOS', 'COMPRADOR', 'VENDEDOR', 'ADMIN'].map((rol) => (
+                <button
+                  key={rol}
+                  onClick={() => setFiltroRolUsuario(rol)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    filtroRolUsuario === rol
+                      ? 'bg-rose-600 text-white shadow-sm'
+                      : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50'
+                  }`}
+                >
+                  {rol}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-bold border-b border-slate-200 dark:border-slate-700">
+                  <tr>
+                    <th className="p-3.5">Nombre</th>
+                    <th className="p-3.5">Email</th>
+                    <th className="p-3.5">Rol</th>
+                    <th className="p-3.5">Estado</th>
+                    <th className="p-3.5">Registro</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {usuarios
+                    .filter((u) => {
+                      const coincideTexto = !busquedaUsuario ||
+                        u.nombre?.toLowerCase().includes(busquedaUsuario.toLowerCase()) ||
+                        u.email?.toLowerCase().includes(busquedaUsuario.toLowerCase())
+                      const coincideRol = filtroRolUsuario === 'TODOS' || u.rol === filtroRolUsuario
+                      return coincideTexto && coincideRol
+                    })
+                    .map((u) => (
+                    <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                      <td className="p-3.5 font-bold text-slate-900 dark:text-white">{u.nombre}</td>
+                      <td className="p-3.5 text-slate-600 dark:text-slate-300">{u.email}</td>
+                      <td className="p-3.5 font-semibold text-indigo-600">{u.rol}</td>
+                      <td className="p-3.5">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${u.activo ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                          {u.activo ? 'Activo' : 'Suspendido'}
+                        </span>
+                      </td>
+                      <td className="p-3.5 text-slate-400">
+                        {u.fechaRegistro ? new Date(u.fechaRegistro).toLocaleDateString('es-CO') : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

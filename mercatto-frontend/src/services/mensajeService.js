@@ -6,8 +6,9 @@ const mensajeService = {
     return res.data
   },
 
-  obtenerConversacion: async (otroUsuarioId) => {
-    const res = await api.get(`/mensajes/conversacion/${otroUsuarioId}`)
+  obtenerConversacion: async (otroUsuarioId, remitenteId = null) => {
+    const params = remitenteId ? { remitenteId } : {}
+    const res = await api.get(`/mensajes/conversacion/${otroUsuarioId}`, { params })
     return res.data
   },
 
@@ -18,6 +19,11 @@ const mensajeService = {
 
   recargarTokens: async (cantidad) => {
     const res = await api.post(`/mensajes/tokens/recargar?cantidad=${cantidad}`)
+    return res.data
+  },
+
+  obtenerSaldoTokens: async () => {
+    const res = await api.get('/mensajes/tokens/saldo')
     return res.data
   }
 }

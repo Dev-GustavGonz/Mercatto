@@ -10,7 +10,7 @@ import VendorProfile from '../components/vendor/VendorProfile'
 import Button from '../components/common/Button'
 import Spinner from '../components/common/Spinner'
 import { formatCurrency } from '../utils/formatCurrency'
-import { Store, Package, ShoppingCart, MessageSquare, Settings, Plus, Edit, Trash2, Send } from 'lucide-react'
+import { Store, Package, ShoppingCart, MessageSquare, Settings, Plus, Edit, Trash2, Send, Search } from 'lucide-react'
 
 export const PanelVendedor = () => {
   const { usuario } = useAuth()
@@ -18,6 +18,7 @@ export const PanelVendedor = () => {
   const [stats, setStats] = useState({})
   const [perfil, setPerfil] = useState(null)
   const [productos, setProductos] = useState([])
+  const [busquedaProducto, setBusquedaProducto] = useState('')
   const [pedidos, setPedidos] = useState([])
   const [mensajes, setMensajes] = useState([])
   const [loading, setLoading] = useState(true)
@@ -166,21 +167,49 @@ export const PanelVendedor = () => {
               }}
             />
           ) : (
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-bold border-b border-slate-200 dark:border-slate-700">
-                    <tr>
-                      <th className="p-3.5">Producto</th>
-                      <th className="p-3.5">Categoría</th>
-                      <th className="p-3.5">Precio</th>
-                      <th className="p-3.5">Stock</th>
-                      <th className="p-3.5">Estado</th>
-                      <th className="p-3.5 text-right">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {productos.map((prod) => (
+            <div className="space-y-4">
+              {/* Buscador de productos del vendedor */}
+              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                <div className="relative flex-1 max-w-md">
+                  <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={busquedaProducto}
+                    onChange={(e) => setBusquedaProducto(e.target.value)}
+                    placeholder="Buscar en tus productos por título o SKU..."
+                    className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-indigo-500 shadow-sm"
+                  />
+                  {busquedaProducto && (
+                    <button
+                      onClick={() => setBusquedaProducto('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                <span className="text-xs font-semibold text-slate-400 self-center">
+                  Mostrando {productos.filter(p => !busquedaProducto || p.titulo?.toLowerCase().includes(busquedaProducto.toLowerCase()) || p.sku?.toLowerCase().includes(busquedaProducto.toLowerCase())).length} de {productos.length} productos
+                </span>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-bold border-b border-slate-200 dark:border-slate-700">
+                      <tr>
+                        <th className="p-3.5">Producto</th>
+                        <th className="p-3.5">Categoría</th>
+                        <th className="p-3.5">Precio</th>
+                        <th className="p-3.5">Stock</th>
+                        <th className="p-3.5">Estado</th>
+                        <th className="p-3.5 text-right">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {productos
+                        .filter(p => !busquedaProducto || p.titulo?.toLowerCase().includes(busquedaProducto.toLowerCase()) || p.sku?.toLowerCase().includes(busquedaProducto.toLowerCase()))
+                        .map((prod) => (
                       <tr key={prod.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                         <td className="p-3.5 flex items-center gap-3">
                           <img
@@ -225,9 +254,10 @@ export const PanelVendedor = () => {
                 </table>
               </div>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
+    )}
 
       {/* Tab 2: Pedidos */}
       {tab === 'pedidos' && (
@@ -237,9 +267,28 @@ export const PanelVendedor = () => {
       {/* Tab 3: Mensajes / Consultas de Compradores */}
       {tab === 'mensajes' && (
         <div className="space-y-4">
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-slate-800 dark:to-slate-800/80 p-5 rounded-2xl border border-indigo-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                <MessageSquare size={18} className="text-indigo-600" />
+                <span>Centro de Mensajería y Chat en Vivo</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Responde en tiempo real a los clientes que te contactan desde tus publicaciones.
+              </p>
+            </div>
+            <a
+              href="/mensajes"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-sm flex items-center gap-1.5 shrink-0"
+            >
+              <MessageSquare size={14} />
+              <span>Abrir Chat en Vivo</span>
+            </a>
+          </div>
+
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800">
             {mensajes.length === 0 ? (
-              <p className="p-8 text-center text-xs text-slate-400">No tienes consultas pendientes de clientes.</p>
+              <p className="p-8 text-center text-xs text-slate-400">No tienes consultas archivadas de clientes.</p>
             ) : (
               mensajes.map((m) => (
                 <div key={m.id} className="p-4 space-y-2">

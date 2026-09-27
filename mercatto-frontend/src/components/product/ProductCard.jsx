@@ -1,18 +1,21 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../../hooks/useCart'
 import { useAuth } from '../../hooks/useAuth'
 import { useToast } from '../../hooks/useToast'
+import { useFavorites } from '../../hooks/useFavorites'
 import productoService from '../../services/productoService'
 import StarRating from '../common/StarRating'
-import { ShoppingCart, Heart } from 'lucide-react'
+import { ShoppingCart, Heart, MessageSquare } from 'lucide-react'
 
 export const ProductCard = ({ producto, onContactClick }) => {
   const { agregarItem } = useCart()
   const { autenticado } = useAuth()
   const { success, info } = useToast()
-  const [esFavorito, setEsFavorito] = useState(false)
+  const { favoriteIds, toggleFavoriteId } = useFavorites()
   const navigate = useNavigate()
+
+  const esFavorito = favoriteIds.includes(producto.id)
 
   const imagenPrincipal =
     producto.imagenes?.find((img) => img.principal)?.url ||
@@ -29,7 +32,7 @@ export const ProductCard = ({ producto, onContactClick }) => {
     }
     try {
       const res = await productoService.toggleFavorito(producto.id)
-      setEsFavorito(res.favorito)
+      toggleFavoriteId(producto.id)
       success(res.mensaje)
     } catch {
       // Error manejado
@@ -42,8 +45,23 @@ export const ProductCard = ({ producto, onContactClick }) => {
     agregarItem(producto, null, 1)
   }
 
+  const handleContactarDirecto = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!autenticado) {
+      info('Inicia sesión para consultar al vendedor')
+      navigate('/login')
+      return
+    }
+    const destinoId = producto.vendedor?.usuarioId || producto.vendedor?.id || 1
+    navigate(`/mensajes?vendedorId=${destinoId}&productoId=${producto.id}`)
+  }
+
   return (
-    <div className="group bg-mercatto-light rounded-3xl p-5 transition-all duration-300 flex flex-col relative h-[380px] hover:-translate-y-1 cursor-pointer">
+    <div 
+      onClick={() => navigate(`/producto/${producto.id}`)}
+      className="group bg-mercatto-light rounded-3xl p-5 transition-all duration-300 flex flex-col relative h-[380px] hover:-translate-y-1 cursor-pointer select-none"
+    >
       {/* Favorite Button Top Right */}
       <button
         onClick={handleToggleFavorito}
@@ -91,14 +109,24 @@ export const ProductCard = ({ producto, onContactClick }) => {
           </div>
         </div>
 
-        {/* Circular Cart Button Bottom Right */}
-        <button
-          onClick={handleAddToCart}
-          className="bg-slate-900 group-hover:bg-mercatto-accent text-white h-10 w-10 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-105"
-          title="Añadir al Carrito"
-        >
-          <ShoppingCart size={18} />
-        </button>
+        {/* Action Buttons Bottom Right */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleContactarDirecto}
+            className="bg-white hover:bg-indigo-50 border border-slate-200 text-slate-500 hover:text-indigo-600 h-10 w-10 rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-105 cursor-pointer"
+            title="Preguntar al vendedor"
+          >
+            <MessageSquare size={17} />
+          </button>
+
+          <button
+            onClick={handleAddToCart}
+            className="bg-slate-900 group-hover:bg-mercatto-accent text-white h-10 w-10 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-105 cursor-pointer"
+            title="Añadir al Carrito"
+          >
+            <ShoppingCart size={18} />
+          </button>
+        </div>
       </div>
     </div>
   )

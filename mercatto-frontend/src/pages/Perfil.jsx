@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../hooks/useToast'
 import direccionService from '../services/direccionService'
+import usuarioService from '../services/usuarioService'
 import Button from '../components/common/Button'
 import Input from '../components/common/Input'
-import { User, MapPin, Plus, Trash2, Edit2, Shield } from 'lucide-react'
+import { User, MapPin, Plus, Trash2, Edit2, Shield, Camera, X, Check } from 'lucide-react'
 
 export const Perfil = () => {
-  const { usuario } = useAuth()
-  const { success, error } = useToast()
+  const { usuario, actualizarUsuario } = useAuth()
+  const { success, error, info } = useToast()
   
   const [direcciones, setDirecciones] = useState([])
   const [loading, setLoading] = useState(true)
@@ -22,9 +23,24 @@ export const Perfil = () => {
     esPrincipal: false
   })
 
+  // Perfil Edit State
+  const [editandoPerfil, setEditandoPerfil] = useState(false)
+  const [perfilData, setPerfilData] = useState({ nombre: '', telefono: '' })
+  const fileInputRef = useRef(null)
+
+  // Password Edit State
+  const [modalPassword, setModalPassword] = useState(false)
+  const [pwdData, setPwdData] = useState({ passwordActual: '', nuevaPassword: '', confirmarPassword: '' })
+
+  // Delete Account State
+  const [modalEliminar, setModalEliminar] = useState(false)
+
   useEffect(() => {
     cargarDirecciones()
-  }, [])
+    if (usuario) {
+      setPerfilData({ nombre: usuario.nombre || '', telefono: usuario.telefono || '' })
+    }
+  }, [usuario])
 
   const cargarDirecciones = async () => {
     try {
@@ -61,6 +77,68 @@ export const Perfil = () => {
     }
   }
 
+  const handleGuardarPerfil = async () => {
+    try {
+      const res = await usuarioService.actualizarPerfil(perfilData)
+      if (res.exito) {
+        actualizarUsuario(res.usuario)
+        setEditandoPerfil(false)
+        success('Perfil actualizado')
+      }
+    } catch (err) {
+      error('No se pudo actualizar el perfil')
+    }
+  }
+
+  const handleSubirFoto = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      error('La imagen no debe superar los 5MB')
+      return
+    }
+
+    try {
+      info('Subiendo foto...')
+      const res = await usuarioService.subirFotoPerfil(file)
+      if (res.exito) {
+        actualizarUsuario(res.usuario)
+        success('Foto actualizada')
+      }
+    } catch (err) {
+      error('No se pudo subir la foto')
+    }
+  }
+
+  const handleCambiarPassword = async (e) => {
+    e.preventDefault()
+    if (pwdData.nuevaPassword !== pwdData.confirmarPassword) {
+      return error('Las contraseñas nuevas no coinciden')
+    }
+    const res = await usuarioService.cambiarPassword(pwdData)
+    if (res.exito) {
+      success(res.mensaje)
+      setModalPassword(false)
+      setPwdData({ passwordActual: '', nuevaPassword: '', confirmarPassword: '' })
+    } else {
+      error(res.mensaje)
+    }
+  }
+
+  const confirmarEliminarCuenta = async () => {
+    const res = await usuarioService.eliminarCuenta()
+    if (res.exito) {
+      setModalEliminar(false)
+      success('Tu cuenta ha sido eliminada correctamente.')
+      setTimeout(() => {
+        window.location.href = '/' // Logout implícito al borrar cookies o perder acceso
+      }, 1500)
+    } else {
+      error(res.mensaje)
+    }
+  }
+
   return (
     <div className="max-w-[1600px] mx-auto space-y-8 font-sans pb-16">
       <div className="flex items-center gap-3">
@@ -72,27 +150,150 @@ export const Perfil = () => {
         
         {/* User Info Card */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
-            <div className="w-24 h-24 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-4">
-              <User size={48} />
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center relative group">
+            {/* Foto de perfil */}
+            <div className="relative w-28 h-28 mb-4">
+              {usuario?.fotoPerfil ? (
+                <img src={usuario.fotoPerfil} alt={usuario.nombre} className="w-full h-full rounded-full object-cover border-4 border-slate-50 shadow-sm" />
+              ) : (
+                <div className="w-full h-full rounded-full bg-slate-100 text-slate-400 flex items-center justify-center border-4 border-slate-50 shadow-sm">
+                  <User size={48} />
+                </div>
+              )}
+              
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 bg-mercatto-accent text-white p-2 rounded-full shadow-md hover:scale-110 transition-transform cursor-pointer"
+                title="Cambiar foto de perfil"
+              >
+                <Camera size={16} />
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleSubirFoto} 
+                accept="image/jpeg, image/png, image/webp" 
+                className="hidden" 
+              />
             </div>
-            <h2 className="text-xl font-bold text-slate-800">{usuario?.nombre || 'Usuario Registrado'}</h2>
-            <p className="text-sm text-slate-500 mb-4">{usuario?.email}</p>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
-              <Shield size={14} /> {usuario?.rol || 'COMPRADOR'}
-            </span>
+
+            {editandoPerfil ? (
+              <div className="w-full space-y-3 mt-2">
+                <Input 
+                  placeholder="Nombre completo" 
+                  value={perfilData.nombre} 
+                  onChange={e => setPerfilData({...perfilData, nombre: e.target.value})} 
+                />
+                <Input 
+                  placeholder="Teléfono" 
+                  value={perfilData.telefono} 
+                  onChange={e => setPerfilData({...perfilData, telefono: e.target.value})} 
+                />
+                <div className="flex justify-center gap-2 pt-2">
+                  <Button variant="ghost" size="sm" onClick={() => setEditandoPerfil(false)}>
+                    <X size={16} />
+                  </Button>
+                  <Button variant="primary" size="sm" onClick={handleGuardarPerfil}>
+                    <Check size={16} className="mr-1" /> Guardar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-slate-800 flex items-center justify-center gap-2">
+                  {usuario?.nombre || 'Usuario Registrado'}
+                  <button onClick={() => setEditandoPerfil(true)} className="text-slate-400 hover:text-mercatto-accent transition-colors cursor-pointer">
+                    <Edit2 size={14} />
+                  </button>
+                </h2>
+                <p className="text-sm text-slate-500 mb-1">{usuario?.email}</p>
+                {usuario?.telefono && <p className="text-sm text-slate-500 mb-3">{usuario?.telefono}</p>}
+                
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 mt-2 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">
+                  <Shield size={14} /> {usuario?.rol || 'COMPRADOR'}
+                </span>
+              </>
+            )}
           </div>
 
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 space-y-4">
             <h3 className="font-bold text-slate-800 border-b border-slate-100 pb-2">Opciones de Cuenta</h3>
-            <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+            <button className="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer" onClick={() => setModalPassword(true)}>
               Cambiar Contraseña
             </button>
-            <button className="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
+            <button className="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer" onClick={() => setModalEliminar(true)}>
               Eliminar Cuenta
             </button>
           </div>
         </div>
+
+        {/* Modal Password */}
+        {modalPassword && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-xl border border-slate-100">
+              <h3 className="text-xl font-bold text-slate-800 mb-4">Cambiar Contraseña</h3>
+              <form onSubmit={handleCambiarPassword} className="space-y-4">
+                {usuario?.proveedor !== 'GOOGLE' && (
+                  <Input 
+                    type="password"
+                    label="Contraseña Actual" 
+                    value={pwdData.passwordActual} 
+                    onChange={e => setPwdData({...pwdData, passwordActual: e.target.value})} 
+                    required 
+                  />
+                )}
+                <Input 
+                  type="password"
+                  label="Nueva Contraseña (Mín. 6 caracteres)" 
+                  value={pwdData.nuevaPassword} 
+                  onChange={e => setPwdData({...pwdData, nuevaPassword: e.target.value})} 
+                  required 
+                />
+                <Input 
+                  type="password"
+                  label="Confirmar Nueva Contraseña" 
+                  value={pwdData.confirmarPassword} 
+                  onChange={e => setPwdData({...pwdData, confirmarPassword: e.target.value})} 
+                  required 
+                />
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="ghost" type="button" onClick={() => setModalPassword(false)}>Cancelar</Button>
+                  <Button type="submit">Actualizar</Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Eliminar Cuenta */}
+        {modalEliminar && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-xl border border-slate-100 text-center">
+              <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">¿Eliminar Cuenta?</h3>
+              <p className="text-sm text-slate-500 mb-6">
+                Esta acción no se puede deshacer. Tu cuenta será desactivada permanentemente y perderás acceso a tus pedidos y configuraciones.
+              </p>
+              
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={confirmarEliminarCuenta}
+                  className="w-full px-4 py-3 rounded-xl font-bold bg-rose-500 text-white hover:bg-rose-600 transition-colors cursor-pointer shadow-sm shadow-rose-200"
+                >
+                  Sí, eliminar mi cuenta
+                </button>
+                <button 
+                  onClick={() => setModalEliminar(false)}
+                  className="w-full px-4 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Addresses Section */}
         <div className="lg:col-span-2 space-y-6">

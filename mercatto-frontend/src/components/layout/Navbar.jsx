@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useCart } from '../../hooks/useCart'
+import { useFavorites } from '../../hooks/useFavorites'
 import SearchBar from './SearchBar'
 import CategoryMenu from './CategoryMenu'
 import { ShoppingBag, Heart, User, LogOut, Store, Shield, Package, Menu, X, Info, Settings, ChevronDown, MessageSquare } from 'lucide-react'
@@ -9,6 +10,7 @@ import { ShoppingBag, Heart, User, LogOut, Store, Shield, Package, Menu, X, Info
 export const Navbar = () => {
   const { usuario, autenticado, logout, esVendedor, esAdmin } = useAuth()
   const { totalItems, setDrawerAbierto } = useCart()
+  const { favoriteIds } = useFavorites()
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [dropdownUser, setDropdownUser] = useState(false)
   const [dropdownLang, setDropdownLang] = useState(false)
@@ -44,10 +46,32 @@ export const Navbar = () => {
               </div>
             </Link>
 
-            {/* Search bar */}
-            <div className="hidden md:flex flex-1 max-w-2xl mx-4">
-              <SearchBar />
-            </div>
+            {/* Search bar (para compradores o visitantes públicos) */}
+            {!esVendedor && !esAdmin && (
+              <div className="hidden md:flex flex-1 max-w-2xl mx-4">
+                <SearchBar />
+              </div>
+            )}
+
+            {/* Search bar compacto exclusivo para el Super Administrador (solo en Catálogo o vista de producto) */}
+            {esAdmin && (location.pathname.startsWith('/catalogo') || location.pathname.startsWith('/producto')) && (
+              <div className="hidden md:flex flex-1 max-w-md mx-6">
+                <SearchBar placeholder="Inspeccionar producto en catálogo..." />
+              </div>
+            )}
+
+            {/* Panel de Vendedor indicator if Vendedor */}
+            {esVendedor && (
+              <div className="hidden md:flex flex-1 items-center justify-start ml-6">
+                <Link
+                  to="/panel-vendedor"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-xs border border-indigo-100 hover:bg-indigo-100 transition"
+                >
+                  <Store size={15} />
+                  <span>Espacio de Trabajo / Panel de Vendedor</span>
+                </Link>
+              </div>
+            )}
 
             {/* Action Links & Icons */}
             <div className="flex items-center gap-5 shrink-0">
@@ -78,28 +102,46 @@ export const Navbar = () => {
                 )}
               </div>
 
-              {/* Carrito */}
-              <button
-                onClick={() => setDrawerAbierto(true)}
-                className="text-slate-700 hover:text-mercatto-accent transition relative cursor-pointer"
-                title="Carrito de Compras"
-              >
-                <ShoppingBag size={24} />
-                {totalItems > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-mercatto-accent text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
-                    {totalItems}
-                  </span>
-                )}
-              </button>
+              {/* Carrito (Solo para compradores o visitantes) */}
+              {!esVendedor && !esAdmin && (
+                <button
+                  onClick={() => setDrawerAbierto(true)}
+                  className="text-slate-700 hover:text-mercatto-accent transition relative cursor-pointer"
+                  title="Carrito de Compras"
+                >
+                  <ShoppingBag size={24} />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-mercatto-accent text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  )}
+                </button>
+              )}
 
-              {/* Favoritos */}
-              {autenticado && (
+              {/* Favoritos (Solo para compradores) */}
+              {autenticado && !esVendedor && !esAdmin && (
                 <Link
                   to="/favoritos"
                   className="text-slate-700 hover:text-mercatto-accent transition relative"
                   title="Mis Favoritos"
                 >
                   <Heart size={24} />
+                  {favoriteIds?.length > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-mercatto-accent text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                      {favoriteIds.length}
+                    </span>
+                  )}
+                </Link>
+              )}
+
+              {/* Mensajes / Chat */}
+              {autenticado && (
+                <Link
+                  to="/mensajes"
+                  className="text-slate-700 hover:text-mercatto-accent transition relative"
+                  title={esVendedor ? "Mensajes con Clientes" : "Mis Mensajes & Chat"}
+                >
+                  <MessageSquare size={24} />
                 </Link>
               )}
 
@@ -114,46 +156,55 @@ export const Navbar = () => {
                       {usuario?.nombre?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <span className="hidden sm:inline-block text-xs font-bold text-slate-700 max-w-[90px] truncate pr-2">
-                      {usuario?.nombre?.split(' ')[0] || 'Mi Perfil'}
+                      {esVendedor ? 'Vendedor' : (usuario?.nombre?.split(' ')[0] || 'Mi Cuenta')}
                     </span>
                   </button>
 
                   {dropdownUser && (
                     <div className="absolute right-0 mt-3 w-56 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50">
                       <div className="px-4 py-2 border-b border-slate-100">
-                        <p className="text-xs font-medium text-slate-400">Conectado como</p>
+                        <p className="text-xs font-medium text-slate-400">
+                          {esVendedor ? 'Cuenta de Proveedor' : 'Conectado como'}
+                        </p>
                         <p className="text-sm font-bold text-slate-900 truncate">{usuario?.email}</p>
                       </div>
 
-                      <Link
-                        to="/perfil"
-                        onClick={() => setDropdownUser(false)}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 mt-1"
-                      >
-                        <User size={16} className="text-slate-400" />
-                        <span>Mi Perfil</span>
-                      </Link>
+                      {/* Opciones exclusivas si es Comprador */}
+                      {!esVendedor && !esAdmin && (
+                        <>
+                          <Link
+                            to="/perfil"
+                            onClick={() => setDropdownUser(false)}
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 mt-1"
+                          >
+                            <User size={16} className="text-slate-400" />
+                            <span>Mi Perfil</span>
+                          </Link>
+                          <Link
+                            to="/mis-pedidos"
+                            onClick={() => setDropdownUser(false)}
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                          >
+                            <Package size={16} className="text-slate-400" />
+                            <span>Mis Pedidos</span>
+                          </Link>
+                        </>
+                      )}
 
+                      {/* Acceso a Mensajes / Chat */}
                       <Link
                         to="/mensajes"
                         onClick={() => setDropdownUser(false)}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-indigo-600 hover:bg-indigo-50"
                       >
                         <MessageSquare size={16} />
-                        Mensajes
-                      </Link>
-                      <Link
-                        to="/mis-pedidos"
-                        onClick={() => setDropdownUser(false)}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                      >
-                        <Package size={16} className="text-slate-400" />
-                        <span>Mis Pedidos</span>
+                        <span>{esVendedor ? 'Mensajes de Clientes' : 'Mensajes'}</span>
                       </Link>
 
+                      {/* Acceso al Panel de Vendedor */}
                       {esVendedor && (
                         <Link
-                          to="/vendedor"
+                          to="/panel-vendedor"
                           onClick={() => setDropdownUser(false)}
                           className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-mercatto-accent hover:bg-indigo-50"
                         >
@@ -210,71 +261,154 @@ export const Navbar = () => {
       <div className="bg-white border-b border-slate-100 shadow-sm hidden md:block">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2.5">
           <nav className="flex gap-2 items-center">
-            <Link 
-              to="/" 
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                location.pathname === '/' 
-                  ? 'bg-slate-800 text-white shadow-md' 
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
-              }`}
-            >
-              Home
-            </Link>
-            <Link 
-              to="/about" 
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                location.pathname === '/about' 
-                  ? 'bg-slate-800 text-white shadow-md' 
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
-              }`}
-            >
-              About Us
-            </Link>
-            <Link 
-              to="/catalogo" 
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1 ${
-                location.pathname.startsWith('/catalogo') 
-                  ? 'bg-slate-800 text-white shadow-md' 
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
-              }`}
-            >
-              Shop <ChevronDown size={14}/>
-            </Link>
-            <Link 
-              to="/registro?rol=VENDEDOR" 
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                location.pathname === '/registro' 
-                  ? 'bg-slate-800 text-white shadow-md' 
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
-              }`}
-            >
-              Sell on Mercatto
-            </Link>
-            <Link 
-              to="/mis-pedidos" 
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                location.pathname.startsWith('/mis-pedidos') 
-                  ? 'bg-slate-800 text-white shadow-md' 
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
-              }`}
-            >
-              Track Order
-            </Link>
-            <Link 
-              to="/favoritos" 
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                location.pathname.startsWith('/favoritos') 
-                  ? 'bg-slate-800 text-white shadow-md' 
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
-              }`}
-            >
-              Wishlist
-            </Link>
+            {esAdmin ? (
+              <>
+                <Link 
+                  to="/admin" 
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+                    location.pathname === '/admin' 
+                      ? 'bg-rose-600 text-white shadow-md' 
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-rose-600'
+                  }`}
+                >
+                  <Shield size={15} />
+                  <span>Panel Global Admin</span>
+                </Link>
+                <Link 
+                  to="/mensajes" 
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+                    location.pathname === '/mensajes' 
+                      ? 'bg-rose-600 text-white shadow-md' 
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-rose-600'
+                  }`}
+                >
+                  <MessageSquare size={15} />
+                  <span>Auditoría de Chats</span>
+                </Link>
+                <Link 
+                  to="/catalogo" 
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                    location.pathname === '/catalogo' 
+                      ? 'bg-slate-800 text-white shadow-md' 
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-rose-600'
+                  }`}
+                >
+                  Ver Catálogo Público
+                </Link>
+              </>
+            ) : esVendedor ? (
+              <>
+                <Link 
+                  to="/panel-vendedor" 
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+                    location.pathname === '/panel-vendedor' || location.pathname === '/vendedor'
+                      ? 'bg-slate-800 text-white shadow-md' 
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
+                  }`}
+                >
+                  <Store size={15} />
+                  <span>Panel de Vendedor</span>
+                </Link>
+                <Link 
+                  to="/mensajes" 
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+                    location.pathname === '/mensajes' 
+                      ? 'bg-slate-800 text-white shadow-md' 
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
+                  }`}
+                >
+                  <MessageSquare size={15} />
+                  <span>Mensajes & Chat con Clientes</span>
+                </Link>
+                <Link 
+                  to="/catalogo" 
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                    location.pathname === '/catalogo' 
+                      ? 'bg-slate-800 text-white shadow-md' 
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
+                  }`}
+                >
+                  Explorar Marketplace
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/" 
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                    location.pathname === '/' 
+                      ? 'bg-slate-800 text-white shadow-md' 
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
+                  }`}
+                >
+                  Home
+                </Link>
+                <Link 
+                  to="/about" 
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                    location.pathname === '/about' 
+                      ? 'bg-slate-800 text-white shadow-md' 
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
+                  }`}
+                >
+                  About Us
+                </Link>
+                <Link 
+                  to="/catalogo" 
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1 ${
+                    location.pathname.startsWith('/catalogo') 
+                      ? 'bg-slate-800 text-white shadow-md' 
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
+                  }`}
+                >
+                  Shop <ChevronDown size={14}/>
+                </Link>
+                {!autenticado && (
+                  <Link 
+                    to="/registro?rol=VENDEDOR" 
+                    className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                      location.pathname === '/registro' 
+                        ? 'bg-slate-800 text-white shadow-md' 
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
+                    }`}
+                  >
+                    Sell on Mercatto
+                  </Link>
+                )}
+                {autenticado && (
+                  <>
+                    <Link 
+                      to="/mis-pedidos" 
+                      className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                        location.pathname.startsWith('/mis-pedidos') 
+                          ? 'bg-slate-800 text-white shadow-md' 
+                          : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
+                      }`}
+                    >
+                      Track Order
+                    </Link>
+                    <Link 
+                      to="/favoritos" 
+                      className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                        location.pathname.startsWith('/favoritos') 
+                          ? 'bg-slate-800 text-white shadow-md' 
+                          : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
+                      }`}
+                    >
+                      Wishlist
+                    </Link>
+                  </>
+                )}
+              </>
+            )}
           </nav>
           
-          <div className="flex items-center">
-            <CategoryMenu />
-          </div>
+          {/* All Category Menu (Solo para compradores y visitantes) */}
+          {!esAdmin && !esVendedor && (
+            <div className="flex items-center">
+              <CategoryMenu />
+            </div>
+          )}
         </div>
       </div>
 

@@ -107,6 +107,7 @@ public class ProductoResponse {
 
     public static class VendedorDTO {
         private Long id;
+        private Long usuarioId;
         private String nombreTienda;
         private String logoUrl;
         private String ciudad;
@@ -115,6 +116,8 @@ public class ProductoResponse {
         public VendedorDTO() {}
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
+        public Long getUsuarioId() { return usuarioId; }
+        public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
         public String getNombreTienda() { return nombreTienda; }
         public void setNombreTienda(String nombreTienda) { this.nombreTienda = nombreTienda; }
         public String getLogoUrl() { return logoUrl; }

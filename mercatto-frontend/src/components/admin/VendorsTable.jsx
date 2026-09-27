@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import adminService from '../../services/adminService'
 import { useToast } from '../../hooks/useToast'
-import { Check, X, ShieldAlert } from 'lucide-react'
+import { Check, X, ShieldAlert, Search } from 'lucide-react'
 
 export const VendorsTable = ({ vendedores = [], onActualizado }) => {
   const { success, error } = useToast()
+  const [busqueda, setBusqueda] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState('TODOS')
 
   const handleCambiarEstado = async (id, estado) => {
     try {
@@ -17,17 +19,59 @@ export const VendorsTable = ({ vendedores = [], onActualizado }) => {
     }
   }
 
-  if (vendedores.length === 0) {
-    return (
-      <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-400 text-sm">
-        No se encontraron vendedores registrados.
-      </div>
-    )
-  }
+  const vendedoresFiltrados = vendedores.filter((v) => {
+    const coincideTexto = !busqueda || 
+      v.nombreTienda?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      v.nombrePropietario?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      v.email?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      v.nitCedula?.toLowerCase().includes(busqueda.toLowerCase())
+    
+    const coincideEstado = filtroEstado === 'TODOS' || v.estado === filtroEstado
+    return coincideTexto && coincideEstado
+  })
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-      <div className="overflow-x-auto">
+    <div className="space-y-4">
+      {/* Barra de Filtros y Búsqueda */}
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+        <div className="relative flex-1 max-w-md">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar tienda por nombre, dueño, email o NIT..."
+            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-rose-500 shadow-sm"
+          />
+          {busqueda && (
+            <button
+              onClick={() => setBusqueda('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {['TODOS', 'APROBADO', 'PENDIENTE', 'SUSPENDIDO'].map((est) => (
+            <button
+              key={est}
+              onClick={() => setFiltroEstado(est)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                filtroEstado === est
+                  ? 'bg-rose-600 text-white shadow-sm'
+                  : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50'
+              }`}
+            >
+              {est}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-bold border-b border-slate-200 dark:border-slate-700">
             <tr>
@@ -39,7 +83,7 @@ export const VendorsTable = ({ vendedores = [], onActualizado }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {vendedores.map((v) => {
+            {vendedoresFiltrados.map((v) => {
               const esPendiente = v.estado === 'PENDIENTE'
               const esAprobado = v.estado === 'APROBADO'
 
@@ -111,6 +155,7 @@ export const VendorsTable = ({ vendedores = [], onActualizado }) => {
         </table>
       </div>
     </div>
+  </div>
   )
 }
 

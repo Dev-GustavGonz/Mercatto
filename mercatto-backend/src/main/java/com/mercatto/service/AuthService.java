@@ -70,6 +70,7 @@ public class AuthService {
         usuario.setPassword(passwordEncoder.encode(password));
         usuario.setRol(Usuario.Rol.valueOf(rolStr));
         usuario.setActivo(!"VENDEDOR".equals(rolStr));
+        usuario.setTokensChat(5); // 5 tokens de bienvenida
         Usuario guardado = usuarioRepo.save(usuario);
 
         if ("VENDEDOR".equals(rolStr)) {
@@ -206,6 +207,7 @@ public class AuthService {
             usuario.setFotoPerfil(datos.foto);
             usuario.setProveedor(Usuario.Proveedor.GOOGLE);
             usuario.setGoogleId(datos.sub);
+            usuario.setTokensChat(5);
         }
 
         usuario.setUltimoLogin(LocalDateTime.now());
@@ -280,6 +282,7 @@ public class AuthService {
         m.put("rol",       u.getRol().name());
         m.put("activo",    u.isActivo());
         m.put("fotoPerfil",u.getFotoPerfil());
+        m.put("tokensChat",u.getTokensChat() != null ? u.getTokensChat() : 0);
         return m;
     }
 }

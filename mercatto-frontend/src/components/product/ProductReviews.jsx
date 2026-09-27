@@ -28,10 +28,10 @@ export const ProductReviews = ({ productoId, calificacionPromedio = 0, totalRese
           <h3 className="text-xl font-bold text-slate-900 dark:text-white">Opiniones del Producto</h3>
           <div className="flex items-center gap-3 mt-2">
             <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
-              {calificacionPromedio.toFixed(1)}
+              {Number(calificacionPromedio || 0).toFixed(1)}
             </span>
             <div>
-              <StarRating rating={calificacionPromedio} size={18} />
+              <StarRating rating={Number(calificacionPromedio || 0)} size={18} />
               <p className="text-xs text-slate-500">{totalResenas} valoraciones de clientes</p>
             </div>
           </div>

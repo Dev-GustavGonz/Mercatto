@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Search, Loader2 } from 'lucide-react'
 import productoService from '../../services/productoService'
 
-export const SearchBar = ({ className = '' }) => {
+export const SearchBar = ({ className = '', placeholder = 'Buscar productos...' }) => {
   const [termino, setTermino] = useState('')
   const [sugerencias, setSugerencias] = useState([])
   const [cargando, setCargando] = useState(false)
@@ -66,7 +66,7 @@ export const SearchBar = ({ className = '' }) => {
           value={termino}
           onChange={(e) => setTermino(e.target.value)}
           onFocus={() => termino.trim().length >= 2 && setMostrarSugerencias(true)}
-          placeholder="Buscar productos..."
+          placeholder={placeholder}
           className="w-full pl-5 pr-4 py-2.5 bg-slate-100 border border-slate-200 rounded-l-full text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-mercatto-accent/20 text-slate-800 placeholder-slate-400 transition-all"
         />
         <button 

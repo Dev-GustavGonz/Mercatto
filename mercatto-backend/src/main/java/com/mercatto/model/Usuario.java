@@ -1,10 +1,13 @@
 package com.mercatto.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Usuario {
 
     @Id
@@ -18,6 +21,7 @@ public class Usuario {
     private String email;
 
     @Column(name = "password_hash", nullable = true)
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)

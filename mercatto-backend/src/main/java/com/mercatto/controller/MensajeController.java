@@ -33,6 +33,7 @@ public class MensajeController {
     @Autowired private UsuarioRepository usuarioRepo;
     @Autowired private ProductoRepository productoRepo;
     @Autowired private VendedorRepository vendedorRepo;
+    @Autowired private org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
     public ResponseEntity<Mensaje> enviarMensaje(
@@ -52,20 +53,11 @@ public class MensajeController {
         
         // Si el remitente es un COMPRADOR, cobramos un Token
         if (remitente.getRol() == Usuario.Rol.COMPRADOR) {
-            if (remitente.getTokensChat() <= 0) {
-                throw new BadRequestException("No tienes tokens suficientes para enviar este mensaje. Recarga tu saldo.");
+            if (remitente.getTokensChat() == null || remitente.getTokensChat() <= 0) {
+                throw new BadRequestException("No tienes tokens suficientes para enviar este mensaje. Recarga tu saldo de tokens para chatear.");
             }
             
-            // Verificar si el destinatario (Vendedor) tiene suscripción activa para recibir mensajes
-            Vendedor vendedorDestino = vendedorRepo.findByUsuarioId(destinatario.getId()).orElse(null);
-            if (vendedorDestino != null) {
-                if (vendedorDestino.getTipoSuscripcion() == Vendedor.TipoSuscripcion.STARTER || 
-                   (vendedorDestino.getFechaExpiracionSuscripcion() != null && vendedorDestino.getFechaExpiracionSuscripcion().isBefore(LocalDateTime.now()))) {
-                    throw new BadRequestException("Este vendedor no tiene habilitada la mensajería actualmente.");
-                }
-            }
-
-            // Descontar token
+            // Descontar token al comprador
             remitente.setTokensChat(remitente.getTokensChat() - 1);
             usuarioRepo.save(remitente);
         }
@@ -78,27 +70,47 @@ public class MensajeController {
         m.setContenido(req.getContenido());
         
         Mensaje guardado = mensajeRepo.save(m);
+
+        // --- EMISIÓN EN TIEMPO REAL VÍA WEBSOCKET (STOMP) ---
+        try {
+            // Canal del destinatario (notificación y nuevo mensaje en su chat)
+            messagingTemplate.convertAndSend("/topic/mensajes/" + destinatario.getId(), guardado);
+            // Canal del remitente (para sincronización multi-pestaña)
+            messagingTemplate.convertAndSend("/topic/mensajes/" + remitente.getId(), guardado);
+            // Canal global de supervisión para el Super Admin
+            messagingTemplate.convertAndSend("/topic/mensajes/admin", guardado);
+        } catch (Exception ex) {
+            // No bloquear la respuesta HTTP si el socket tiene algún fallo de transporte temporal
+            System.err.println("Aviso: No se pudo emitir mensaje por WebSocket: " + ex.getMessage());
+        }
+
         return ResponseEntity.ok(guardado);
     }
 
     @GetMapping("/conversacion/{otroUsuarioId}")
     public ResponseEntity<List<Mensaje>> obtenerConversacion(
             @PathVariable Long otroUsuarioId,
+            @RequestParam(required = false) Long remitenteId,
             @AuthenticationPrincipal UserDetails userDetails) {
         
         Usuario yo = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
         Usuario otro = usuarioRepo.findById(otroUsuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
-        List<Mensaje> conversacion = mensajeRepo.obtenerConversacion(yo, otro);
+        List<Mensaje> conversacion;
         
-        // Marcar como leídos los que yo recibí
-        boolean actualizados = false;
-        for (Mensaje m : conversacion) {
-            if (m.getDestinatario().getId().equals(yo.getId()) && !m.isLeido()) {
-                m.setLeido(true);
-                mensajeRepo.save(m);
-                actualizados = true;
+        // Si el usuario es ADMIN y viene un remitenteId específico (auditoría entre dos usuarios de la plataforma)
+        if (yo.getRol() == Usuario.Rol.ADMIN && remitenteId != null) {
+            Usuario u1 = usuarioRepo.findById(remitenteId).orElse(yo);
+            conversacion = mensajeRepo.obtenerConversacion(u1, otro);
+        } else {
+            conversacion = mensajeRepo.obtenerConversacion(yo, otro);
+            // Marcar como leídos los que yo recibí
+            for (Mensaje m : conversacion) {
+                if (m.getDestinatario().getId().equals(yo.getId()) && !m.isLeido()) {
+                    m.setLeido(true);
+                    mensajeRepo.save(m);
+                }
             }
         }
 
@@ -108,47 +120,95 @@ public class MensajeController {
     @GetMapping("/contactos")
     public ResponseEntity<List<Map<String, Object>>> obtenerContactos(@AuthenticationPrincipal UserDetails userDetails) {
         Usuario yo = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
-        List<Mensaje> todosMisMensajes = mensajeRepo.findByRemitenteOrDestinatarioOrderByFechaEnvioDesc(yo, yo);
+        
+        // Si es ADMIN, recopila todos los mensajes del marketplace para supervisión y moderación
+        List<Mensaje> listaMensajes = (yo.getRol() == Usuario.Rol.ADMIN)
+                ? mensajeRepo.findAllByOrderByFechaEnvioDesc()
+                : mensajeRepo.findByRemitenteOrDestinatarioOrderByFechaEnvioDesc(yo, yo);
 
-        // Agrupar por el otro usuario
-        Map<Long, Map<String, Object>> contactos = new HashMap<>();
+        // Agrupar contactos
+        Map<String, Map<String, Object>> contactos = new HashMap<>();
 
-        for (Mensaje m : todosMisMensajes) {
-            Usuario otro = m.getRemitente().getId().equals(yo.getId()) ? m.getDestinatario() : m.getRemitente();
+        for (Mensaje m : listaMensajes) {
+            Usuario otro;
+            String key;
             
-            if (!contactos.containsKey(otro.getId())) {
+            if (yo.getRol() == Usuario.Rol.ADMIN) {
+                // En modo admin, la clave representa la conversación entre el par (u1, u2)
+                long idMin = Math.min(m.getRemitente().getId(), m.getDestinatario().getId());
+                long idMax = Math.max(m.getRemitente().getId(), m.getDestinatario().getId());
+                key = idMin + "_" + idMax;
+                otro = m.getRemitente();
+            } else {
+                otro = m.getRemitente().getId().equals(yo.getId()) ? m.getDestinatario() : m.getRemitente();
+                key = otro.getId().toString();
+            }
+            
+            if (!contactos.containsKey(key)) {
                 Map<String, Object> info = new HashMap<>();
-                info.put("usuario", otro);
+                Map<String, Object> uMap = new HashMap<>();
+                
+                if (yo.getRol() == Usuario.Rol.ADMIN) {
+                    uMap.put("id", m.getDestinatario().getId()); // ID del destinatario
+                    uMap.put("nombre", m.getRemitente().getNombre() + " y " + m.getDestinatario().getNombre());
+                    uMap.put("email", m.getDestinatario().getEmail());
+                    uMap.put("rol", "SUPERVISION");
+                    uMap.put("fotoPerfil", null);
+                } else {
+                    uMap.put("id", otro.getId());
+                    uMap.put("nombre", otro.getNombre());
+                    uMap.put("email", otro.getEmail());
+                    uMap.put("rol", otro.getRol() != null ? otro.getRol().name() : "COMPRADOR");
+                    uMap.put("fotoPerfil", otro.getFotoPerfil());
+                }
+                
+                info.put("usuario", uMap);
+                info.put("remitenteId", m.getRemitente().getId());
+                info.put("destinatarioId", m.getDestinatario().getId());
+                info.put("remitenteNombre", m.getRemitente().getNombre());
+                info.put("destinatarioNombre", m.getDestinatario().getNombre());
                 info.put("ultimoMensaje", m.getContenido());
                 info.put("fechaUltimoMensaje", m.getFechaEnvio());
-                // Contar no leídos de esta persona hacia mi
-                long noLeidos = todosMisMensajes.stream()
+                
+                // Contar no leídos
+                long noLeidos = listaMensajes.stream()
                         .filter(msg -> msg.getRemitente().getId().equals(otro.getId()) && msg.getDestinatario().getId().equals(yo.getId()) && !msg.isLeido())
                         .count();
                 info.put("noLeidos", noLeidos);
-                contactos.put(otro.getId(), info);
+                contactos.put(key, info);
             }
         }
 
-        // Convertir mapa a lista y ordenar por fecha (el hashmap no garantiza orden)
+        // Convertir mapa a lista y ordenar por fecha más reciente
         List<Map<String, Object>> result = new ArrayList<>(contactos.values());
         result.sort((a, b) -> ((LocalDateTime) b.get("fechaUltimoMensaje")).compareTo((LocalDateTime) a.get("fechaUltimoMensaje")));
 
         return ResponseEntity.ok(result);
     }
     
+    @GetMapping("/tokens/saldo")
+    public ResponseEntity<Map<String, Object>> obtenerSaldoTokens(@AuthenticationPrincipal UserDetails userDetails) {
+        Usuario yo = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
+        int saldo = yo.getTokensChat() != null ? yo.getTokensChat() : 0;
+        return ResponseEntity.ok(Map.of(
+            "tokensRestantes", saldo,
+            "email", yo.getEmail()
+        ));
+    }
+    
     @PostMapping("/tokens/recargar")
-    public ResponseEntity<Map<String, String>> recargarTokens(
-            @RequestParam Integer cantidad,
+    public ResponseEntity<Map<String, Object>> recargarTokens(
+            @RequestParam(required = false, defaultValue = "10") Integer cantidad,
             @AuthenticationPrincipal UserDetails userDetails) {
         Usuario yo = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
-        // Simulamos la compra exitosa
-        yo.setTokensChat(yo.getTokensChat() + cantidad);
+        int actual = yo.getTokensChat() != null ? yo.getTokensChat() : 0;
+        yo.setTokensChat(actual + cantidad);
         usuarioRepo.save(yo);
         
-        Map<String, String> response = new HashMap<>();
-        response.put("mensaje", "Has recargado " + cantidad + " tokens exitosamente.");
-        response.put("tokensRestantes", yo.getTokensChat().toString());
+        Map<String, Object> response = new HashMap<>();
+        response.put("exito", true);
+        response.put("mensaje", "¡Recarga exitosa! Has añadido " + cantidad + " tokens a tu cuenta.");
+        response.put("tokensRestantes", yo.getTokensChat());
         return ResponseEntity.ok(response);
     }
 }

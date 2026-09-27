@@ -4,6 +4,7 @@ import productoService from '../services/productoService'
 import { useCart } from '../hooks/useCart'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../hooks/useToast'
+import { useFavorites } from '../hooks/useFavorites'
 import ProductImages from '../components/product/ProductImages'
 import ProductVariants from '../components/product/ProductVariants'
 import PriceDisplay from '../components/product/PriceDisplay'
@@ -21,29 +22,62 @@ export const DetalleProducto = () => {
   const [varianteSeleccionada, setVarianteSeleccionada] = useState(null)
   const [cantidad, setCantidad] = useState(1)
   const [modalContacto, setModalContacto] = useState(false)
-  const [esFavorito, setEsFavorito] = useState(false)
 
   const { agregarItem, setDrawerAbierto } = useCart()
-  const { autenticado } = useAuth()
+  const { usuario, autenticado } = useAuth()
+  const { favoriteIds, toggleFavoriteId } = useFavorites()
   const { success, info } = useToast()
   const navigate = useNavigate()
 
+  const [errorCarga, setErrorCarga] = useState(false)
+
   useEffect(() => {
     setLoading(true)
-    productoService
-      .obtenerPorId(id)
-      .then((data) => {
+    setErrorCarga(false)
+
+    const fetchProducto = async () => {
+      try {
+        let data
+        if (!isNaN(id)) {
+          data = await productoService.obtenerPorId(id)
+        } else {
+          data = await productoService.obtenerPorSlug(id)
+        }
         setProducto(data)
         if (data.variantes && data.variantes.length > 0) {
           setVarianteSeleccionada(data.variantes[0])
         }
-      })
-      .catch(() => navigate('/404'))
-      .finally(() => setLoading(false))
-  }, [id, navigate])
+      } catch (err) {
+        console.error('Error cargando producto:', err)
+        setErrorCarga(true)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  if (loading || !producto) {
+    if (id) {
+      fetchProducto()
+    }
+  }, [id])
+
+  const esFavorito = producto ? favoriteIds.includes(producto.id) : false
+
+  if (loading) {
     return <Spinner size="lg" className="py-32" />
+  }
+
+  if (errorCarga || !producto) {
+    return (
+      <div className="py-24 text-center space-y-4">
+        <h2 className="text-2xl font-black text-slate-800 dark:text-white">Producto no encontrado</h2>
+        <p className="text-sm text-slate-500 max-w-md mx-auto">
+          El producto que buscas no está disponible o ha sido pausado por su vendedor.
+        </p>
+        <Button variant="primary" onClick={() => navigate('/catalogo')}>
+          Explorar otros productos en el Catálogo
+        </Button>
+      </div>
+    )
   }
 
   const precioActual = varianteSeleccionada
@@ -71,7 +105,8 @@ export const DetalleProducto = () => {
       navigate('/login')
       return
     }
-    navigate(`/mensajes?vendedorId=${producto.vendedor.usuario.id}&productoId=${producto.id}`)
+    const destinoId = producto.vendedor?.usuarioId || producto.vendedor?.usuario?.id || producto.vendedor?.id || 1
+    navigate(`/mensajes?vendedorId=${destinoId}&productoId=${producto.id}`)
   }
 
   const handleToggleFavorito = async () => {
@@ -82,10 +117,12 @@ export const DetalleProducto = () => {
     }
     try {
       const res = await productoService.toggleFavorito(producto.id)
-      setEsFavorito(res.favorito)
+      toggleFavoriteId(producto.id)
       success(res.mensaje)
     } catch {}
   }
+
+  const esMiProducto = Boolean(usuario?.id && producto.vendedor?.usuarioId && usuario.id === producto.vendedor.usuarioId)
 
   return (
     <div className="space-y-10 pb-20">
@@ -116,30 +153,44 @@ export const DetalleProducto = () => {
         {/* Product Details & Actions */}
         <div className="lg:col-span-5 space-y-6">
           {/* Vendor Card */}
-          {producto.vendedor && (
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-slate-800/60 border border-indigo-100 dark:border-slate-700">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">
-                  <Store size={18} />
-                </div>
-                <div>
-                  <p className="text-[11px] text-slate-400 font-medium">Vendido y despachado por</p>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">{producto.vendedor.nombreTienda}</h4>
-                  <span className="text-[10px] text-slate-500">{producto.vendedor.ciudad || 'Colombia'} • {(producto.vendedor.calificacion || 5.0).toFixed(1)} ★</span>
-                </div>
+          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-slate-800/60 border border-indigo-100 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                <Store size={18} />
               </div>
+              <div>
+                <p className="text-[11px] text-slate-400 font-medium">
+                  {esMiProducto ? 'Tu tienda registrada' : 'Vendido y despachado por'}
+                </p>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                  {producto.vendedor?.nombreTienda || 'Tienda Oficial Mercatto'}
+                </h4>
+                <span className="text-[10px] text-slate-500">
+                  {producto.vendedor?.ciudad || 'Colombia'} • {(producto.vendedor?.calificacion || 5.0).toFixed(1)} ★
+                </span>
+              </div>
+            </div>
 
-              {/* Botón clave de contacto con el vendedor */}
+            {/* Botón clave de contacto con el vendedor */}
+            {esMiProducto ? (
+              <Link
+                to="/panel-vendedor"
+                className="px-3.5 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 flex items-center gap-1.5 shadow-sm transition"
+              >
+                <Store size={14} />
+                <span>Tu Panel</span>
+              </Link>
+            ) : (
               <button
                 onClick={handleContactar}
-                className="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-indigo-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-indigo-50 flex items-center gap-1.5 shadow-sm cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-indigo-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center gap-1.5 shadow-sm cursor-pointer transition hover:scale-105"
                 title="Resolver dudas o coordinar con el proveedor"
               >
                 <MessageSquare size={14} />
                 <span>Contactar</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
 
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
@@ -236,6 +287,26 @@ export const DetalleProducto = () => {
                 Comprar Ahora
               </Button>
             </div>
+
+            {/* Botón directo de chat y consulta de producto */}
+            {esMiProducto ? (
+              <Link
+                to="/panel-vendedor"
+                className="w-full py-3 px-4 rounded-2xl border border-indigo-200 dark:border-slate-700 bg-indigo-50/50 dark:bg-slate-800/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm"
+              >
+                <Store size={16} />
+                <span>Esta es tu publicación en venta (Administrar en tu Panel)</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={handleContactar}
+                className="w-full py-3 px-4 rounded-2xl border border-indigo-200 dark:border-slate-700 bg-indigo-50/50 dark:bg-slate-800/60 hover:bg-indigo-100/70 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-sm"
+              >
+                <MessageSquare size={16} />
+                <span>¿Tienes preguntas antes de comprar? Chatea con el vendedor</span>
+              </button>
+            )}
           </div>
 
           {/* Guarantees */}

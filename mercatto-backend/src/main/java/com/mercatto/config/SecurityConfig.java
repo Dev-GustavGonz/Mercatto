@@ -43,7 +43,8 @@ public class SecurityConfig {
                 "/api/categorias/**",
                 "/api/cupones/validar",
                 "/api/test/**",
-                "/uploads/**"
+                "/uploads/**",
+                "/ws-chat/**"
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/resenas/producto/**").permitAll()

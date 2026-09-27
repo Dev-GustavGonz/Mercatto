@@ -241,6 +241,11 @@ public class ProductoService {
         if (p.getVendedor() != null) {
             ProductoResponse.VendedorDTO vDto = new ProductoResponse.VendedorDTO();
             vDto.setId(p.getVendedor().getId());
+            if (p.getVendedor().getUsuario() != null) {
+                vDto.setUsuarioId(p.getVendedor().getUsuario().getId());
+            } else {
+                vDto.setUsuarioId(p.getVendedor().getId());
+            }
             vDto.setNombreTienda(p.getVendedor().getNombreTienda());
             vDto.setLogoUrl(p.getVendedor().getLogoUrl());
             vDto.setCiudad(p.getVendedor().getCiudad());

@@ -18,6 +18,9 @@ public interface MensajeRepository extends JpaRepository<Mensaje, Long> {
     @Query("SELECT m FROM Mensaje m WHERE (m.remitente = :u1 AND m.destinatario = :u2) OR (m.remitente = :u2 AND m.destinatario = :u1) ORDER BY m.fechaEnvio ASC")
     List<Mensaje> obtenerConversacion(Usuario u1, Usuario u2);
     
+    // Todos los mensajes para moderación del Admin
+    List<Mensaje> findAllByOrderByFechaEnvioDesc();
+    
     // Contar mensajes no leidos
     long countByDestinatarioAndLeidoFalse(Usuario destinatario);
 }

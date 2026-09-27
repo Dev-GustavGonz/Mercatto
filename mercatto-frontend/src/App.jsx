@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { ToastProvider } from './context/ToastContext'
+import { FavoritesProvider } from './context/FavoritesContext'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import CartDrawer from './components/cart/CartDrawer'
@@ -63,85 +64,95 @@ function App() {
       <ScrollToTop />
       <ToastProvider>
         <AuthProvider>
-          <CartProvider>
-            <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
-              <Navbar />
-              <CartDrawer />
+          <FavoritesProvider>
+            <CartProvider>
+              <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+                <Navbar />
+                <CartDrawer />
 
-              <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-                <Routes>
-                  {/* Public Marketplace routes */}
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<AboutUs />} />
-                  <Route path="/catalogo" element={<Catalogo />} />
-                  <Route path="/producto/:id" element={<DetalleProducto />} />
-                  <Route path="/carrito" element={<Carrito />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/registro" element={<Registro />} />
+                <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+                  <Routes>
+                    {/* Public Marketplace routes */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<AboutUs />} />
+                    <Route path="/catalogo" element={<Catalogo />} />
+                    <Route path="/producto/:id" element={<DetalleProducto />} />
+                    <Route path="/carrito" element={<Carrito />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/registro" element={<Registro />} />
 
-                  {/* Buyer protected routes */}
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route
-                    path="/perfil"
-                    element={
-                      <RutaProtegida>
-                        <Perfil />
-                      </RutaProtegida>
-                    }
-                  />
-                  <Route
-                    path="/mis-pedidos"
-                    element={
-                      <RutaProtegida>
-                        <MisPedidos />
-                      </RutaProtegida>
-                    }
-                  />
-                  <Route
-                    path="/favoritos"
-                    element={
-                      <RutaProtegida>
-                        <Favoritos />
-                      </RutaProtegida>
-                    }
-                  />
-                  <Route
-                    path="/mensajes"
-                    element={
-                      <RutaProtegida>
-                        <Mensajes />
-                      </RutaProtegida>
-                    }
-                  />
+                    {/* Buyer protected routes */}
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route
+                      path="/perfil"
+                      element={
+                        <RutaProtegida>
+                          <Perfil />
+                        </RutaProtegida>
+                      }
+                    />
+                    <Route
+                      path="/mis-pedidos"
+                      element={
+                        <RutaProtegida>
+                          <MisPedidos />
+                        </RutaProtegida>
+                      }
+                    />
+                    <Route
+                      path="/favoritos"
+                      element={
+                        <RutaProtegida>
+                          <Favoritos />
+                        </RutaProtegida>
+                      }
+                    />
+                    <Route
+                      path="/mensajes"
+                      element={
+                        <RutaProtegida>
+                          <Mensajes />
+                        </RutaProtegida>
+                      }
+                    />
 
-                  {/* Vendor Panel */}
-                  <Route
-                    path="/vendedor"
-                    element={
-                      <RutaVendedor>
-                        <PanelVendedor />
-                      </RutaVendedor>
-                    }
-                  />
+                    {/* Vendor Panel */}
+                    <Route
+                      path="/vendedor"
+                      element={
+                        <RutaVendedor>
+                          <PanelVendedor />
+                        </RutaVendedor>
+                      }
+                    />
+                    <Route
+                      path="/panel-vendedor"
+                      element={
+                        <RutaVendedor>
+                          <PanelVendedor />
+                        </RutaVendedor>
+                      }
+                    />
 
-                  {/* Admin Panel */}
-                  <Route
-                    path="/admin"
-                    element={
-                      <RutaAdmin>
-                        <PanelAdmin />
-                      </RutaAdmin>
-                    }
-                  />
+                    {/* Admin Panel */}
+                    <Route
+                      path="/admin"
+                      element={
+                        <RutaAdmin>
+                          <PanelAdmin />
+                        </RutaAdmin>
+                      }
+                    />
 
-                  {/* 404 Fallback */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
+                    {/* 404 Fallback */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
 
-              <Footer />
-            </div>
-          </CartProvider>
+                <Footer />
+              </div>
+            </CartProvider>
+          </FavoritesProvider>
         </AuthProvider>
       </ToastProvider>
     </BrowserRouter>

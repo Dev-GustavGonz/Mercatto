@@ -110,6 +110,14 @@ export const AuthProvider = ({ children }) => {
   const esVendedor = usuario?.rol === 'VENDEDOR'
   const esAdmin = usuario?.rol === 'ADMIN'
 
+  const actualizarUsuario = (nuevosDatos) => {
+    setUsuario((prev) => {
+      const actualizado = { ...prev, ...nuevosDatos }
+      localStorage.setItem('mercatto_user', JSON.stringify(actualizado))
+      return actualizado
+    })
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -124,6 +132,7 @@ export const AuthProvider = ({ children }) => {
         loginGoogle,
         registro,
         logout,
+        actualizarUsuario,
       }}
     >
       {children}
