@@ -1,6 +1,7 @@
 com\mercatto\MercattoApplication.class
 com\mercatto\controller\PedidoController.class
 com\mercatto\model\PedidoItem.class
+com\mercatto\repository\MensajeRepository.class
 com\mercatto\model\Pedido$EstadoPedido.class
 com\mercatto\controller\CuponController.class
 com\mercatto\dto\request\RegistroRequest.class
@@ -12,6 +13,7 @@ com\mercatto\repository\VarianteRepository.class
 com\mercatto\controller\DireccionController.class
 com\mercatto\controller\PagoController.class
 com\mercatto\exception\ResourceNotFoundException.class
+com\mercatto\model\Mensaje.class
 com\mercatto\util\PaginacionUtil.class
 com\mercatto\dto\request\ProductoRequest$AtributoDTO.class
 com\mercatto\service\VendedorService.class
@@ -95,6 +97,7 @@ com\mercatto\service\EmailService.class
 com\mercatto\repository\VendedorRepository.class
 com\mercatto\repository\PedidoItemRepository.class
 com\mercatto\service\CloudinaryService.class
+com\mercatto\controller\MensajeController.class
 com\mercatto\dto\response\VendedorResponse.class
 com\mercatto\model\Pago$MetodoPago.class
 com\mercatto\service\CuponService.class
@@ -111,6 +114,7 @@ com\mercatto\config\JwtConfig.class
 com\mercatto\dto\response\PedidoResponse.class
 com\mercatto\model\Direccion.class
 com\mercatto\controller\MensajeContactoController.class
+com\mercatto\model\Vendedor$TipoSuscripcion.class
 com\mercatto\util\SlugUtil.class
 com\mercatto\dto\response\PedidoResponse$CompradorDTO.class
 com\mercatto\repository\ResenaRepository.class

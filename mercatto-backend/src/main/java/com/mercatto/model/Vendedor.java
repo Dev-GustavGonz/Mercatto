@@ -56,6 +56,13 @@ public class Vendedor {
     @Column(name = "total_ventas")
     private Integer totalVentas = 0;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_suscripcion", nullable = false, length = 20)
+    private TipoSuscripcion tipoSuscripcion = TipoSuscripcion.STARTER;
+
+    @Column(name = "fecha_expiracion_suscripcion")
+    private LocalDateTime fechaExpiracionSuscripcion;
+
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
@@ -64,6 +71,14 @@ public class Vendedor {
     @PrePersist
     protected void onCreate() {
         fechaRegistro = LocalDateTime.now();
+        // Starter plan expires in 100 years by default (forever free)
+        if (tipoSuscripcion == TipoSuscripcion.STARTER && fechaExpiracionSuscripcion == null) {
+            fechaExpiracionSuscripcion = LocalDateTime.now().plusYears(100);
+        }
+    }
+
+    public enum TipoSuscripcion {
+        STARTER, PRO, ELITE
     }
 
     public enum Tipo {
@@ -122,4 +137,10 @@ public class Vendedor {
 
     public LocalDateTime getFechaRegistro() { return fechaRegistro; }
     public void setFechaRegistro(LocalDateTime fechaRegistro) { this.fechaRegistro = fechaRegistro; }
+
+    public TipoSuscripcion getTipoSuscripcion() { return tipoSuscripcion; }
+    public void setTipoSuscripcion(TipoSuscripcion tipoSuscripcion) { this.tipoSuscripcion = tipoSuscripcion; }
+
+    public LocalDateTime getFechaExpiracionSuscripcion() { return fechaExpiracionSuscripcion; }
+    public void setFechaExpiracionSuscripcion(LocalDateTime fechaExpiracionSuscripcion) { this.fechaExpiracionSuscripcion = fechaExpiracionSuscripcion; }
 }

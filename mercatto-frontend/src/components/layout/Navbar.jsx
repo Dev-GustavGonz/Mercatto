@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useCart } from '../../hooks/useCart'
 import SearchBar from './SearchBar'
 import CategoryMenu from './CategoryMenu'
-import { ShoppingBag, Heart, User, LogOut, Store, Shield, Package, Menu, X, Info, Settings, ChevronDown } from 'lucide-react'
+import { ShoppingBag, Heart, User, LogOut, Store, Shield, Package, Menu, X, Info, Settings, ChevronDown, MessageSquare } from 'lucide-react'
 
 export const Navbar = () => {
   const { usuario, autenticado, logout, esVendedor, esAdmin } = useAuth()
@@ -24,57 +24,16 @@ export const Navbar = () => {
 
   return (
     <header className="w-full font-sans">
-      {/* Top Bar */}
-      <div className="bg-mercatto-accent text-white py-2 text-[11px] font-medium hidden md:block">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <div className="flex items-center gap-1.5">
-            <Info size={14} /> 
-            <span>Need Help</span>
-          </div>
-          <div>Welcome to our Mercatto</div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span>Follow us:</span>
-              <span className="font-bold">f X O ►</span>
-            </div>
-            
-            <div className="relative">
-              <div 
-                className="flex items-center gap-1 cursor-pointer hover:text-red-200 transition-colors"
-                onClick={() => setDropdownLang(!dropdownLang)}
-              >
-                {idioma} <ChevronDown size={12}/>
-              </div>
-              
-              {dropdownLang && (
-                <div className="absolute right-0 mt-2 w-28 bg-white text-slate-800 border border-slate-200 rounded-lg shadow-lg py-1 z-50">
-                  <button 
-                    onClick={() => { setIdioma('ENG'); setDropdownLang(false); }}
-                    className="block w-full text-left px-4 py-1.5 text-xs font-semibold hover:bg-mercatto-accent hover:text-white transition-colors"
-                  >
-                    ENG
-                  </button>
-                  <button 
-                    onClick={() => { setIdioma('Español'); setDropdownLang(false); }}
-                    className="block w-full text-left px-4 py-1.5 text-xs font-semibold hover:bg-mercatto-accent hover:text-white transition-colors"
-                  >
-                    Español
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Header */}
       <div className="bg-white border-b border-slate-100 py-5 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-6">
             
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 shrink-0">
-              <Settings className="text-mercatto-accent w-8 h-8" />
+              <div className="bg-mercatto-accent p-2 rounded-xl text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
+              </div>
               <div>
                 <span className="text-2xl font-black tracking-tight text-slate-800 leading-none block">
                   Mercatto
@@ -92,6 +51,33 @@ export const Navbar = () => {
 
             {/* Action Links & Icons */}
             <div className="flex items-center gap-5 shrink-0">
+              
+              {/* Language Selector */}
+              <div className="relative hidden sm:block">
+                <button 
+                  className="flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-mercatto-accent transition-colors"
+                  onClick={() => setDropdownLang(!dropdownLang)}
+                >
+                  {idioma} <ChevronDown size={14}/>
+                </button>
+                {dropdownLang && (
+                  <div className="absolute right-0 mt-2 w-28 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50">
+                    <button 
+                      onClick={() => { setIdioma('ENG'); setDropdownLang(false); }}
+                      className="block w-full text-left px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-slate-700"
+                    >
+                      ENG
+                    </button>
+                    <button 
+                      onClick={() => { setIdioma('Español'); setDropdownLang(false); }}
+                      className="block w-full text-left px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-slate-700"
+                    >
+                      Español
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Carrito */}
               <button
                 onClick={() => setDrawerAbierto(true)}
@@ -149,6 +135,14 @@ export const Navbar = () => {
                       </Link>
 
                       <Link
+                        to="/mensajes"
+                        onClick={() => setDropdownUser(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-indigo-600 hover:bg-indigo-50"
+                      >
+                        <MessageSquare size={16} />
+                        Mensajes
+                      </Link>
+                      <Link
                         to="/mis-pedidos"
                         onClick={() => setDropdownUser(false)}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
@@ -161,7 +155,7 @@ export const Navbar = () => {
                         <Link
                           to="/vendedor"
                           onClick={() => setDropdownUser(false)}
-                          className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-mercatto-accent hover:bg-red-50"
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-mercatto-accent hover:bg-indigo-50"
                         >
                           <Store size={16} />
                           <span>Panel de Vendedor</span>
@@ -172,7 +166,7 @@ export const Navbar = () => {
                         <Link
                           to="/admin"
                           onClick={() => setDropdownUser(false)}
-                          className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-mercatto-accent hover:bg-red-50"
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-mercatto-accent hover:bg-indigo-50"
                         >
                           <Shield size={16} />
                           <span>Panel de Administración</span>
@@ -214,7 +208,7 @@ export const Navbar = () => {
 
       {/* Bottom Menu */}
       <div className="bg-white border-b border-slate-100 shadow-sm hidden md:block">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2.5">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2.5">
           <nav className="flex gap-2 items-center">
             <Link 
               to="/" 
@@ -302,7 +296,7 @@ export const Navbar = () => {
               <Link
                 to="/registro?rol=VENDEDOR"
                 onClick={() => setMenuAbierto(false)}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium text-mercatto-accent hover:bg-red-50"
+                className="px-4 py-2.5 rounded-lg text-sm font-medium text-mercatto-accent hover:bg-indigo-50"
               >
                 Vender en Mercatto
               </Link>

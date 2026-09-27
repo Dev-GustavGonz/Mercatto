@@ -71,7 +71,7 @@ export const DetalleProducto = () => {
       navigate('/login')
       return
     }
-    setModalContacto(true)
+    navigate(`/mensajes?vendedorId=${producto.vendedor.usuario.id}&productoId=${producto.id}`)
   }
 
   const handleToggleFavorito = async () => {

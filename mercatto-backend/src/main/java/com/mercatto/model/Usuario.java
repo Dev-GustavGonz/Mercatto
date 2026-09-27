@@ -49,6 +49,9 @@ public class Usuario {
     @Column(name = "ultimo_login")
     private LocalDateTime ultimoLogin;
 
+    @Column(name = "tokens_chat", nullable = false)
+    private Integer tokensChat = 0;
+
     public Usuario() {}
 
     @PrePersist
@@ -103,4 +106,7 @@ public class Usuario {
 
     public LocalDateTime getUltimoLogin() { return ultimoLogin; }
     public void setUltimoLogin(LocalDateTime ultimoLogin) { this.ultimoLogin = ultimoLogin; }
+
+    public Integer getTokensChat() { return tokensChat; }
+    public void setTokensChat(Integer tokensChat) { this.tokensChat = tokensChat; }
 }

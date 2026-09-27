@@ -22,7 +22,7 @@ export const Button = ({
 
   const variants = {
     primary:
-      'bg-mercatto-accent hover:bg-red-600 text-white focus:ring-mercatto-accent',
+      'bg-mercatto-accent hover:bg-violet-600 text-white focus:ring-mercatto-accent',
     secondary:
       'bg-mercatto-dark hover:bg-black text-white focus:ring-slate-800',
     outline:

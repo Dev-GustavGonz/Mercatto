@@ -62,7 +62,7 @@ export const Perfil = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 font-sans pb-16">
+    <div className="max-w-[1600px] mx-auto space-y-8 font-sans pb-16">
       <div className="flex items-center gap-3">
         <User size={32} className="text-mercatto-accent" />
         <h1 className="text-3xl font-black text-slate-800">Mi Perfil</h1>

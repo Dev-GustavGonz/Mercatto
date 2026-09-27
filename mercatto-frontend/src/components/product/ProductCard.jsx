@@ -56,7 +56,9 @@ export const ProductCard = ({ producto, onContactClick }) => {
       {/* Rating Badge Top Left */}
       <div className="absolute top-5 left-5 z-10 bg-white px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
         <StarRating rating={1} max={1} size={14} className="text-slate-800" />
-        <span className="text-xs font-bold text-slate-800">{producto.calificacion || '4.8'}</span>
+        <span className="text-xs font-bold text-slate-800">
+          {producto.calificacion != null ? producto.calificacion.toFixed(1) : '0.0'}
+        </span>
       </div>
 
       {/* Image container */}

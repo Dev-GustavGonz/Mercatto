@@ -43,6 +43,7 @@ const RutaAdmin = ({ children }) => {
 }
 
 import Perfil from './pages/Perfil'
+import Mensajes from './pages/Mensajes'
 
 // Protected Route Wrapper for Logged-in Buyers
 const RutaProtegida = ({ children }) => {
@@ -54,9 +55,12 @@ const RutaProtegida = ({ children }) => {
   return children
 }
 
+import ScrollToTop from './components/common/ScrollToTop'
+
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <ToastProvider>
         <AuthProvider>
           <CartProvider>
@@ -64,7 +68,7 @@ function App() {
               <Navbar />
               <CartDrawer />
 
-              <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+              <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
                 <Routes>
                   {/* Public Marketplace routes */}
                   <Route path="/" element={<Home />} />
@@ -98,6 +102,14 @@ function App() {
                     element={
                       <RutaProtegida>
                         <Favoritos />
+                      </RutaProtegida>
+                    }
+                  />
+                  <Route
+                    path="/mensajes"
+                    element={
+                      <RutaProtegida>
+                        <Mensajes />
                       </RutaProtegida>
                     }
                   />

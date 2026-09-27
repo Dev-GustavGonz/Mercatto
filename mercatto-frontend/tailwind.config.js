@@ -9,10 +9,10 @@ export default {
     extend: {
       colors: {
         mercatto: {
-          primary: '#2563EB',
-          accent: '#FF3B3B',
-          dark: '#111827',
-          light: '#F4F5F8'
+          primary: '#0F172A',
+          accent: '#8B5CF6',
+          dark: '#1E1B4B',
+          light: '#F5F3FF'
         }
       }
     },
