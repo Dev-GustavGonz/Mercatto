@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mercatto — Presentación de Proyecto Universitario</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            mercatto: {
+              primary: '#0F172A',
+              accent: '#8B5CF6', // El morado/violeta oficial de Mercatto
+              dark: '#1E1B4B',
+              light: '#F5F3FF'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased selection:bg-mercatto-accent selection:text-white">
+
+  <!-- NOTIFICACIÓN TOAST -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700">
+    <div class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">✓</div>
+    <span id="toast-text" class="text-xs font-semibold">Credenciales copiadas al portapapeles</span>
+  </div>
+
+  <!-- TOP BAR (Idéntico a Mercatto) -->
+  <div class="bg-slate-900 text-slate-300 text-xs py-2 px-4 border-b border-slate-800">
+    <div class="max-w-[1600px] mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <span>🎓 Presentación de Proyecto Final de Ingeniería</span>
+        <span class="hidden sm:inline text-slate-500">|</span>
+        <span class="hidden sm:inline text-slate-400">Ecosistema E-Commerce & Sockets en Vivo</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5 text-emerald-400 font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sistema en línea (localhost:5173)
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR PRINCIPAL (Idéntico al Navbar de Mercatto con logo y color accent #8B5CF6) -->
+  <header class="w-full bg-white border-b border-slate-100 py-4 shadow-sm sticky top-0 z-40">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between gap-6">
+        
+        <!-- Logo Oficial Mercatto -->
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="bg-mercatto-accent p-2 rounded-xl text-white shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
+          </div>
+          <div>
+            <span class="text-2xl font-black tracking-tight text-slate-800 leading-none block">
+              Mercatto
+            </span>
+            <span class="text-[10px] text-slate-500 font-medium tracking-wide">
+              A Marketplace Theme — Dossier del Proyecto
+            </span>
+          </div>
+        </div>
+
+        <!-- Enlaces Rápidos -->
+        <nav class="hidden md:flex items-center gap-7 text-sm font-semibold text-slate-600">
+          <a href="#problema" class="hover:text-mercatto-accent transition">Problema & Solución</a>
+          <a href="#arquitectura" class="hover:text-mercatto-accent transition">Arquitectura</a>
+          <a href="#roles" class="hover:text-mercatto-accent transition">Roles de Demostración</a>
+          <a href="#stack" class="hover:text-mercatto-accent transition">Stack Tecnológico</a>
+        </nav>
+
+        <!-- Botón Acceso Directo -->
+        <div class="flex items-center gap-3">
+          <a href="http://localhost:5173" target="_blank" class="bg-mercatto-accent hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md shadow-purple-500/20 transition flex items-center gap-2">
+            <span>Abrir Mercatto en Vivo</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION CON ESTILO MERCATTO (Fondo suave mercatto-light, badge morado y tarjetas limpias) -->
+  <section class="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-mercatto-light/70 via-white to-slate-50 border-b border-slate-200/80">
+    <div class="max-w-5xl mx-auto text-center">
+      
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-purple-200 text-xs font-bold text-mercatto-accent mb-6 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-mercatto-accent animate-ping"></span>
+        Proyecto de Ingeniería de Software Empresarial
+      </div>
+
+      <h1 class="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-tight mb-6">
+        Mercatto: Plataforma Multi-Vendor con <span class="text-mercatto-accent">WebSockets en Tiempo Real</span>
+      </h1>
+
+      <p class="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed mb-10">
+        Diseñado para resolver los desafíos de inmediatez y confianza en el comercio electrónico: múltiples tiendas con catálogo independiente, chat interactivo en vivo con protocolo STOMP, pagos con Stripe y panel de auditoría neutral para el Administrador.
+      </p>
+
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <a href="http://localhost:5173" target="_blank" class="px-8 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-xl shadow-slate-900/10 transition flex items-center gap-2">
+          <span>Explorar Marketplace (Puerto 5173)</span>
+          <svg class="w-4 h-4 text-mercatto-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </a>
+        <a href="#roles" class="px-8 py-3.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-sm shadow-sm transition">
+          Ver Credenciales de Demostración
+        </a>
+      </div>
+
+      <!-- BADGES TECNOLÓGICOS CON ESTILO CLARO -->
+      <div id="stack" class="mt-14 pt-8 border-t border-slate-200/80 flex flex-wrap justify-center items-center gap-2.5 sm:gap-3 text-xs font-medium text-slate-700">
+        <span class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center gap-1.5"><span class="text-orange-500 font-bold">☕</span> Spring Boot 3.2</span>
+        <span class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center gap-1.5"><span class="text-cyan-500 font-bold">⚛️</span> React 18 + Vite</span>
+        <span class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center gap-1.5"><span class="text-amber-500 font-bold">⚡</span> WebSockets + STOMP</span>
+        <span class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center gap-1.5"><span class="text-blue-600 font-bold">🐬</span> MySQL 8 Relacional</span>
+        <span class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center gap-1.5"><span class="text-emerald-600 font-bold">🔐</span> Spring Security + JWT</span>
+        <span class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center gap-1.5"><span class="text-indigo-600 font-bold">💳</span> Pasarela Stripe</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECCIÓN 1: EL PROBLEMA Y LA PROPUESTA (Estilo Tarjetas Mercatto) -->
+  <section id="problema" class="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="text-xs font-bold text-mercatto-accent uppercase tracking-wider">Fundamentación Académica</span>
+      <h2 class="text-3xl font-black text-slate-900 mt-2">¿Por qué nace Mercatto?</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Tarjeta 1 -->
+      <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-xl mb-6">
+          ⚠️
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">La Fricción Actual</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          En los comercios tradicionales, la comunicación ocurre por correo o llamadas externas. Esto retrasa la decisión de compra, causa abandono de carritos y genera indefensión ante estafas.
+        </p>
+      </div>
+
+      <!-- Tarjeta 2 -->
+      <div class="bg-white p-8 rounded-2xl border border-purple-200/80 shadow-sm hover:shadow-md transition bg-gradient-to-b from-purple-50/30 to-white">
+        <div class="w-12 h-12 rounded-xl bg-purple-100 text-mercatto-accent flex items-center justify-center font-bold text-xl mb-6">
+          💡
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Canal en Tiempo Real</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          Mercatto implementa un túnel WebSocket continuo que permite a compradores y vendedores chatear al instante directamente en la ficha del producto con latencia de milisegundos.
+        </p>
+      </div>
+
+      <!-- Tarjeta 3 -->
+      <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl mb-6">
+          🛡️
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">Supervisión & Arbitraje</h3>
+        <p class="text-slate-600 text-sm leading-relaxed">
+          El Super Administrador cuenta con un módulo de auditoría neutral para revisar cualquier conversación histórica o en vivo, garantizando resolución transparente de disputas.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 2: ARQUITECTURA TÉCNICA (Clean Architecture) -->
+  <section id="arquitectura" class="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white border-y border-slate-200/80">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <span class="text-xs font-bold text-mercatto-accent uppercase tracking-wider">Ingeniería & Patrones</span>
+        <h2 class="text-3xl font-black text-slate-900 mt-2">Arquitectura en Capas</h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        <!-- Bloque de Capas -->
+        <div class="space-y-4">
+          
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-purple-100 text-mercatto-accent flex items-center justify-center font-bold text-sm shrink-0">
+              UI
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm">1. Presentación (React 18 SPA + Vite)</h4>
+              <p class="text-xs text-slate-600 mt-1">Componentes desacoplados, rutas protegidas por roles con Context API (`AuthContext`, `CartContext`, `FavoritesContext`) y STOMP client nativo.</p>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
+              SEC
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm">2. Seguridad (Spring Security 6 + JWT)</h4>
+              <p class="text-xs text-slate-600 mt-1">Filtro de tokens Bearer sin estado (Stateless), BCrypt para cifrado de credenciales y autorización por método `@PreAuthorize`.</p>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm shrink-0">
+              SRV
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm">3. Negocio & WebSocket Broker (Spring Boot)</h4>
+              <p class="text-xs text-slate-600 mt-1">Lógica transaccional de pagos, gestión de cupones, descuento de tokens antispam y difusión de eventos mediante `SimpMessagingTemplate`.</p>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0">
+              DB
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm">4. Persistencia Relacional (Spring Data JPA)</h4>
+              <p class="text-xs text-slate-600 mt-1">MySQL 8 con modelos altamente normalizados, llaves foráneas, índices de búsqueda y paginación nativa.</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Ventajas Destacadas -->
+        <div class="space-y-6">
+          <div class="p-6 rounded-2xl bg-purple-50/50 border border-purple-100">
+            <h4 class="font-bold text-slate-900 flex items-center gap-2 mb-2 text-sm">
+              <span class="text-mercatto-accent text-lg">⚡</span> WebSockets vs. HTTP Polling
+            </h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              En lugar de saturar el servidor con peticiones HTTP cada 3 segundos, la conexión socket bidireccional reduce la sobrecarga de peticiones en un **85%** con entrega menor a **50ms**.
+            </p>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200">
+            <h4 class="font-bold text-slate-900 flex items-center gap-2 mb-2 text-sm">
+              <span class="text-amber-500 text-lg">🪙</span> Control Antispam Tokenizado
+            </h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Protección de tiendas contra bots y mensajes basura. Los compradores cuentan con tokens de saldo recargables mediante pasarela simulada con tarjeta.
+            </p>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200">
+            <h4 class="font-bold text-slate-900 flex items-center gap-2 mb-2 text-sm">
+              <span class="text-emerald-500 text-lg">🏢</span> Modelo Multi-Tenant / Multi-Tienda
+            </h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Aislamiento estricto de catálogos y órdenes: un vendedor solo tiene visibilidad de sus productos y ventas sin interferir con las demás tiendas.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 3: ROLES Y CREDENCIALES (Tarjetas idénticas al estilo de Mercatto) -->
+  <section id="roles" class="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="text-xs font-bold text-mercatto-accent uppercase tracking-wider">Demostración al Jurado</span>
+      <h2 class="text-3xl font-black text-slate-900 mt-2">Cuentas Pre-Configuradas</h2>
+      <p class="text-xs text-slate-500 mt-2">Haz clic en el botón de cualquier rol para copiar sus credenciales e iniciar sesión en Mercatto.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <!-- CARD ADMIN -->
+      <div class="bg-white rounded-2xl p-7 border border-slate-200 shadow-sm flex flex-col justify-between hover:border-purple-300 transition">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 uppercase">Super Administrador</span>
+            <span class="text-xl">🛡️</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Panel de Administración</h3>
+          <p class="text-xs text-slate-600 mb-6 leading-relaxed">
+            Auditoría de todos los chats en vivo de la plataforma, aprobación de tiendas, gestión de usuarios y métricas globales.
+          </p>
+
+          <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80 font-mono text-xs space-y-2 mb-6">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Email:</span>
+              <span class="text-slate-900 font-bold select-all">admin@mercatto.com</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Clave:</span>
+              <span class="text-slate-900 font-bold select-all">123456</span>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="copiar('admin@mercatto.com', '123456', 'Super Administrador')" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+          <span>Copiar Credenciales Admin</span>
+        </button>
+      </div>
+
+      <!-- CARD VENDEDOR -->
+      <div class="bg-white rounded-2xl p-7 border-2 border-purple-300 shadow-sm flex flex-col justify-between relative">
+        <span class="absolute -top-3 right-6 bg-mercatto-accent text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Multi-Vendor</span>
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-50 text-mercatto-accent border border-purple-200 uppercase">Vendedor Verificado</span>
+            <span class="text-xl">🏪</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Panel del Vendedor</h3>
+          <p class="text-xs text-slate-600 mb-6 leading-relaxed">
+            Gestión de la tienda "Gadget Store". Publicación de productos con SKU, control de inventario y atención directa por chat con clientes.
+          </p>
+
+          <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80 font-mono text-xs space-y-2 mb-6">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Email:</span>
+              <span class="text-slate-900 font-bold select-all">vendedor@mercatto.com</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Clave:</span>
+              <span class="text-slate-900 font-bold select-all">123456</span>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="copiar('vendedor@mercatto.com', '123456', 'Vendedor / Tienda')" class="w-full py-3 rounded-xl bg-mercatto-accent hover:bg-indigo-600 text-white font-bold text-xs shadow-md shadow-purple-500/20 transition flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+          <span>Copiar Credenciales Vendedor</span>
+        </button>
+      </div>
+
+      <!-- CARD COMPRADOR -->
+      <div class="bg-white rounded-2xl p-7 border border-slate-200 shadow-sm flex flex-col justify-between hover:border-purple-300 transition">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">Cliente Registrado</span>
+            <span class="text-xl">🛒</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Experiencia Comprador</h3>
+          <p class="text-xs text-slate-600 mb-6 leading-relaxed">
+            Navegación en catálogo con filtros dinámicos, carrito, cupones, lista de deseos y 25 tokens listos para iniciar chats en vivo.
+          </p>
+
+          <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80 font-mono text-xs space-y-2 mb-6">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Email:</span>
+              <span class="text-slate-900 font-bold select-all">comprador@mercatto.com</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-slate-500">Clave:</span>
+              <span class="text-slate-900 font-bold select-all">123456</span>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="copiar('comprador@mercatto.com', '123456', 'Cliente Comprador')" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+          <span>Copiar Credenciales Comprador</span>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER (Idéntico al estilo formal de Mercatto) -->
+  <footer class="bg-slate-900 text-slate-400 py-12 px-4 sm:px-6 lg:px-8 text-xs border-t border-slate-800">
+    <div class="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-mercatto-accent"></div>
+        <span class="text-white font-bold">Mercatto Enterprise Marketplace</span> — Sustentación de Proyecto Universitario
+      </div>
+      <div>
+        Clean Architecture: Spring Boot 3 + React 18 + WebSockets STOMP + MySQL 8
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function copiar(email, pass, rol) {
+      navigator.clipboard.writeText(email).then(() => {
+        const toast = document.getElementById('toast');
+        const toastText = document.getElementById('toast-text');
+        toastText.innerText = 'Copiado para ' + rol + ': ' + email + ' (Clave: 123456)';
+        toast.classList.remove('translate-y-24', 'opacity-0');
+        setTimeout(() => {
+          toast.classList.add('translate-y-24', 'opacity-0');
+        }, 3500);
+      }).catch(() => {
+        alert('Credenciales de ' + rol + ':\nEmail: ' + email + '\nClave: ' + pass);
+      });
+    }
+  </script>
+</body>
+</html>
