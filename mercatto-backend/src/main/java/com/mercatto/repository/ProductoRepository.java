@@ -34,11 +34,13 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
 
     @Query("SELECT p FROM Producto p WHERE p.activo = true AND " +
            "(:categoriaId IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
+           "(:marca IS NULL OR LOWER(p.marca) = LOWER(:marca)) AND " +
            "(:precioMin IS NULL OR p.precio >= :precioMin) AND " +
            "(:precioMax IS NULL OR p.precio <= :precioMax) AND " +
            "(:termino IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', :termino, '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', :termino, '%')))")
     Page<Producto> filtrarCatalogo(
         @Param("categoriaId") Long categoriaId,
+        @Param("marca") String marca,
         @Param("precioMin") Double precioMin,
         @Param("precioMax") Double precioMax,
         @Param("termino") String termino,
@@ -48,4 +50,30 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
     List<Producto> findTop8ByActivoTrueOrderByFechaCreacionDesc();
     List<Producto> findTop8ByDestacadoTrueAndActivoTrueOrderByTotalVentasDesc();
     long countByVendedor(Vendedor vendedor);
+    long countByVendedorAndActivoTrue(Vendedor vendedor);
+
+    // Obtener marcas únicas de una tienda
+    @Query("SELECT DISTINCT TRIM(p.marca) FROM Producto p WHERE p.vendedor.id = :vendedorId AND p.activo = true AND p.marca IS NOT NULL AND TRIM(p.marca) != '' ORDER BY TRIM(p.marca) ASC")
+    List<String> obtenerMarcasPorVendedor(@Param("vendedorId") Long vendedorId);
+
+    // Obtener todas las marcas únicas del marketplace
+    @Query("SELECT DISTINCT TRIM(p.marca) FROM Producto p WHERE p.activo = true AND p.marca IS NOT NULL AND TRIM(p.marca) != '' ORDER BY TRIM(p.marca) ASC")
+    List<String> obtenerTodasLasMarcas();
+
+    // Filtrar productos exclusivos de una tienda
+    @Query("SELECT p FROM Producto p WHERE p.vendedor.id = :vendedorId AND p.activo = true AND " +
+           "(:categoriaId IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
+           "(:marca IS NULL OR LOWER(p.marca) = LOWER(:marca)) AND " +
+           "(:precioMin IS NULL OR p.precio >= :precioMin) AND " +
+           "(:precioMax IS NULL OR p.precio <= :precioMax) AND " +
+           "(:termino IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', :termino, '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', :termino, '%')))")
+    Page<Producto> filtrarPorTienda(
+        @Param("vendedorId") Long vendedorId,
+        @Param("categoriaId") Long categoriaId,
+        @Param("marca") String marca,
+        @Param("precioMin") Double precioMin,
+        @Param("precioMax") Double precioMax,
+        @Param("termino") String termino,
+        Pageable pageable
+    );
 }

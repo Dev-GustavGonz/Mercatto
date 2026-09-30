@@ -1,8 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { ShieldCheck, Truck, RefreshCw, Headphones, Settings } from 'lucide-react'
+import { useLanguage } from '../../hooks/useLanguage'
 
 export const Footer = () => {
+  const { idioma, t } = useLanguage()
   return (
     <footer className="bg-mercatto-dark text-slate-300 mt-12 font-sans">
       {/* Features bar */}
@@ -14,8 +16,8 @@ export const Footer = () => {
                 <Truck size={24} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">Envíos a todo el país</h4>
-                <p className="text-xs text-slate-400">Gratis desde $150.000</p>
+                <h4 className="text-sm font-bold text-white">{t('envios_colombia')}</h4>
+                <p className="text-xs text-slate-400">{idioma === 'EN' ? 'Free from $150.000 COP' : 'Gratis desde $150.000'}</p>
               </div>
             </div>
             <div className="flex items-center gap-4 bg-slate-800/40 p-4 rounded-2xl border border-slate-700/50 hover:border-slate-600 transition-colors">
@@ -23,8 +25,8 @@ export const Footer = () => {
                 <ShieldCheck size={24} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">Compra 100% Segura</h4>
-                <p className="text-xs text-slate-400">Pasarela cifrada y protegida</p>
+                <h4 className="text-sm font-bold text-white">{t('compra_segura')}</h4>
+                <p className="text-xs text-slate-400">{idioma === 'EN' ? 'Encrypted & protected checkout' : 'Pasarela cifrada y protegida'}</p>
               </div>
             </div>
             <div className="flex items-center gap-4 bg-slate-800/40 p-4 rounded-2xl border border-slate-700/50 hover:border-slate-600 transition-colors">
@@ -32,8 +34,8 @@ export const Footer = () => {
                 <RefreshCw size={24} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">Garantía y Devolución</h4>
-                <p className="text-xs text-slate-400">Soporte directo con vendedores</p>
+                <h4 className="text-sm font-bold text-white">{idioma === 'EN' ? 'Warranty & Returns' : 'Garantía y Devolución'}</h4>
+                <p className="text-xs text-slate-400">{idioma === 'EN' ? 'Direct store resolution' : 'Soporte directo con vendedores'}</p>
               </div>
             </div>
             <div className="flex items-center gap-4 bg-slate-800/40 p-4 rounded-2xl border border-slate-700/50 hover:border-slate-600 transition-colors">
@@ -41,8 +43,8 @@ export const Footer = () => {
                 <Headphones size={24} />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white">Soporte y Negociación</h4>
-                <p className="text-xs text-slate-400">Habla directo con el proveedor</p>
+                <h4 className="text-sm font-bold text-white">{t('atencion_cliente')}</h4>
+                <p className="text-xs text-slate-400">{idioma === 'EN' ? 'Official WhatsApp & tickets' : 'Habla directo con soporte'}</p>
               </div>
             </div>
           </div>

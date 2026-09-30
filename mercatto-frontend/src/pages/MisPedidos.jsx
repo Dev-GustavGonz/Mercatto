@@ -90,9 +90,15 @@ export const MisPedidos = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="text-right text-xs">
+                    <div className="text-right text-xs space-y-1">
                       <p className="font-medium text-slate-500">{item.cantidad} x {formatCurrency(item.precioUnitario)}</p>
                       <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(item.subtotal)}</p>
+                      <Link
+                        to={`/producto/${item.productoId}#reviews`}
+                        className="inline-block text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline pt-1"
+                      >
+                        ⭐ Calificar Producto
+                      </Link>
                     </div>
                   </div>
                 ))}

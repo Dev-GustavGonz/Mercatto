@@ -26,6 +26,16 @@ export const adminService = {
     return res.data
   },
 
+  cambiarRolUsuario: async (id, rol) => {
+    const res = await api.patch(`/admin/usuarios/${id}/rol`, { rol })
+    return res.data
+  },
+
+  listarPedidos: async (params = {}) => {
+    const res = await api.get('/admin/pedidos', { params })
+    return res.data
+  },
+
   crearCategoria: async (datos, padreId = null) => {
     const res = await api.post('/categorias', datos, { params: { padreId } })
     return res.data
@@ -63,6 +73,21 @@ export const adminService = {
 
   actualizarReporte: async (id, datos) => {
     const res = await api.patch(`/reportes/${id}`, datos)
+    return res.data
+  },
+
+  listarTicketsSoporte: async (params = {}) => {
+    const res = await api.get('/soporte/admin/tickets', { params })
+    return res.data
+  },
+
+  responderTicketSoporte: async (id, datos) => {
+    const res = await api.patch(`/soporte/admin/tickets/${id}/responder`, datos)
+    return res.data
+  },
+
+  contarTicketsPendientes: async () => {
+    const res = await api.get('/soporte/admin/pendientes-count')
     return res.data
   },
 }

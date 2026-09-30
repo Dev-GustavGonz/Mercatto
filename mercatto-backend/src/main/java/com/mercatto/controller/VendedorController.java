@@ -21,6 +21,7 @@ public class VendedorController {
 
     @Autowired private VendedorService vendedorService;
     @Autowired private UsuarioRepository usuarioRepo;
+    @Autowired private com.mercatto.service.ProductoService productoService;
 
     // GET /api/vendedor/perfil
     @GetMapping("/perfil")
@@ -38,11 +39,32 @@ public class VendedorController {
         return ResponseEntity.ok(vendedorService.actualizarPerfil(usuario, datos));
     }
 
+    // POST /api/vendedor/suscripcion
+    @PostMapping("/suscripcion")
+    public ResponseEntity<VendedorResponse> actualizarSuscripcion(
+            @RequestBody Map<String, String> body,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
+        String plan = body.getOrDefault("plan", "STARTER");
+        return ResponseEntity.ok(vendedorService.actualizarSuscripcion(usuario, plan));
+    }
+
     // GET /api/vendedor/stats
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> stats(@AuthenticationPrincipal UserDetails userDetails) {
         Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
         Vendedor vendedor = vendedorService.obtenerPorUsuario(usuario);
         return ResponseEntity.ok(vendedorService.obtenerEstadisticas(vendedor));
+    }
+
+    // GET /api/vendedor/productos (Productos exclusivos del vendedor autenticado)
+    @GetMapping("/productos")
+    public ResponseEntity<org.springframework.data.domain.Page<com.mercatto.dto.response.ProductoResponse>> misProductos(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "50") int tamano,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
+        Vendedor vendedor = vendedorService.obtenerPorUsuario(usuario);
+        return ResponseEntity.ok(productoService.listarPorVendedor(vendedor, pagina, tamano));
     }
 }

@@ -6,6 +6,7 @@ import com.mercatto.exception.ResourceNotFoundException;
 import com.mercatto.exception.UnauthorizedException;
 import com.mercatto.model.*;
 import com.mercatto.repository.MensajeContactoRepository;
+import com.mercatto.repository.MensajeRepository;
 import com.mercatto.repository.PedidoRepository;
 import com.mercatto.repository.ProductoRepository;
 import com.mercatto.repository.VendedorRepository;
@@ -86,11 +87,16 @@ public class MensajeContactoService {
         }
     }
 
+    @Autowired private MensajeRepository mensajeWsRepo;
+
     public long contarNoLeidos(Usuario usuario) {
+        long wsNoLeidos = mensajeWsRepo.countByDestinatarioAndLeidoFalse(usuario);
+
         Optional<Vendedor> vOpt = vendedorRepo.findByUsuario(usuario);
-        if (vOpt.isPresent()) {
-            return mensajeRepo.countByVendedorAndLeidoFalse(vOpt.get());
-        }
-        return mensajeRepo.countByCompradorAndLeidoFalse(usuario);
+        long contactoNoLeidos = vOpt.isPresent()
+                ? mensajeRepo.countByVendedorAndLeidoFalse(vOpt.get())
+                : mensajeRepo.countByCompradorAndLeidoFalse(usuario);
+
+        return wsNoLeidos + contactoNoLeidos;
     }
 }

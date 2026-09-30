@@ -25,6 +25,11 @@ const mensajeService = {
   obtenerSaldoTokens: async () => {
     const res = await api.get('/mensajes/tokens/saldo')
     return res.data
+  },
+
+  obtenerNoLeidos: async () => {
+    const res = await api.get('/mensajes/no-leidos')
+    return res.data
   }
 }
 

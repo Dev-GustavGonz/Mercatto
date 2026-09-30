@@ -149,8 +149,8 @@ public class Producto {
     public Integer getTotalResenas() { return totalResenas; }
     public void setTotalResenas(Integer totalResenas) { this.totalResenas = totalResenas; }
 
-    public Integer getTotalVentas() { return totalVentas; }
-    public void setTotalVentas(Integer totalVentas) { this.totalVentas = totalVentas; }
+    public Integer getTotalVentas() { return totalVentas != null ? totalVentas : 0; }
+    public void setTotalVentas(Integer totalVentas) { this.totalVentas = totalVentas != null ? totalVentas : 0; }
 
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }

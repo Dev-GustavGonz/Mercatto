@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,10 +38,32 @@ public class VendedorService {
         if (datos.containsKey("nombreTienda")) v.setNombreTienda(datos.get("nombreTienda"));
         if (datos.containsKey("descripcion")) v.setDescripcion(datos.get("descripcion"));
         if (datos.containsKey("logoUrl")) v.setLogoUrl(datos.get("logoUrl"));
+        if (datos.containsKey("portadaUrl")) v.setPortadaUrl(datos.get("portadaUrl"));
         if (datos.containsKey("ciudad")) v.setCiudad(datos.get("ciudad"));
         if (datos.containsKey("direccion")) v.setDireccion(datos.get("direccion"));
         if (datos.containsKey("cuentaBancaria")) v.setCuentaBancaria(datos.get("cuentaBancaria"));
         if (datos.containsKey("banco")) v.setBanco(datos.get("banco"));
+
+        return convertirAResponse(vendedorRepo.save(v));
+    }
+
+    @Transactional
+    public VendedorResponse actualizarSuscripcion(Usuario usuario, String planStr) {
+        Vendedor v = obtenerPorUsuario(usuario);
+        Vendedor.TipoSuscripcion nuevoPlan;
+        try {
+            nuevoPlan = Vendedor.TipoSuscripcion.valueOf(planStr.toUpperCase());
+        } catch (Exception e) {
+            throw new com.mercatto.exception.BadRequestException("Plan de suscripción no válido: " + planStr);
+        }
+
+        v.setTipoSuscripcion(nuevoPlan);
+        if (nuevoPlan == Vendedor.TipoSuscripcion.STARTER) {
+            v.setFechaExpiracionSuscripcion(LocalDateTime.now().plusYears(100));
+        } else {
+            // Plan mensual (30 días)
+            v.setFechaExpiracionSuscripcion(LocalDateTime.now().plusDays(30));
+        }
 
         return convertirAResponse(vendedorRepo.save(v));
     }
@@ -64,6 +87,7 @@ public class VendedorService {
         res.setNombreTienda(v.getNombreTienda());
         res.setDescripcion(v.getDescripcion());
         res.setLogoUrl(v.getLogoUrl());
+        res.setPortadaUrl(v.getPortadaUrl());
         res.setTipo(v.getTipo().name());
         res.setEstado(v.getEstado().name());
         res.setNitCedula(v.getNitCedula());
@@ -73,6 +97,8 @@ public class VendedorService {
         res.setCalificacion(v.getCalificacion());
         res.setTotalVentas(v.getTotalVentas());
         res.setFechaRegistro(v.getFechaRegistro());
+        res.setTipoSuscripcion(v.getTipoSuscripcion() != null ? v.getTipoSuscripcion().name() : "STARTER");
+        res.setFechaExpiracionSuscripcion(v.getFechaExpiracionSuscripcion());
         res.setIngresosTotales(pedidoRepo.sumIngresosByVendedor(v));
         return res;
     }

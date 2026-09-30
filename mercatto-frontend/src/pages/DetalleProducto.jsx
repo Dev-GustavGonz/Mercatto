@@ -154,49 +154,78 @@ export const DetalleProducto = () => {
         <div className="lg:col-span-5 space-y-6">
           {/* Vendor Card */}
           <div className="flex items-center justify-between p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-slate-800/60 border border-indigo-100 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                <Store size={18} />
+            <Link
+              to={producto.vendedor?.id ? `/tienda/${producto.vendedor.id}` : '#'}
+              className="flex items-center gap-3 group/vendor"
+              title="Ver vitrina completa y catálogo de esta tienda"
+            >
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover/vendor:scale-105 transition-transform overflow-hidden">
+                {producto.vendedor?.logoUrl ? (
+                  <img src={producto.vendedor.logoUrl} alt={producto.vendedor.nombreTienda} className="w-full h-full object-cover" />
+                ) : (
+                  <Store size={18} />
+                )}
               </div>
               <div>
                 <p className="text-[11px] text-slate-400 font-medium">
                   {esMiProducto ? 'Tu tienda registrada' : 'Vendido y despachado por'}
                 </p>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                  {producto.vendedor?.nombreTienda || 'Tienda Oficial Mercatto'}
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover/vendor:text-indigo-600 transition flex items-center gap-1">
+                  <span>{producto.vendedor?.nombreTienda || 'Tienda Oficial Mercatto'}</span>
+                  <span className="text-[10px] text-indigo-500 font-normal">→ Ver vitrina</span>
                 </h4>
                 <span className="text-[10px] text-slate-500">
                   {producto.vendedor?.ciudad || 'Colombia'} • {(producto.vendedor?.calificacion || 5.0).toFixed(1)} ★
                 </span>
               </div>
-            </div>
+            </Link>
 
             {/* Botón clave de contacto con el vendedor */}
-            {esMiProducto ? (
-              <Link
-                to="/panel-vendedor"
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 flex items-center gap-1.5 shadow-sm transition"
-              >
-                <Store size={14} />
-                <span>Tu Panel</span>
-              </Link>
-            ) : (
-              <button
-                onClick={handleContactar}
-                className="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-indigo-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-indigo-50 dark:hover:bg-slate-800 flex items-center gap-1.5 shadow-sm cursor-pointer transition hover:scale-105"
-                title="Resolver dudas o coordinar con el proveedor"
-              >
-                <MessageSquare size={14} />
-                <span>Contactar</span>
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {producto.vendedor?.id && (
+                <Link
+                  to={`/tienda/${producto.vendedor.id}`}
+                  className="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:border-indigo-500 hover:text-indigo-600 transition shadow-sm"
+                >
+                  Vitrina
+                </Link>
+              )}
+              {esMiProducto ? (
+                <Link
+                  to="/panel-vendedor"
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 flex items-center gap-1.5 shadow-sm transition"
+                >
+                  <Store size={14} />
+                  <span>Tu Panel</span>
+                </Link>
+              ) : (
+                <button
+                  onClick={handleContactar}
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 flex items-center gap-1.5 shadow-sm cursor-pointer transition hover:scale-105"
+                  title="Resolver dudas o coordinar con el proveedor"
+                >
+                  <MessageSquare size={14} />
+                  <span>Contactar</span>
+                </button>
+              )}
+            </div>
           </div>
 
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-              {producto.categoria?.nombre || 'General'}
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                {producto.categoria?.nombre || 'General'}
+              </span>
+              {producto.marca && (
+                <>
+                  <span className="text-xs text-slate-300">•</span>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-slate-700">
+                    Marca: {producto.marca}
+                  </span>
+                </>
+              )}
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-2">
               {producto.titulo}
             </h1>
 

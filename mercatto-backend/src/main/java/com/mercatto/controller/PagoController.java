@@ -43,4 +43,11 @@ public class PagoController {
         Map<String, Object> res = pagoService.confirmarPago(pedidoId, transaccionId, usuario);
         return ResponseEntity.ok(res);
     }
+
+    // POST /api/pagos/webhook/wompi (Público para eventos de Wompi)
+    @PostMapping("/webhook/wompi")
+    public ResponseEntity<?> webhookWompi(@RequestBody Map<String, Object> evento) {
+        boolean procesado = pagoService.procesarWebhookWompi(evento);
+        return ResponseEntity.ok(Map.of("received", true, "processed", procesado));
+    }
 }

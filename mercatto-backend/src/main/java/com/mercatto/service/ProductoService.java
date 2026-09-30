@@ -31,7 +31,7 @@ public class ProductoService {
     @Autowired private ProductoImagenRepository imagenRepo;
     @Autowired private VarianteRepository varianteRepo;
 
-    public Page<ProductoResponse> listar(Long categoriaId, Double precioMin, Double precioMax,
+    public Page<ProductoResponse> listar(Long categoriaId, String marca, Double precioMin, Double precioMax,
                                         String termino, int pagina, int tamano, String orden) {
         Sort sort = Sort.by(Sort.Direction.DESC, "fechaCreacion");
         if ("precio_asc".equalsIgnoreCase(orden)) {
@@ -45,7 +45,26 @@ public class ProductoService {
         }
 
         Pageable pageable = PageRequest.of(pagina, tamano, sort);
-        Page<Producto> productos = productoRepo.filtrarCatalogo(categoriaId, precioMin, precioMax, termino, pageable);
+        Page<Producto> productos = productoRepo.filtrarCatalogo(categoriaId, marca, precioMin, precioMax, termino, pageable);
+        return productos.map(this::convertirAResponse);
+    }
+
+    public Page<ProductoResponse> filtrarPorTienda(Long vendedorId, Long categoriaId, String marca,
+                                                  Double precioMin, Double precioMax, String termino,
+                                                  int pagina, int tamano, String orden) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "fechaCreacion");
+        if ("precio_asc".equalsIgnoreCase(orden)) {
+            sort = Sort.by(Sort.Direction.ASC, "precio");
+        } else if ("precio_desc".equalsIgnoreCase(orden)) {
+            sort = Sort.by(Sort.Direction.DESC, "precio");
+        } else if ("calificacion".equalsIgnoreCase(orden)) {
+            sort = Sort.by(Sort.Direction.DESC, "calificacion");
+        } else if ("ventas".equalsIgnoreCase(orden)) {
+            sort = Sort.by(Sort.Direction.DESC, "totalVentas");
+        }
+
+        Pageable pageable = PageRequest.of(pagina, tamano, sort);
+        Page<Producto> productos = productoRepo.filtrarPorTienda(vendedorId, categoriaId, marca, precioMin, precioMax, termino, pageable);
         return productos.map(this::convertirAResponse);
     }
 
@@ -208,6 +227,19 @@ public class ProductoService {
 
         producto.setActivo(false);
         productoRepo.save(producto);
+    }
+
+    @Transactional
+    public ProductoResponse toggleActivo(Long id, Vendedor vendedor) {
+        Producto producto = productoRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
+
+        if (!producto.getVendedor().getId().equals(vendedor.getId())) {
+            throw new UnauthorizedException("No tienes permiso para modificar este producto.");
+        }
+
+        producto.setActivo(!producto.isActivo());
+        return convertirAResponse(productoRepo.save(producto));
     }
 
     public ProductoResponse convertirAResponse(Producto p) {

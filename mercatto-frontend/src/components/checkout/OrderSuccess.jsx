@@ -40,7 +40,7 @@ export const OrderSuccess = ({ pedido }) => {
           </div>
           <div className="flex justify-between">
             <span>Método de pago:</span>
-            <span className="font-semibold">{pedido.metodoPago || 'STRIPE'}</span>
+            <span className="font-semibold">{pedido.metodoPago || 'Tarjeta de Crédito / Débito'}</span>
           </div>
           {pedido.direccion && (
             <div className="flex justify-between">

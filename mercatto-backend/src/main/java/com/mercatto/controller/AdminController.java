@@ -57,4 +57,22 @@ public class AdminController {
             @RequestBody Map<String, Boolean> body) {
         return ResponseEntity.ok(adminService.cambiarEstadoUsuario(id, body.get("activo")));
     }
+
+    // PATCH /api/admin/usuarios/{id}/rol
+    @PatchMapping("/usuarios/{id}/rol")
+    public ResponseEntity<Usuario> cambiarRolUsuario(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(adminService.cambiarRolUsuario(id, body.get("rol")));
+    }
+
+    @Autowired private com.mercatto.service.PedidoService pedidoService;
+
+    // GET /api/admin/pedidos (Auditoría de todos los pedidos del marketplace)
+    @GetMapping("/pedidos")
+    public ResponseEntity<Page<com.mercatto.dto.response.PedidoResponse>> pedidos(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamano) {
+        return ResponseEntity.ok(pedidoService.listarTodos(pagina, tamano));
+    }
 }

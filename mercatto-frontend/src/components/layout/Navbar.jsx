@@ -1,22 +1,38 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useCart } from '../../hooks/useCart'
 import { useFavorites } from '../../hooks/useFavorites'
+import { useLanguage } from '../../hooks/useLanguage'
+import productoService from '../../services/productoService'
+import tiendaService from '../../services/tiendaService'
+import mensajeService from '../../services/mensajeService'
 import SearchBar from './SearchBar'
 import CategoryMenu from './CategoryMenu'
-import { ShoppingBag, Heart, User, LogOut, Store, Shield, Package, Menu, X, Info, Settings, ChevronDown, MessageSquare } from 'lucide-react'
+import { ShoppingBag, Heart, User, LogOut, Store, Shield, Package, Menu, X, Info, Settings, ChevronDown, MessageSquare, Sparkles, Tag, Layers, Globe } from 'lucide-react'
 
 export const Navbar = () => {
   const { usuario, autenticado, logout, esVendedor, esAdmin } = useAuth()
   const { totalItems, setDrawerAbierto } = useCart()
   const { favoriteIds } = useFavorites()
+  const { idioma, cambiarIdioma, t } = useLanguage()
   const [menuAbierto, setMenuAbierto] = useState(false)
   const [dropdownUser, setDropdownUser] = useState(false)
   const [dropdownLang, setDropdownLang] = useState(false)
-  const [idioma, setIdioma] = useState('ENG')
+  const [dropdownShop, setDropdownShop] = useState(false)
+  const [categorias, setCategorias] = useState([])
+  const [marcas, setMarcas] = useState([])
+  const [mensajesNoLeidos, setMensajesNoLeidos] = useState(0)
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    productoService.listarCategorias().then((data) => setCategorias(data || [])).catch(() => {})
+    tiendaService.listarMarcas().then((data) => setMarcas(data || [])).catch(() => {})
+    if (autenticado) {
+      mensajeService.obtenerNoLeidos().then((data) => setMensajesNoLeidos(data?.noLeidos || 0)).catch(() => {})
+    }
+  }, [autenticado])
 
   const handleLogout = async () => {
     await logout()
@@ -41,7 +57,7 @@ export const Navbar = () => {
                   Mercatto
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium tracking-wide">
-                  A Marketplace Theme
+                  {t('colombia_marketplace')}
                 </span>
               </div>
             </Link>
@@ -76,27 +92,42 @@ export const Navbar = () => {
             {/* Action Links & Icons */}
             <div className="flex items-center gap-5 shrink-0">
               
-              {/* Language Selector */}
+              {/* Selector de Idioma Funcional */}
               <div className="relative hidden sm:block">
                 <button 
-                  className="flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-mercatto-accent transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 text-xs font-bold text-slate-700 hover:text-indigo-600 transition shadow-2xs bg-slate-50/80 cursor-pointer"
                   onClick={() => setDropdownLang(!dropdownLang)}
+                  title="Cambiar idioma / Change language"
                 >
-                  {idioma} <ChevronDown size={14}/>
+                  <Globe size={14} className="text-indigo-600" />
+                  <span>{idioma === 'EN' ? '🇺🇸 EN' : '🇨🇴 ES'}</span>
+                  <ChevronDown size={13} className={`text-slate-400 transition-transform ${dropdownLang ? 'rotate-180' : ''}`} />
                 </button>
                 {dropdownLang && (
-                  <div className="absolute right-0 mt-2 w-28 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl py-1.5 z-50 animate-in fade-in">
                     <button 
-                      onClick={() => { setIdioma('ENG'); setDropdownLang(false); }}
-                      className="block w-full text-left px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-slate-700"
+                      onClick={() => { cambiarIdioma('es'); setDropdownLang(false); }}
+                      className={`flex items-center justify-between w-full px-3.5 py-2 text-xs font-bold transition cursor-pointer ${
+                        idioma === 'ES' ? 'text-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/40' : 'text-slate-700 hover:bg-slate-50'
+                      }`}
                     >
-                      ENG
+                      <span className="flex items-center gap-2">
+                        <span>🇨🇴</span>
+                        <span>Español</span>
+                      </span>
+                      {idioma === 'ES' && <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />}
                     </button>
                     <button 
-                      onClick={() => { setIdioma('Español'); setDropdownLang(false); }}
-                      className="block w-full text-left px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-slate-700"
+                      onClick={() => { cambiarIdioma('en'); setDropdownLang(false); }}
+                      className={`flex items-center justify-between w-full px-3.5 py-2 text-xs font-bold transition cursor-pointer ${
+                        idioma === 'EN' ? 'text-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/40' : 'text-slate-700 hover:bg-slate-50'
+                      }`}
                     >
-                      Español
+                      <span className="flex items-center gap-2">
+                        <span>🇺🇸</span>
+                        <span>English</span>
+                      </span>
+                      {idioma === 'EN' && <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />}
                     </button>
                   </div>
                 )}
@@ -142,6 +173,11 @@ export const Navbar = () => {
                   title={esVendedor ? "Mensajes con Clientes" : "Mis Mensajes & Chat"}
                 >
                   <MessageSquare size={24} />
+                  {mensajesNoLeidos > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[10px] font-black h-4.5 w-4.5 rounded-full flex items-center justify-center animate-pulse shadow-sm">
+                      {mensajesNoLeidos > 9 ? '9+' : mensajesNoLeidos}
+                    </span>
+                  )}
                 </Link>
               )}
 
@@ -195,10 +231,17 @@ export const Navbar = () => {
                       <Link
                         to="/mensajes"
                         onClick={() => setDropdownUser(false)}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-indigo-600 hover:bg-indigo-50"
+                        className="flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-indigo-600 hover:bg-indigo-50"
                       >
-                        <MessageSquare size={16} />
-                        <span>{esVendedor ? 'Mensajes de Clientes' : 'Mensajes'}</span>
+                        <span className="flex items-center gap-2">
+                          <MessageSquare size={16} />
+                          <span>{esVendedor ? 'Mensajes de Clientes' : 'Mensajes'}</span>
+                        </span>
+                        {mensajesNoLeidos > 0 && (
+                          <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-extrabold shadow-sm animate-pulse">
+                            {mensajesNoLeidos > 9 ? '9+' : mensajesNoLeidos}
+                          </span>
+                        )}
                       </Link>
 
                       {/* Acceso al Panel de Vendedor */}
@@ -341,7 +384,7 @@ export const Navbar = () => {
                       : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
                   }`}
                 >
-                  Home
+                  {idioma === 'EN' ? 'Home' : 'Inicio'}
                 </Link>
                 <Link 
                   to="/about" 
@@ -351,18 +394,137 @@ export const Navbar = () => {
                       : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
                   }`}
                 >
-                  About Us
+                  {t('nosotros')}
                 </Link>
+
+                {/* Dropdown Dinámico de Catálogo */}
+                <div 
+                  className="relative"
+                  onMouseEnter={() => setDropdownShop(true)}
+                  onMouseLeave={() => setDropdownShop(false)}
+                >
+                  <button 
+                    onClick={() => setDropdownShop(!dropdownShop)}
+                    className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${
+                      location.pathname.startsWith('/catalogo') 
+                        ? 'bg-slate-800 text-white shadow-md' 
+                        : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
+                    }`}
+                  >
+                    <span>{idioma === 'EN' ? 'Catalog' : 'Catálogo'}</span>
+                    <ChevronDown size={14} className={`transition-transform duration-200 ${dropdownShop ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {dropdownShop && (
+                    <div className="absolute top-full left-0 pt-2 w-[420px] z-50 animate-fadeIn">
+                      <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl p-4 overflow-hidden text-slate-800">
+                        {/* Accesos rápidos superiores */}
+                        <div className="grid grid-cols-2 gap-2 pb-3 border-b border-slate-100">
+                          <Link
+                            to="/catalogo"
+                            onClick={() => setDropdownShop(false)}
+                            className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-indigo-50 text-xs font-bold text-slate-800 hover:text-indigo-600 transition"
+                          >
+                            <ShoppingBag size={16} className="text-indigo-600" />
+                            <span>Todo el Catálogo</span>
+                          </Link>
+                          <Link
+                            to="/tiendas"
+                            onClick={() => setDropdownShop(false)}
+                            className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-indigo-50 text-xs font-bold text-slate-800 hover:text-indigo-600 transition"
+                          >
+                            <Store size={16} className="text-indigo-600" />
+                            <span>Tiendas Oficiales</span>
+                          </Link>
+                        </div>
+
+                        {/* Contenido Dinámico: Categorías y Marcas de la BD */}
+                        <div className="grid grid-cols-2 gap-4 py-3">
+                          {/* Categorías Dinámicas */}
+                          <div>
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 flex items-center gap-1">
+                              <Layers size={12} className="text-indigo-500" />
+                              <span>Categorías</span>
+                            </span>
+                            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                              {categorias && categorias.length > 0 ? (
+                                categorias.slice(0, 5).map((cat) => (
+                                  <Link
+                                    key={cat.id}
+                                    to={`/catalogo?categoriaId=${cat.id}`}
+                                    onClick={() => setDropdownShop(false)}
+                                    className="block px-2 py-1 rounded-lg text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition truncate"
+                                  >
+                                    {cat.nombre}
+                                  </Link>
+                                ))
+                              ) : (
+                                <span className="text-[11px] text-slate-400 italic">Cargando categorías...</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Marcas Dinámicas */}
+                          <div>
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 flex items-center gap-1">
+                              <Tag size={12} className="text-indigo-500" />
+                              <span>Marcas Oficiales</span>
+                            </span>
+                            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                              {marcas && marcas.length > 0 ? (
+                                marcas.slice(0, 5).map((m) => (
+                                  <Link
+                                    key={m}
+                                    to={`/catalogo?marca=${encodeURIComponent(m)}`}
+                                    onClick={() => setDropdownShop(false)}
+                                    className="block px-2 py-1 rounded-lg text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition truncate"
+                                  >
+                                    {m}
+                                  </Link>
+                                ))
+                              ) : (
+                                <span className="text-[11px] text-slate-400 italic">Cargando marcas...</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Footer del dropdown */}
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                          <Link
+                            to="/catalogo?orden=ventas"
+                            onClick={() => setDropdownShop(false)}
+                            className="text-slate-500 hover:text-indigo-600 font-medium flex items-center gap-1"
+                          >
+                            <Sparkles size={12} className="text-amber-500" />
+                            <span>Más Vendidos</span>
+                          </Link>
+                          <Link
+                            to="/catalogo?orden=recientes"
+                            onClick={() => setDropdownShop(false)}
+                            className="text-slate-500 hover:text-indigo-600 font-medium flex items-center gap-1"
+                          >
+                            <Package size={12} className="text-emerald-500" />
+                            <span>Nuevos Productos</span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <Link 
-                  to="/catalogo" 
-                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1 ${
-                    location.pathname.startsWith('/catalogo') 
+                  to="/tiendas" 
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+                    location.pathname.startsWith('/tienda') 
                       ? 'bg-slate-800 text-white shadow-md' 
                       : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
                   }`}
                 >
-                  Shop <ChevronDown size={14}/>
+                  <Store size={15} />
+                  <span>{t('tiendas')}</span>
                 </Link>
+
                 {!autenticado && (
                   <Link 
                     to="/registro?rol=VENDEDOR" 
@@ -372,7 +534,7 @@ export const Navbar = () => {
                         : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
                     }`}
                   >
-                    Sell on Mercatto
+                    {idioma === 'EN' ? 'Sell on Mercatto' : 'Vender en Mercatto'}
                   </Link>
                 )}
                 {autenticado && (
@@ -385,7 +547,7 @@ export const Navbar = () => {
                           : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
                       }`}
                     >
-                      Track Order
+                      Mis Pedidos
                     </Link>
                     <Link 
                       to="/favoritos" 
@@ -395,7 +557,7 @@ export const Navbar = () => {
                           : 'text-slate-700 hover:bg-slate-100 hover:text-mercatto-accent'
                       }`}
                     >
-                      Wishlist
+                      Favoritos
                     </Link>
                   </>
                 )}
@@ -425,6 +587,14 @@ export const Navbar = () => {
               className="px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               Catálogo Completo
+            </Link>
+            <Link
+              to="/tiendas"
+              onClick={() => setMenuAbierto(false)}
+              className="px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+            >
+              <Store size={16} />
+              <span>Tiendas Oficiales</span>
             </Link>
             {!esVendedor && !esAdmin && (
               <Link

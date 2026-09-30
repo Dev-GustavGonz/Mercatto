@@ -1,0 +1,23 @@
+# Maven
+mercatto-backend/target/
+*.class
+
+# Node / Vite
+mercatto-frontend/node_modules/
+mercatto-frontend/dist/
+mercatto-frontend/.vite/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Uploads y archivos generados
+mercatto-backend/uploads/
+*.log
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

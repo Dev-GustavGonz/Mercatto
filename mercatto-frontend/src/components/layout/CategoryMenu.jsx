@@ -21,7 +21,7 @@ export const CategoryMenu = () => {
         className="bg-mercatto-accent text-white px-4 py-2 rounded-md flex items-center gap-2 text-sm font-semibold transition-all duration-200 hover:shadow-md hover:shadow-gray-300 cursor-pointer"
       >
         <Grid size={18} />
-        <span>All Category</span>
+        <span>Todas las Categorías</span>
       </button>
 
       {/* Puente invisible para que el mouse no pierda el focus al bajar */}

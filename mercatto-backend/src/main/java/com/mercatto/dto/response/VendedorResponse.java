@@ -10,6 +10,7 @@ public class VendedorResponse {
     private String nombreTienda;
     private String descripcion;
     private String logoUrl;
+    private String portadaUrl;
     private String tipo;
     private String estado;
     private String nitCedula;
@@ -20,6 +21,8 @@ public class VendedorResponse {
     private Integer totalVentas;
     private Double ingresosTotales;
     private LocalDateTime fechaRegistro;
+    private String tipoSuscripcion;
+    private LocalDateTime fechaExpiracionSuscripcion;
 
     public VendedorResponse() {}
 
@@ -43,6 +46,9 @@ public class VendedorResponse {
 
     public String getLogoUrl() { return logoUrl; }
     public void setLogoUrl(String logoUrl) { this.logoUrl = logoUrl; }
+
+    public String getPortadaUrl() { return portadaUrl; }
+    public void setPortadaUrl(String portadaUrl) { this.portadaUrl = portadaUrl; }
 
     public String getTipo() { return tipo; }
     public void setTipo(String tipo) { this.tipo = tipo; }
@@ -73,4 +79,10 @@ public class VendedorResponse {
 
     public LocalDateTime getFechaRegistro() { return fechaRegistro; }
     public void setFechaRegistro(LocalDateTime fechaRegistro) { this.fechaRegistro = fechaRegistro; }
+
+    public String getTipoSuscripcion() { return tipoSuscripcion; }
+    public void setTipoSuscripcion(String tipoSuscripcion) { this.tipoSuscripcion = tipoSuscripcion; }
+
+    public LocalDateTime getFechaExpiracionSuscripcion() { return fechaExpiracionSuscripcion; }
+    public void setFechaExpiracionSuscripcion(LocalDateTime fechaExpiracionSuscripcion) { this.fechaExpiracionSuscripcion = fechaExpiracionSuscripcion; }
 }

@@ -28,6 +28,9 @@ public class Vendedor {
     @Column(name = "logo_url")
     private String logoUrl;
 
+    @Column(name = "portada_url", length = 500)
+    private String portadaUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Estado estado = Estado.PENDIENTE;
@@ -107,6 +110,9 @@ public class Vendedor {
 
     public String getLogoUrl() { return logoUrl; }
     public void setLogoUrl(String logoUrl) { this.logoUrl = logoUrl; }
+
+    public String getPortadaUrl() { return portadaUrl; }
+    public void setPortadaUrl(String portadaUrl) { this.portadaUrl = portadaUrl; }
 
     public Estado getEstado() { return estado; }
     public void setEstado(Estado estado) { this.estado = estado; }

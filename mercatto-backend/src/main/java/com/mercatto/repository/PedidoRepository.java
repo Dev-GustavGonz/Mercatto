@@ -16,6 +16,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     Optional<Pedido> findByCodigo(String codigo);
     Page<Pedido> findByCompradorOrderByFechaCreacionDesc(Usuario comprador, Pageable pageable);
+    Page<Pedido> findAllByOrderByFechaCreacionDesc(Pageable pageable);
 
     @Query("SELECT DISTINCT p FROM Pedido p JOIN p.items item WHERE item.vendedor = :vendedor ORDER BY p.fechaCreacion DESC")
     Page<Pedido> findByVendedor(@Param("vendedor") Vendedor vendedor, Pageable pageable);

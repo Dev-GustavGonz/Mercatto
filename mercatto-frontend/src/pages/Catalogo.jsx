@@ -14,6 +14,7 @@ export const Catalogo = () => {
   const [productoContacto, setProductoContacto] = useState(null)
 
   const categoriaId = searchParams.get('categoriaId') || null
+  const marca = searchParams.get('marca') || ''
   const termino = searchParams.get('q') || ''
   const orden = searchParams.get('orden') || 'recientes'
   const pagina = Number(searchParams.get('pagina') || 0)
@@ -26,6 +27,7 @@ export const Catalogo = () => {
       try {
         const data = await productoService.listar({
           categoriaId,
+          marca: marca || null,
           q: termino,
           orden,
           pagina,
@@ -42,7 +44,7 @@ export const Catalogo = () => {
       }
     }
     fetchProductos()
-  }, [categoriaId, termino, orden, pagina, precioMin, precioMax])
+  }, [categoriaId, marca, termino, orden, pagina, precioMin, precioMax])
 
   const handleCategoryChange = (catId) => {
     const next = new URLSearchParams(searchParams)
@@ -50,6 +52,17 @@ export const Catalogo = () => {
       next.set('categoriaId', catId)
     } else {
       next.delete('categoriaId')
+    }
+    next.set('pagina', '0')
+    setSearchParams(next)
+  }
+
+  const handleMarcaChange = (nuevaMarca) => {
+    const next = new URLSearchParams(searchParams)
+    if (nuevaMarca) {
+      next.set('marca', nuevaMarca)
+    } else {
+      next.delete('marca')
     }
     next.set('pagina', '0')
     setSearchParams(next)
@@ -98,6 +111,8 @@ export const Catalogo = () => {
           <ProductFilters
             selectedCategory={categoriaId}
             onCategoryChange={handleCategoryChange}
+            selectedMarca={marca}
+            onMarcaChange={handleMarcaChange}
             priceRange={{ min: precioMin, max: precioMax }}
             onPriceChange={handlePriceChange}
             orden={orden}

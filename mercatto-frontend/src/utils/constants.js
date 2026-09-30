@@ -1,4 +1,14 @@
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+export const SERVER_URL = API_BASE_URL.replace(/\/api\/?$/, '')
+
+export const getMediaUrl = (url, fallback) => {
+  if (!url) return fallback || ''
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url
+  }
+  const cleanPath = url.startsWith('/') ? url : `/${url}`
+  return `${SERVER_URL}${cleanPath}`
+}
 
 // Debe coincidir EXACTAMENTE con google.client-id en application.properties del backend
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
@@ -20,7 +30,8 @@ export const ESTADOS_PEDIDO = {
 }
 
 export const METODOS_PAGO = [
-  { id: 'STRIPE', nombre: 'Tarjeta de Crédito / Débito', icono: 'CreditCard' },
+  { id: 'WOMPI', nombre: 'Tarjeta de Crédito / Débito', icono: 'CreditCard' },
+  { id: 'NEQUI', nombre: 'Nequi / Daviplata Directo', icono: 'Smartphone' },
   { id: 'PSE', nombre: 'PSE / Transferencia Bancaria', icono: 'Building' },
-  { id: 'NEQUI', nombre: 'Nequi / Daviplata', icono: 'Smartphone' },
+  { id: 'CONTRA_ENTREGA', nombre: 'Pago Contra Entrega (Efectivo)', icono: 'Truck' },
 ]

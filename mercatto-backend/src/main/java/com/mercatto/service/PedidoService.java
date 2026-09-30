@@ -99,11 +99,13 @@ public class PedidoService {
                     throw new BadRequestException("Stock insuficiente para '" + producto.getTitulo() + "'");
                 }
                 // Descontar stock de producto
-                producto.setStock(producto.getStock() - itemDto.getCantidad());
+                int stockActual = producto.getStock() != null ? producto.getStock() : 0;
+                producto.setStock(Math.max(0, stockActual - itemDto.getCantidad()));
             }
 
-            // Incrementar ventas del producto
-            producto.setTotalVentas(producto.getTotalVentas() + itemDto.getCantidad());
+            // Incrementar ventas del producto (con protección contra null)
+            int ventasActuales = producto.getTotalVentas() != null ? producto.getTotalVentas() : 0;
+            producto.setTotalVentas(ventasActuales + itemDto.getCantidad());
             productoRepo.save(producto);
 
             PedidoItem item = new PedidoItem();
@@ -229,6 +231,11 @@ public class PedidoService {
     public Page<PedidoResponse> listarPorVendedor(Vendedor vendedor, int pagina, int tamano) {
         Pageable pageable = PageRequest.of(pagina, tamano);
         return pedidoRepo.findByVendedor(vendedor, pageable).map(this::convertirAResponse);
+    }
+
+    public Page<PedidoResponse> listarTodos(int pagina, int tamano) {
+        Pageable pageable = PageRequest.of(pagina, tamano);
+        return pedidoRepo.findAllByOrderByFechaCreacionDesc(pageable).map(this::convertirAResponse);
     }
 
     public PedidoResponse obtenerPorId(Long id, Usuario usuario) {

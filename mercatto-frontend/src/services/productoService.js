@@ -46,6 +46,11 @@ export const productoService = {
     return res.data
   },
 
+  toggleActivo: async (id) => {
+    const res = await api.patch(`/productos/${id}/toggle-activo`)
+    return res.data
+  },
+
   subirImagen: async (file) => {
     const formData = new FormData()
     formData.append('archivo', file)

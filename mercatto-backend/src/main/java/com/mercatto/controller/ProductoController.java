@@ -35,13 +35,14 @@ public class ProductoController {
     @GetMapping
     public ResponseEntity<Page<ProductoResponse>> listar(
             @RequestParam(required = false) Long categoriaId,
+            @RequestParam(required = false) String marca,
             @RequestParam(required = false) Double precioMin,
             @RequestParam(required = false) Double precioMax,
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "12") int tamano,
             @RequestParam(defaultValue = "recientes") String orden) {
-        return ResponseEntity.ok(productoService.listar(categoriaId, precioMin, precioMax, q, pagina, tamano, orden));
+        return ResponseEntity.ok(productoService.listar(categoriaId, marca, precioMin, precioMax, q, pagina, tamano, orden));
     }
 
     // GET /api/productos/destacados
@@ -101,6 +102,17 @@ public class ProductoController {
         Vendedor vendedor = vendedorService.obtenerPorUsuario(usuario);
         productoService.eliminar(id, vendedor);
         return ResponseEntity.ok(Map.of("exito", true, "mensaje", "Producto eliminado exitosamente"));
+    }
+
+    // PATCH /api/productos/{id}/toggle-activo (Pausar o Activar producto)
+    @PatchMapping("/{id}/toggle-activo")
+    @PreAuthorize("hasRole('VENDEDOR')")
+    public ResponseEntity<ProductoResponse> toggleActivo(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
+        Vendedor vendedor = vendedorService.obtenerPorUsuario(usuario);
+        return ResponseEntity.ok(productoService.toggleActivo(id, vendedor));
     }
 
     // POST /api/productos/subir-imagen (Subida a Cloudinary / Local)

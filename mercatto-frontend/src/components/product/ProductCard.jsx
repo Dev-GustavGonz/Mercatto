@@ -6,7 +6,7 @@ import { useToast } from '../../hooks/useToast'
 import { useFavorites } from '../../hooks/useFavorites'
 import productoService from '../../services/productoService'
 import StarRating from '../common/StarRating'
-import { ShoppingCart, Heart, MessageSquare } from 'lucide-react'
+import { ShoppingCart, Heart, MessageSquare, Store } from 'lucide-react'
 
 export const ProductCard = ({ producto, onContactClick }) => {
   const { agregarItem } = useCart()
@@ -91,12 +91,30 @@ export const ProductCard = ({ producto, onContactClick }) => {
 
       {/* Content */}
       <div className="mt-auto flex justify-between items-end">
-        <div>
+        <div className="flex-1 min-w-0 pr-2">
+          {producto.marca && (
+            <span className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase block truncate">
+              {producto.marca}
+            </span>
+          )}
+
           <Link to={`/producto/${producto.id}`}>
-            <h3 className="text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-mercatto-accent transition-colors" title={producto.titulo}>
+            <h3 className="text-base sm:text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-mercatto-accent transition-colors" title={producto.titulo}>
               {producto.titulo}
             </h3>
           </Link>
+
+          {producto.vendedor?.nombreTienda && (
+            <Link
+              to={`/tienda/${producto.vendedor.id || producto.vendedor.usuarioId}`}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition max-w-full truncate mt-0.5"
+              title={`Visitar tienda oficial ${producto.vendedor.nombreTienda}`}
+            >
+              <Store size={11} className="shrink-0" />
+              <span className="truncate">{producto.vendedor.nombreTienda}</span>
+            </Link>
+          )}
 
           <div className="flex items-center gap-2 mt-1">
             <span className="text-sm font-semibold text-slate-800">${producto.precio}</span>

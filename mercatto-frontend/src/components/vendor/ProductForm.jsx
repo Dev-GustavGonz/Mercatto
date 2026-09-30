@@ -70,22 +70,47 @@ export const ProductForm = ({ productoInicial = null, onGuardado, onCancelar }) 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!categoriaId) {
-      error('Selecciona una categoría')
+      error('Selecciona una categoría para el producto')
+      return
+    }
+
+    const precioNum = Number(precio)
+    const precioOfertaNum = precioOferta ? Number(precioOferta) : null
+    const stockNum = Number(stock)
+
+    if (isNaN(precioNum) || precioNum <= 0) {
+      error('El precio normal debe ser un valor mayor a 0')
+      return
+    }
+
+    if (precioOfertaNum !== null) {
+      if (isNaN(precioOfertaNum) || precioOfertaNum <= 0) {
+        error('El precio de oferta debe ser mayor a 0')
+        return
+      }
+      if (precioOfertaNum >= precioNum) {
+        error('El precio de oferta debe ser menor que el precio regular')
+        return
+      }
+    }
+
+    if (isNaN(stockNum) || stockNum < 0) {
+      error('El stock disponible no puede ser negativo')
       return
     }
 
     setLoading(true)
     const payload = {
-      titulo,
+      titulo: titulo.trim(),
       categoriaId: Number(categoriaId),
-      descripcion,
-      precio: Number(precio),
-      precioOferta: precioOferta ? Number(precioOferta) : null,
-      stock: Number(stock),
-      marca,
+      descripcion: descripcion.trim(),
+      precio: precioNum,
+      precioOferta: precioOfertaNum,
+      stock: stockNum,
+      marca: marca?.trim() || null,
       estado,
       destacado,
-      activo: true,
+      activo: productoInicial ? (productoInicial.activo ?? true) : true,
       imagenes: imagenes.filter(Boolean).map((url, i) => ({
         url,
         principal: i === 0,

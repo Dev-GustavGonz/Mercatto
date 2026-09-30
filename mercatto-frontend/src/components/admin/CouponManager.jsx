@@ -101,7 +101,7 @@ export const CouponManager = () => {
                   className="w-full text-xs p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                 >
                   <option value="PORCENTAJE">Porcentaje (%)</option>
-                  <option value="FIJO">Monto Fijo (COP)</option>
+                  <option value="MONTO_FIJO">Monto Fijo (COP)</option>
                 </select>
               </div>
               <Input label="Valor del Descuento" type="number" value={valor} onChange={(e) => setValor(e.target.value)} required />

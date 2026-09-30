@@ -80,4 +80,12 @@ public class AdminService {
         u.setActivo(activo);
         return usuarioRepo.save(u);
     }
+
+    @Transactional
+    public Usuario cambiarRolUsuario(Long usuarioId, String nuevoRolStr) {
+        Usuario u = usuarioRepo.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        u.setRol(Usuario.Rol.valueOf(nuevoRolStr.toUpperCase()));
+        return usuarioRepo.save(u);
+    }
 }

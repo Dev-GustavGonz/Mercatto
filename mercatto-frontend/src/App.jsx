@@ -4,9 +4,11 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { ToastProvider } from './context/ToastContext'
 import { FavoritesProvider } from './context/FavoritesContext'
+import { LanguageProvider } from './context/LanguageContext'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import CartDrawer from './components/cart/CartDrawer'
+import PublicChatbot from './components/common/PublicChatbot'
 
 // Pages
 import Home from './pages/Home'
@@ -21,6 +23,12 @@ import Login from './pages/Login'
 import Registro from './pages/Registro'
 import PanelVendedor from './pages/PanelVendedor'
 import PanelAdmin from './pages/PanelAdmin'
+import DirectorioTiendas from './pages/DirectorioTiendas'
+import VitrinaTienda from './pages/VitrinaTienda'
+import Categoria from './pages/Categoria'
+import Busqueda from './pages/Busqueda'
+import PagoExitoso from './pages/PagoExitoso'
+import PagoCancelado from './pages/PagoCancelado'
 import NotFound from './pages/NotFound'
 
 // Protected Route Wrapper for Vendor
@@ -66,9 +74,11 @@ function App() {
         <AuthProvider>
           <FavoritesProvider>
             <CartProvider>
-              <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
-                <Navbar />
-                <CartDrawer />
+              <LanguageProvider>
+                <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+                  <Navbar />
+                  <CartDrawer />
+                  <PublicChatbot />
 
                 <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
                   <Routes>
@@ -76,6 +86,10 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<AboutUs />} />
                     <Route path="/catalogo" element={<Catalogo />} />
+                    <Route path="/categoria/:id" element={<Categoria />} />
+                    <Route path="/buscar" element={<Busqueda />} />
+                    <Route path="/tiendas" element={<DirectorioTiendas />} />
+                    <Route path="/tienda/:id" element={<VitrinaTienda />} />
                     <Route path="/producto/:id" element={<DetalleProducto />} />
                     <Route path="/carrito" element={<Carrito />} />
                     <Route path="/login" element={<Login />} />
@@ -83,6 +97,8 @@ function App() {
 
                     {/* Buyer protected routes */}
                     <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/pago/exitoso" element={<PagoExitoso />} />
+                    <Route path="/pago/cancelado" element={<PagoCancelado />} />
                     <Route
                       path="/perfil"
                       element={
@@ -151,6 +167,7 @@ function App() {
 
                 <Footer />
               </div>
+              </LanguageProvider>
             </CartProvider>
           </FavoritesProvider>
         </AuthProvider>

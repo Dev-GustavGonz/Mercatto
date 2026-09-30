@@ -56,6 +56,7 @@ public class Pago {
     }
 
     public enum MetodoPago {
+        WOMPI,
         STRIPE,
         TARJETA_CREDITO,
         PSE,
