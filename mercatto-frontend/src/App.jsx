@@ -31,10 +31,18 @@ import PagoExitoso from './pages/PagoExitoso'
 import PagoCancelado from './pages/PagoCancelado'
 import NotFound from './pages/NotFound'
 
+import Spinner from './components/common/Spinner'
+
 // Protected Route Wrapper for Vendor
 const RutaVendedor = ({ children }) => {
   const { autenticado, esVendedor, esAdmin, cargando } = useAuth()
-  if (cargando) return null
+  if (cargando) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
   if (!autenticado || (!esVendedor && !esAdmin)) {
     return <Navigate to="/login" replace />
   }
@@ -44,7 +52,13 @@ const RutaVendedor = ({ children }) => {
 // Protected Route Wrapper for Admin
 const RutaAdmin = ({ children }) => {
   const { autenticado, esAdmin, cargando } = useAuth()
-  if (cargando) return null
+  if (cargando) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
   if (!autenticado || !esAdmin) {
     return <Navigate to="/login" replace />
   }
@@ -57,7 +71,13 @@ import Mensajes from './pages/Mensajes'
 // Protected Route Wrapper for Logged-in Buyers
 const RutaProtegida = ({ children }) => {
   const { autenticado, cargando } = useAuth()
-  if (cargando) return null
+  if (cargando) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
   if (!autenticado) {
     return <Navigate to="/login" replace />
   }

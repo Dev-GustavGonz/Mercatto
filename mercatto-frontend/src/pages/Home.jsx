@@ -15,6 +15,8 @@ const renderIcon = (iconName) => {
   return <IconoComponente size={32} strokeWidth={1.5} className="mb-3 text-slate-700 group-hover:scale-110 group-hover:text-mercatto-accent transition-all" />
 }
 
+import Spinner from '../components/common/Spinner'
+
 export const Home = () => {
   const [destacados, setDestacados] = useState([])
   const [nuevos, setNuevos] = useState([])
@@ -72,6 +74,14 @@ export const Home = () => {
 
   const handleNextSlide = () => {
     setCurrentSlide(prev => (prev === destacados.length - 1 ? 0 : prev + 1))
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
   }
 
   const bigBannerProduct = destacados[currentSlide] || destacados[0]

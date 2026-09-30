@@ -19,12 +19,13 @@ export const Login = () => {
   const redirectUrl = searchParams.get('redirect') || '/'
 
   const irSegunRol = (res) => {
-    if (res.usuario?.rol === 'VENDEDOR') {
-      navigate('/vendedor')
-    } else if (res.usuario?.rol === 'ADMIN') {
-      navigate('/admin')
+    const rol = res?.usuario?.rol
+    if (rol === 'VENDEDOR') {
+      navigate('/vendedor', { replace: true })
+    } else if (rol === 'ADMIN') {
+      navigate('/admin', { replace: true })
     } else {
-      navigate(redirectUrl)
+      navigate(redirectUrl, { replace: true })
     }
   }
 
