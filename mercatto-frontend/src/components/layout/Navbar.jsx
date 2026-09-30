@@ -35,9 +35,13 @@ export const Navbar = () => {
   }, [autenticado])
 
   const handleLogout = async () => {
-    await logout()
-    setDropdownUser(false)
-    navigate('/')
+    try {
+      await logout()
+    } finally {
+      setDropdownUser(false)
+      // Redirección completa limpia para desmantelar estados de vendedor/admin en memoria
+      window.location.replace('/')
+    }
   }
 
   return (
