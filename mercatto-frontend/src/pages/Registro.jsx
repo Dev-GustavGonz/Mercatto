@@ -68,7 +68,7 @@ export const Registro = () => {
         navigate('/login')
       } else {
         success('¡Cuenta creada exitosamente! Bienvenido a Mercatto.')
-        navigate('/')
+        window.location.replace('/')
       }
     } else {
       error(res?.mensaje || 'Error en el registro')

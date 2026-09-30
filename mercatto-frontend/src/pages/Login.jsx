@@ -20,13 +20,15 @@ export const Login = () => {
 
   const irSegunRol = (res) => {
     const rol = res?.usuario?.rol
+    let destino = redirectUrl
     if (rol === 'VENDEDOR') {
-      navigate('/vendedor', { replace: true })
+      destino = '/vendedor'
     } else if (rol === 'ADMIN') {
-      navigate('/admin', { replace: true })
-    } else {
-      navigate(redirectUrl, { replace: true })
+      destino = '/admin'
     }
+    // Usar window.location.replace garantiza la sincronización total del árbol de React
+    // y localStorage sin requerir F5 manual por parte del usuario.
+    window.location.replace(destino)
   }
 
   const handleSubmit = async (e) => {
