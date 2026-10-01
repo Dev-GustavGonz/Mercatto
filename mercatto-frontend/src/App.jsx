@@ -8,23 +8,20 @@ import { LanguageProvider } from './context/LanguageContext'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 // Common Layout & Components
-import CartDrawer from './components/cart/CartDrawer'
-import PublicChatbot from './components/common/PublicChatbot'
 import Spinner from './components/common/Spinner'
 
-// General Pages
-import Home from './pages/Home'
-import AboutUs from './pages/AboutUs'
-import NotFound from './pages/NotFound'
+// General / Public Pages
+import { Home, AboutUs, NotFound } from './features/public'
 
 // Domain / Feature Entities
 import { Login, Registro } from './features/auth'
 import { Catalogo, DetalleProducto, Categoria, Busqueda, Favoritos } from './features/productos'
-import { Carrito, Checkout, MisPedidos, PagoExitoso, PagoCancelado } from './features/pedidos'
+import { Carrito, Checkout, MisPedidos, PagoExitoso, PagoCancelado, CartDrawer } from './features/pedidos'
 import { DirectorioTiendas, VitrinaTienda, PanelVendedor } from './features/tiendas'
 import { PanelAdmin } from './features/admin'
-import { Perfil } from './features/perfil'
+import { Perfil } from './features/usuario'
 import { Mensajes } from './features/mensajes'
+import { PublicChatbot } from './features/soporte'
 
 
 // Protected Route Wrapper for Vendor

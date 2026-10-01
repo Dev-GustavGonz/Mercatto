@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { storage } from '../utils/storage'
-import pedidoService from '../services/pedidoService'
+import { storage } from '@/utils/storage'
+import { pedidoService } from '../features/pedidos'
 import { useToast } from './ToastContext'
 
 const CartContext = createContext(null)

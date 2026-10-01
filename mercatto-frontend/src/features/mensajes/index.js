@@ -1,3 +1,3 @@
-export * from '../../services/mensajeService'
-export * from '../../services/websocketService'
-export { default as Mensajes } from '../../pages/Mensajes'
+export { default as Mensajes } from './pages/Mensajes'
+export { default as mensajeService } from './services/mensajeService'
+export { default as websocketService } from './services/websocketService'

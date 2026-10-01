@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { ShieldCheck, Truck, RefreshCw, Headphones, Settings } from 'lucide-react'
-import { useLanguage } from '../../hooks/useLanguage'
+import { useLanguage } from '@/hooks/useLanguage'
 
 export const Footer = () => {
   const { idioma, t } = useLanguage()
