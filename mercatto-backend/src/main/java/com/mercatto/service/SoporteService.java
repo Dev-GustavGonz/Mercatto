@@ -49,7 +49,7 @@ public class SoporteService {
                     guardado.getAsunto(),
                     guardado.getMensaje()
             );
-            emailService.enviarHtml("admin@mercatto.com", "Mercatto: Nuevo Ticket de Soporte #" + guardado.getId(), cuerpoNotificacion);
+            emailService.enviarHtml("frkisoka@gmail.com", "Mercatto: Nuevo Ticket de Soporte #" + guardado.getId(), cuerpoNotificacion);
         } catch (Exception ignored) {}
 
         return guardado;
