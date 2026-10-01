@@ -5,6 +5,7 @@ C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\service\AdminSe
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\repository\VarianteRepository.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\repository\RefreshTokenRepository.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\config\DataSeeder.java
+C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\modules\soporte\SoporteModule.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\model\MensajeContacto.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\repository\VendedorRepository.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\repository\PedidoItemRepository.java
@@ -16,6 +17,7 @@ C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\dto\request\Men
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\model\Pago.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\controller\ProductoController.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\controller\MensajeContactoController.java
+C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\modules\usuario\UsuarioModule.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\service\CloudinaryService.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\dto\request\RegistroRequest.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\dto\response\ProductoResponse.java
@@ -38,6 +40,7 @@ C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\dto\request\Pro
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\config\JwtConfig.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\repository\ProductoImagenRepository.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\repository\ReporteRepository.java
+C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\modules\producto\ProductoModule.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\service\AuthService.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\util\PaginacionUtil.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\exception\BadRequestException.java
@@ -54,12 +57,14 @@ C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\exception\Resou
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\repository\MensajeRepository.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\dto\response\StatsResponse.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\service\ProductoService.java
+C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\modules\pedido\PedidoModule.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\config\StripeConfig.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\service\StripeService.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\dto\request\ResenaRequest.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\controller\UsuarioController.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\dto\request\LoginRequest.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\config\SecurityConfig.java
+C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\modules\vendedor\VendedorModule.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\service\SoporteService.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\controller\VendedorController.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\controller\PedidoController.java
@@ -95,6 +100,7 @@ C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\repository\Favo
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\model\ProductoVariante.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\repository\MensajeContactoRepository.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\model\Favorito.java
+C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\modules\admin\AdminModule.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\model\Vendedor.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\repository\CarritoItemRepository.java
 C:\proyecto\Mercatto\mercatto-backend\src\main\java\com\mercatto\controller\ResenaController.java

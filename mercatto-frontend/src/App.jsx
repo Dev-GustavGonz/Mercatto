@@ -7,31 +7,25 @@ import { FavoritesProvider } from './context/FavoritesContext'
 import { LanguageProvider } from './context/LanguageContext'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
+// Common Layout & Components
 import CartDrawer from './components/cart/CartDrawer'
 import PublicChatbot from './components/common/PublicChatbot'
+import Spinner from './components/common/Spinner'
 
-// Pages
+// General Pages
 import Home from './pages/Home'
 import AboutUs from './pages/AboutUs'
-import Catalogo from './pages/Catalogo'
-import DetalleProducto from './pages/DetalleProducto'
-import Carrito from './pages/Carrito'
-import Checkout from './pages/Checkout'
-import MisPedidos from './pages/MisPedidos'
-import Favoritos from './pages/Favoritos'
-import Login from './pages/Login'
-import Registro from './pages/Registro'
-import PanelVendedor from './pages/PanelVendedor'
-import PanelAdmin from './pages/PanelAdmin'
-import DirectorioTiendas from './pages/DirectorioTiendas'
-import VitrinaTienda from './pages/VitrinaTienda'
-import Categoria from './pages/Categoria'
-import Busqueda from './pages/Busqueda'
-import PagoExitoso from './pages/PagoExitoso'
-import PagoCancelado from './pages/PagoCancelado'
 import NotFound from './pages/NotFound'
 
-import Spinner from './components/common/Spinner'
+// Domain / Feature Entities
+import { Login, Registro } from './features/auth'
+import { Catalogo, DetalleProducto, Categoria, Busqueda, Favoritos } from './features/productos'
+import { Carrito, Checkout, MisPedidos, PagoExitoso, PagoCancelado } from './features/pedidos'
+import { DirectorioTiendas, VitrinaTienda, PanelVendedor } from './features/tiendas'
+import { PanelAdmin } from './features/admin'
+import { Perfil } from './features/perfil'
+import { Mensajes } from './features/mensajes'
+
 
 // Protected Route Wrapper for Vendor
 const RutaVendedor = ({ children }) => {
@@ -64,9 +58,6 @@ const RutaAdmin = ({ children }) => {
   }
   return children
 }
-
-import Perfil from './pages/Perfil'
-import Mensajes from './pages/Mensajes'
 
 // Protected Route Wrapper for Logged-in Buyers
 const RutaProtegida = ({ children }) => {

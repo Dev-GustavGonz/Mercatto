@@ -8,6 +8,7 @@ com\mercatto\dto\request\RegistroRequest.class
 com\mercatto\model\Favorito.class
 com\mercatto\model\Pago.class
 com\mercatto\model\ProductoImagen.class
+com\mercatto\modules\producto\ProductoModule.class
 com\mercatto\model\MensajeContacto.class
 com\mercatto\repository\VarianteRepository.class
 com\mercatto\controller\DireccionController.class
@@ -32,6 +33,7 @@ com\mercatto\dto\request\CuponRequest.class
 com\mercatto\model\Reporte$MotivoReporte.class
 com\mercatto\config\WebSocketConfig.class
 com\mercatto\dto\response\AuthResponse.class
+com\mercatto\modules\pedido\PedidoModule.class
 com\mercatto\model\Producto$EstadoProducto.class
 com\mercatto\config\StripeConfig.class
 com\mercatto\security\UserDetailsServiceImpl.class
@@ -42,7 +44,9 @@ com\mercatto\repository\UsuarioRepository.class
 com\mercatto\service\GoogleTokenService.class
 com\mercatto\dto\request\ProductoRequest.class
 com\mercatto\dto\response\ProductoResponse.class
+com\mercatto\modules\soporte\SoporteModule.class
 com\mercatto\dto\request\RegistroRequest$DatosVendedorRequest.class
+com\mercatto\modules\vendedor\VendedorModule.class
 com\mercatto\dto\request\PedidoRequest$DireccionDTO.class
 com\mercatto\model\Reporte.class
 com\mercatto\controller\ReporteController.class
@@ -98,6 +102,7 @@ com\mercatto\model\Vendedor$Tipo.class
 com\mercatto\dto\response\ProductoResponse$CategoriaDTO.class
 com\mercatto\controller\ResenaController.class
 com\mercatto\repository\DireccionRepository.class
+com\mercatto\modules\usuario\UsuarioModule.class
 com\mercatto\repository\PedidoRepository.class
 com\mercatto\security\JwtUtil.class
 com\mercatto\model\VarianteAtributo.class
@@ -107,6 +112,7 @@ com\mercatto\dto\request\ProductoRequest$VarianteDTO.class
 com\mercatto\repository\ProductoRepository.class
 com\mercatto\service\EmailService.class
 com\mercatto\repository\VendedorRepository.class
+com\mercatto\modules\admin\AdminModule.class
 com\mercatto\repository\PedidoItemRepository.class
 com\mercatto\service\CloudinaryService.class
 com\mercatto\controller\MensajeController.class

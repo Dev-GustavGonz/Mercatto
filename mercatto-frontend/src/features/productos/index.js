@@ -1,0 +1,8 @@
+export * from '../../services/productoService'
+export { default as Catalogo } from '../../pages/Catalogo'
+export { default as DetalleProducto } from '../../pages/DetalleProducto'
+export { default as Categoria } from '../../pages/Categoria'
+export { default as Busqueda } from '../../pages/Busqueda'
+export { default as Favoritos } from '../../pages/Favoritos'
+export { default as ProductCard } from '../../components/product/ProductCard'
+export { default as ModalContactoVendedor } from '../../components/product/ModalContactoVendedor'
