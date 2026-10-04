@@ -105,7 +105,7 @@ export const PanelAdmin = () => {
 
   const navItems = [
     { id: 'resumen', label: 'Tablero Global', icon: LayoutDashboard, badge: null },
-    { id: 'finanzas', label: 'Finanzas & Suscripciones', icon: DollarSign, badge: 'SaaS' },
+    { id: 'finanzas', label: 'Comisiones & Liquidaciones', icon: DollarSign, badge: '4% Ganancia' },
     { id: 'pedidos', label: 'Pedidos del Marketplace', icon: ShoppingCart, badge: pedidos.length },
     { id: 'vendedores', label: 'Tiendas & Proveedores', icon: Store, badge: tiendasPendientes > 0 ? tiendasPendientes : vendedores.length },
     { id: 'categorias', label: 'Categorías & Árbol', icon: Grid, badge: null },
@@ -702,97 +702,77 @@ export const PanelAdmin = () => {
         )}
 
         {/* ============================================================== */}
-        {/* VISTA: FINANZAS Y SUSCRIPCIONES (MONETIZACIÓN DEL ADMIN) */}
+        {/* VISTA: COMISIONES & LIQUIDACIONES (MONETIZACIÓN DEL ADMIN - 4%) */}
         {/* ============================================================== */}
         {tab === 'finanzas' && (() => {
-          const ingresosSuscripciones = vendedores.reduce((acc, v) => {
-            if (v.tipoSuscripcion === 'ELITE') return acc + 99000
-            if (v.tipoSuscripcion === 'PRO') return acc + 49000
-            return acc
-          }, 0)
-
           const totalVentasMercado = pedidos.filter(p => p.estado !== 'CANCELADO').reduce((acc, p) => acc + (p.total || 0), 0)
-          const comisionesEstimadas = totalVentasMercado * 0.05
-          const cuponesAsumidos = pedidos.filter(p => p.estado !== 'CANCELADO').reduce((acc, p) => acc + (p.descuento || 0), 0)
-          const gananciaNetaMercatto = (ingresosSuscripciones + comisionesEstimadas) - cuponesAsumidos
+          const comisionesTotalesAdmin = totalVentasMercado * 0.04
+          const totalNetoProveedores = totalVentasMercado * 0.96
 
           return (
             <div className="space-y-6">
-              {/* Header Hero Finanzas */}
-              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+              {/* Header Hero Comisiones */}
+              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="space-y-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-xs border border-emerald-400/30">
                     <DollarSign size={14} />
-                    <span>Panel de Monetización del Administrador</span>
+                    <span>Control Financiero & Comisiones Mercatto</span>
                   </span>
                   <h3 className="text-2xl sm:text-3xl font-black">
-                    Flujo de Caja, Membresías y Comisiones
+                    Comisiones por Venta (4%) & Liquidación a Tiendas
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-                    Visualiza tus ganancias por suscripciones de tiendas y comisiones por venta. Los descuentos de cupones de campaña son absorbidos por la plataforma para proteger las ganancias de tus vendedores.
+                    Por cada venta realizada en la plataforma, Mercatto retiene automáticamente el <strong>4%</strong> como ganancia del Administrador y reserva el <strong>96%</strong> para transferir a la cuenta bancaria de cada vendedor.
                   </p>
                 </div>
 
                 <div className="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20 text-right shrink-0">
                   <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">
-                    Ganancia Neta Administrador
+                    Ganancia Total Admin (4%)
                   </span>
                   <span className="text-3xl font-black text-emerald-400">
-                    {formatCurrency(gananciaNetaMercatto)}
+                    {formatCurrency(comisionesTotalesAdmin)}
                   </span>
-                  <span className="text-[10px] text-slate-300 block mt-1">Suscripciones + Comisiones - Cupones</span>
+                  <span className="text-[10px] text-slate-300 block mt-1">4% de todas las ventas completadas</span>
                 </div>
               </div>
 
-              {/* Métricas Financieras */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Métricas Financieras Claras */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-                  <span className="text-xs font-semibold text-slate-400">Ingresos Suscripciones (MRR)</span>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                      {formatCurrency(ingresosSuscripciones)}
-                    </span>
-                    <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold text-[11px]">
-                      {vendedores.filter(v => v.tipoSuscripcion !== 'STARTER').length} activas
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-400">100% ganancia neta recurrente</p>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-                  <span className="text-xs font-semibold text-slate-400">Volumen de Ventas</span>
+                  <span className="text-xs font-semibold text-slate-400">Ventas Brutas del Marketplace</span>
                   <div className="text-2xl font-black text-slate-900 dark:text-white">
                     {formatCurrency(totalVentasMercado)}
                   </div>
-                  <p className="text-[11px] text-slate-400">En {pedidos.length} órdenes procesadas</p>
+                  <p className="text-[11px] text-slate-400">En {pedidos.length} pedidos procesados</p>
+                </div>
+
+                <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/60 shadow-sm space-y-1 bg-emerald-50/20">
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Tus Ganancias (4% Admin)</span>
+                  <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                    {formatCurrency(comisionesTotalesAdmin)}
+                  </div>
+                  <p className="text-[11px] text-emerald-600/80 font-medium">Ingreso 100% neto para el administrador</p>
                 </div>
 
                 <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-                  <span className="text-xs font-semibold text-slate-400">Comisiones Retenidas</span>
+                  <span className="text-xs font-semibold text-slate-400">Neto a Liquidar a Vendedores (96%)</span>
                   <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
-                    {formatCurrency(comisionesEstimadas)}
+                    {formatCurrency(totalNetoProveedores)}
                   </div>
-                  <p className="text-[11px] text-slate-400">Ingreso por intermediación (~5%)</p>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
-                  <span className="text-xs font-semibold text-slate-400">Cupones Asumidos (Admin)</span>
-                  <div className="text-2xl font-black text-rose-500">
-                    -{formatCurrency(cuponesAsumidos)}
-                  </div>
-                  <p className="text-[11px] text-slate-400">Inversión en fidelización</p>
+                  <p className="text-[11px] text-slate-400">Dinero para dispersión bancaria a tiendas</p>
                 </div>
               </div>
 
-              {/* Tabla de Tiendas y Estado de Membresía */}
+              {/* Tabla de Tiendas y Desglose Financiero por Cada Una */}
               <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden space-y-4 p-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
                   <div>
                     <h4 className="text-base font-black text-slate-900 dark:text-white">
-                      Liquidación de Tiendas y Planes de Suscripción
+                      Desglose de Comisiones & Liquidación por Tienda
                     </h4>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Visualiza qué plan tiene cada tienda, cuánto aporta a tus ingresos y sus datos para dispersión de pagos.
+                      Consulta exactamente cuánto ha vendido cada tienda, cuánta comisión del 4% le genera al Admin y sus datos para consignar.
                     </p>
                   </div>
                 </div>
@@ -801,67 +781,74 @@ export const PanelAdmin = () => {
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 uppercase tracking-wider text-[10px] font-bold">
-                        <th className="pb-3">Tienda / Marca</th>
-                        <th className="pb-3">Membresía</th>
-                        <th className="pb-3">Aporte Mensual</th>
-                        <th className="pb-3">Comisión Marketplace</th>
-                        <th className="pb-3">Datos Bancarios para Liquidación</th>
+                        <th className="pb-3">Tienda / Propietario</th>
+                        <th className="pb-3 text-right">Ventas Brutas</th>
+                        <th className="pb-3 text-right text-emerald-600 dark:text-emerald-400">Comisión Admin (4%)</th>
+                        <th className="pb-3 text-right text-indigo-600 dark:text-indigo-400">Neto Tienda (96%)</th>
+                        <th className="pb-3">Datos Bancarios para Transferencia</th>
                         <th className="pb-3 text-right">Estado</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {vendedores.map((v) => {
-                        const plan = v.tipoSuscripcion || 'STARTER'
-                        const costoPlan = plan === 'ELITE' ? 99000 : plan === 'PRO' ? 49000 : 0
-                        const comision = plan === 'ELITE' ? '2%' : plan === 'PRO' ? '5%' : '10%'
+                      {vendedores.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="py-8 text-center text-slate-400">
+                            No hay tiendas registradas aún.
+                          </td>
+                        </tr>
+                      ) : (
+                        vendedores.map((v) => {
+                          const ventasBrutas = v.ventasBrutas || (v.ingresosTotales ? v.ingresosTotales / 0.96 : 0)
+                          const comision = v.comisionAdmin || (ventasBrutas * 0.04)
+                          const neto = v.pagoNetoVendedor || (ventasBrutas * 0.96)
 
-                        return (
-                          <tr key={v.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                            <td className="py-4">
-                              <div className="font-bold text-slate-900 dark:text-white text-xs">
-                                {v.nombreTienda}
-                              </div>
-                              <div className="text-[11px] text-slate-400">
-                                {v.nombrePropietario || v.email}
-                              </div>
-                            </td>
+                          return (
+                            <tr key={v.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                              <td className="py-4">
+                                <div className="font-bold text-slate-900 dark:text-white text-xs">
+                                  {v.nombreTienda}
+                                </div>
+                                <div className="text-[11px] text-slate-400">
+                                  {v.nombrePropietario} • {v.email}
+                                </div>
+                              </td>
 
-                            <td className="py-4">
-                              <span className={`px-2.5 py-1 rounded-full font-black text-[10px] uppercase tracking-wider ${
-                                plan === 'ELITE'
-                                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                                  : plan === 'PRO'
-                                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
-                                  : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                              }`}>
-                                {plan}
-                              </span>
-                            </td>
+                              <td className="py-4 text-right font-bold text-slate-900 dark:text-white">
+                                {formatCurrency(ventasBrutas)}
+                              </td>
 
-                            <td className="py-4 font-black text-slate-900 dark:text-white">
-                              {costoPlan === 0 ? 'Gratis (Starter)' : `${formatCurrency(costoPlan)} / mes`}
-                            </td>
+                              <td className="py-4 text-right font-black text-emerald-600 dark:text-emerald-400">
+                                +{formatCurrency(comision)}
+                              </td>
 
-                            <td className="py-4 font-bold text-indigo-600 dark:text-indigo-400">
-                              {comision} por venta
-                            </td>
+                              <td className="py-4 text-right font-black text-indigo-600 dark:text-indigo-400">
+                                {formatCurrency(neto)}
+                              </td>
 
-                            <td className="py-4 text-[11px] text-slate-500">
-                              {v.banco ? (
-                                <span>{v.banco} • {v.cuentaBancaria}</span>
-                              ) : (
-                                <span className="text-slate-400 italic">Sin datos bancarios</span>
-                              )}
-                            </td>
+                              <td className="py-4 text-[11px] text-slate-600 dark:text-slate-300">
+                                {v.banco ? (
+                                  <div className="flex items-center gap-1.5 font-mono">
+                                    <CreditCard size={12} className="text-emerald-500 shrink-0" />
+                                    <span>{v.banco}: {v.cuentaBancaria}</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-400 italic">Sin datos bancarios cargados</span>
+                                )}
+                              </td>
 
-                            <td className="py-4 text-right">
-                              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 font-bold text-[10px]">
-                                Al Día
-                              </span>
-                            </td>
-                          </tr>
-                        )
-                      })}
+                              <td className="py-4 text-right">
+                                <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
+                                  v.estado === 'APROBADO'
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                                    : 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                                }`}>
+                                  {v.estado}
+                                </span>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
                     </tbody>
                   </table>
                 </div>

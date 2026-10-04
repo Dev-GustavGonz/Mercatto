@@ -79,6 +79,8 @@ export const VendorsTable = ({ vendedores = [], onActualizado }) => {
             <tr>
               <th className="p-3.5">Tienda / Propietario</th>
               <th className="p-3.5">NIT / Cédula</th>
+              <th className="p-3.5 text-right">Ventas Brutas</th>
+              <th className="p-3.5 text-right text-emerald-600 dark:text-emerald-400">Comisión Admin (4%)</th>
               <th className="p-3.5">Ciudad</th>
               <th className="p-3.5">Estado</th>
               <th className="p-3.5 text-right">Acciones de Aprobación</th>
@@ -88,6 +90,8 @@ export const VendorsTable = ({ vendedores = [], onActualizado }) => {
             {vendedoresFiltrados.map((v) => {
               const esPendiente = v.estado === 'PENDIENTE'
               const esAprobado = v.estado === 'APROBADO'
+              const ventasBrutas = v.ventasBrutas || (v.ingresosTotales ? v.ingresosTotales / 0.96 : 0)
+              const comision = v.comisionAdmin || (ventasBrutas * 0.04)
 
               return (
                 <tr key={v.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
@@ -96,6 +100,12 @@ export const VendorsTable = ({ vendedores = [], onActualizado }) => {
                     <p className="text-[11px] text-slate-400">{v.nombrePropietario} ({v.email})</p>
                   </td>
                   <td className="p-3.5 text-slate-700 dark:text-slate-300 font-mono">{v.nitCedula || 'N/A'}</td>
+                  <td className="p-3.5 text-right font-bold text-slate-900 dark:text-white">
+                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(ventasBrutas)}
+                  </td>
+                  <td className="p-3.5 text-right font-black text-emerald-600 dark:text-emerald-400">
+                    +{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(comision)}
+                  </td>
                   <td className="p-3.5 text-slate-600 dark:text-slate-300">{v.ciudad || 'No especificada'}</td>
                   <td className="p-3.5">
                     <span
@@ -218,6 +228,32 @@ export const VendorsTable = ({ vendedores = [], onActualizado }) => {
                 <span>{vendedorSeleccionado.banco || 'Banco por definir'}</span>
               </p>
               <p className="text-slate-500 font-mono">{vendedorSeleccionado.cuentaBancaria || 'No suministrada'}</p>
+            </div>
+          </div>
+
+          <div className="p-3.5 bg-gradient-to-r from-emerald-500/10 via-indigo-500/10 to-transparent dark:bg-slate-800 rounded-2xl border border-emerald-500/30 space-y-2">
+            <span className="text-[10px] uppercase font-black text-emerald-600 dark:text-emerald-400 block tracking-wider">
+              Balance Comercial & Liquidación (Comisión 4%)
+            </span>
+            <div className="grid grid-cols-3 gap-2 text-left">
+              <div>
+                <span className="text-[10px] text-slate-400 block">Ventas Brutas:</span>
+                <span className="font-extrabold text-slate-900 dark:text-white text-xs">
+                  {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(vendedorSeleccionado.ventasBrutas || (vendedorSeleccionado.ingresosTotales ? vendedorSeleccionado.ingresosTotales / 0.96 : 0))}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block">Tu Ganancia (4%):</span>
+                <span className="font-black text-emerald-600 dark:text-emerald-400 text-xs">
+                  +{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(vendedorSeleccionado.comisionAdmin || ((vendedorSeleccionado.ventasBrutas || (vendedorSeleccionado.ingresosTotales ? vendedorSeleccionado.ingresosTotales / 0.96 : 0)) * 0.04))}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold block">Neto para la Tienda (96%):</span>
+                <span className="font-black text-indigo-600 dark:text-indigo-400 text-xs">
+                  {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(vendedorSeleccionado.pagoNetoVendedor || ((vendedorSeleccionado.ventasBrutas || (vendedorSeleccionado.ingresosTotales ? vendedorSeleccionado.ingresosTotales / 0.96 : 0)) * 0.96))}
+                </span>
+              </div>
             </div>
           </div>
 

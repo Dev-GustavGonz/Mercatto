@@ -20,6 +20,11 @@ public class VendedorResponse {
     private Double calificacion;
     private Integer totalVentas;
     private Double ingresosTotales;
+    private Double ventasBrutas;
+    private Double comisionAdmin;
+    private Double pagoNetoVendedor;
+    private String banco;
+    private String cuentaBancaria;
     private LocalDateTime fechaRegistro;
     private String tipoSuscripcion;
     private LocalDateTime fechaExpiracionSuscripcion;
@@ -82,6 +87,21 @@ public class VendedorResponse {
 
     public String getTipoSuscripcion() { return tipoSuscripcion; }
     public void setTipoSuscripcion(String tipoSuscripcion) { this.tipoSuscripcion = tipoSuscripcion; }
+
+    public Double getVentasBrutas() { return ventasBrutas; }
+    public void setVentasBrutas(Double ventasBrutas) { this.ventasBrutas = ventasBrutas; }
+
+    public Double getComisionAdmin() { return comisionAdmin; }
+    public void setComisionAdmin(Double comisionAdmin) { this.comisionAdmin = comisionAdmin; }
+
+    public Double getPagoNetoVendedor() { return pagoNetoVendedor; }
+    public void setPagoNetoVendedor(Double pagoNetoVendedor) { this.pagoNetoVendedor = pagoNetoVendedor; }
+
+    public String getBanco() { return banco; }
+    public void setBanco(String banco) { this.banco = banco; }
+
+    public String getCuentaBancaria() { return cuentaBancaria; }
+    public void setCuentaBancaria(String cuentaBancaria) { this.cuentaBancaria = cuentaBancaria; }
 
     public LocalDateTime getFechaExpiracionSuscripcion() { return fechaExpiracionSuscripcion; }
     public void setFechaExpiracionSuscripcion(LocalDateTime fechaExpiracionSuscripcion) { this.fechaExpiracionSuscripcion = fechaExpiracionSuscripcion; }

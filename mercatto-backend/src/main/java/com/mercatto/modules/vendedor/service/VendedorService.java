@@ -104,8 +104,17 @@ public class VendedorService {
         res.setTotalVentas(v.getTotalVentas());
         res.setFechaRegistro(v.getFechaRegistro());
         res.setTipoSuscripcion(v.getTipoSuscripcion() != null ? v.getTipoSuscripcion().name() : "STARTER");
-        res.setFechaExpiracionSuscripcion(v.getFechaExpiracionSuscripcion());
-        res.setIngresosTotales(pedidoRepo.sumIngresosByVendedor(v));
+        Double ventasBrutas = pedidoRepo.sumIngresosByVendedor(v);
+        if (ventasBrutas == null) ventasBrutas = 0.0;
+        double comision = ventasBrutas * 0.04;
+        double neto = ventasBrutas * 0.96;
+
+        res.setVentasBrutas(ventasBrutas);
+        res.setComisionAdmin(comision);
+        res.setPagoNetoVendedor(neto);
+        res.setIngresosTotales(neto);
+        res.setBanco(v.getBanco());
+        res.setCuentaBancaria(v.getCuentaBancaria());
         return res;
     }
 }
