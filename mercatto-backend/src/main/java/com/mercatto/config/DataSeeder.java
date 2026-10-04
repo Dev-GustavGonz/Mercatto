@@ -1,11 +1,11 @@
 package com.mercatto.config;
 
-import com.mercatto.model.Cupon;
-import com.mercatto.model.Usuario;
-import com.mercatto.model.Vendedor;
-import com.mercatto.repository.CuponRepository;
-import com.mercatto.repository.UsuarioRepository;
-import com.mercatto.repository.VendedorRepository;
+import com.mercatto.modules.pedido.model.Cupon;
+import com.mercatto.modules.usuario.model.Usuario;
+import com.mercatto.modules.vendedor.model.Vendedor;
+import com.mercatto.modules.pedido.repository.CuponRepository;
+import com.mercatto.modules.usuario.repository.UsuarioRepository;
+import com.mercatto.modules.vendedor.repository.VendedorRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,5 +1,7 @@
 package com.mercatto.dto.request;
 
+import com.mercatto.modules.soporte.service.MensajeContactoService;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

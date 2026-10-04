@@ -1,5 +1,9 @@
 package com.mercatto.modules.vendedor;
 
+import com.mercatto.modules.vendedor.controller.VendedorController;
+import com.mercatto.modules.vendedor.model.Vendedor;
+import com.mercatto.modules.vendedor.service.VendedorService;
+
 /**
  * Módulo de Dominio: Vendedor & Tiendas
  * Entidades asociadas: Vendedor

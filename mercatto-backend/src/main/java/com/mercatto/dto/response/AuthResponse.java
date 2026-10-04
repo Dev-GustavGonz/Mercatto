@@ -1,5 +1,7 @@
 package com.mercatto.dto.response;
 
+import com.mercatto.modules.vendedor.model.Vendedor;
+
 public class AuthResponse {
 
     private String accessToken;

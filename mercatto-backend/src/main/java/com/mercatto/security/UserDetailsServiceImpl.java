@@ -1,6 +1,8 @@
 package com.mercatto.security;
 
-import com.mercatto.repository.UsuarioRepository;
+import com.mercatto.modules.usuario.model.Usuario;
+
+import com.mercatto.modules.usuario.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;

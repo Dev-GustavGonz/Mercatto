@@ -1,6 +1,6 @@
 package com.mercatto.security;
 
-import com.mercatto.model.Usuario;
+import com.mercatto.modules.usuario.model.Usuario;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
