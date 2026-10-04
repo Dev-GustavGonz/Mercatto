@@ -5,7 +5,7 @@ import { DollarSign, Package, ShoppingCart, Star } from 'lucide-react'
 export const VendorStats = ({ stats = {} }) => {
   const cards = [
     {
-      title: 'Ingresos Totales',
+      title: 'Ingresos Netos (tras 4% admin)',
       value: formatCurrency(stats.ingresosTotales || 0),
       icon: DollarSign,
       color: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-950/50',

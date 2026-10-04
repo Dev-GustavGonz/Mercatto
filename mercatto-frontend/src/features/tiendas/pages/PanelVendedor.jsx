@@ -298,38 +298,21 @@ export const PanelVendedor = () => {
           </div>
         </div>
 
-        {/* Tarjeta inferior informativa de Suscripción */}
+        {/* Tarjeta informativa de Comisión Transparente */}
         <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-amber-50/50 dark:from-slate-800 dark:to-slate-850 border border-indigo-100/80 dark:border-slate-700 text-xs space-y-2.5 shadow-sm">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-emerald-50/50 dark:from-slate-800 dark:to-slate-850 border border-indigo-100/80 dark:border-slate-700 text-xs space-y-2.5 shadow-sm">
             <div className="flex items-center justify-between font-bold text-slate-800 dark:text-slate-200">
               <span className="flex items-center gap-1.5">
-                <Sparkles size={14} className="text-amber-500" />
-                <span>Membresía</span>
+                <ShieldCheck size={14} className="text-emerald-500" />
+                <span>Comisión de Venta</span>
               </span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                perfil?.tipoSuscripcion === 'ELITE'
-                  ? 'bg-amber-400 text-slate-950 shadow-sm'
-                  : perfil?.tipoSuscripcion === 'PRO'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-              }`}>
-                {perfil?.tipoSuscripcion || 'STARTER'}
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400">
+                4% Fijo
               </span>
             </div>
             <p className="text-[11px] text-slate-500 leading-tight">
-              {perfil?.tipoSuscripcion === 'ELITE'
-                ? 'Tienes el plan máximo con comisiones del 2% y vitrina destacada.'
-                : perfil?.tipoSuscripcion === 'PRO'
-                ? 'Disfrutas del 5% de comisión e insignia verificada.'
-                : 'Pasa a PRO o ELITE para reducir comisiones por venta.'}
+              Sin planes ni cuotas mensuales. Mercatto solo retiene el 4% por venta completada y te transfiere el 96% neto. Chat con clientes 100% gratuito e ilimitado.
             </p>
-            <button
-              type="button"
-              onClick={() => setModalSuscripcion(true)}
-              className="w-full py-2 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-[11px] transition shadow cursor-pointer text-center flex items-center justify-center gap-1"
-            >
-              <span>{perfil?.tipoSuscripcion === 'ELITE' ? 'Gestionar Plan' : '⚡ Mejorar Mi Plan'}</span>
-            </button>
           </div>
         </div>
       </aside>

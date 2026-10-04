@@ -11,8 +11,8 @@ export const AdminStats = ({ stats = {} }) => {
       color: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-950/50',
     },
     {
-      title: 'Comisiones Estimadas (15%)',
-      value: formatCurrency((stats.ingresosTotales || 0) * 0.15),
+      title: 'Comisiones Plataforma (4%)',
+      value: formatCurrency((stats.ingresosTotales || 0) * 0.04),
       icon: DollarSign,
       color: 'text-indigo-600 bg-indigo-100 dark:bg-indigo-950/50',
     },

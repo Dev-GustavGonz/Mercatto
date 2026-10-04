@@ -37,7 +37,7 @@ public class AdminService {
         stats.setTotalProductos(productoRepo.count());
         stats.setTotalPedidos(pedidoRepo.count());
         stats.setIngresosTotales(pedidoRepo.sumIngresosTotales());
-        stats.setIngresosMes(pedidoRepo.sumIngresosTotales() * 0.15); // Simulación o cálculo comisiones
+        stats.setIngresosMes(pedidoRepo.sumIngresosTotales() * 0.04); // Comisión fija del 4% para el Admin por cada venta
 
         Map<String, Long> porEstado = new HashMap<>();
         stats.setPedidosPorEstado(porEstado);

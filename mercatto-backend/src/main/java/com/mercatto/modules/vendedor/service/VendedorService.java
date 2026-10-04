@@ -70,9 +70,15 @@ public class VendedorService {
 
     public Map<String, Object> obtenerEstadisticas(Vendedor vendedor) {
         Map<String, Object> stats = new HashMap<>();
+        double ventasBrutas = pedidoRepo.sumIngresosByVendedor(vendedor) != null ? pedidoRepo.sumIngresosByVendedor(vendedor) : 0.0;
+        double comisionAdmin = ventasBrutas * 0.04;
+        double ingresosNetos = ventasBrutas * 0.96;
+
         stats.put("totalProductos", productoRepo.countByVendedor(vendedor));
         stats.put("totalPedidos", pedidoRepo.countByVendedor(vendedor));
-        stats.put("ingresosTotales", pedidoRepo.sumIngresosByVendedor(vendedor));
+        stats.put("ventasBrutas", ventasBrutas);
+        stats.put("comisionAdmin", comisionAdmin);
+        stats.put("ingresosTotales", ingresosNetos); // Dinero neto que le llega al vendedor tras el 4%
         stats.put("calificacion", vendedor.getCalificacion());
         stats.put("totalVentas", vendedor.getTotalVentas());
         return stats;

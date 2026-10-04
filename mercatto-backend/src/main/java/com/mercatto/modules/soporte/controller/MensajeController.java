@@ -49,18 +49,7 @@ public class MensajeController {
             producto = productoRepo.findById(req.getProductoId()).orElse(null);
         }
 
-        // --- LÓGICA DE NEGOCIO: TOKENS Y SUSCRIPCIONES ---
-        
-        // Si el remitente es un COMPRADOR, cobramos un Token
-        if (remitente.getRol() == Usuario.Rol.COMPRADOR) {
-            if (remitente.getTokensChat() == null || remitente.getTokensChat() <= 0) {
-                throw new BadRequestException("No tienes tokens suficientes para enviar este mensaje. Recarga tu saldo de tokens para chatear.");
-            }
-            
-            // Descontar token al comprador
-            remitente.setTokensChat(remitente.getTokensChat() - 1);
-            usuarioRepo.save(remitente);
-        }
+        // Chat libre e indefinido: sin cobro ni restricción de tokens para compradores ni vendedores
 
         // Crear y guardar mensaje
         Mensaje m = new Mensaje();
