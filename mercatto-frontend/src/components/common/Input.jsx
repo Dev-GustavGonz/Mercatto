@@ -7,6 +7,7 @@ export const Input = ({
   placeholder = '',
   className = '',
   icon: Icon,
+  rightElement,
   ...props
 }) => {
   return (
@@ -27,13 +28,18 @@ export const Input = ({
           placeholder={placeholder}
           className={`w-full rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-200 text-sm py-2.5 ${
             Icon ? 'pl-10' : 'pl-3.5'
-          } pr-3.5 ${
+          } ${rightElement ? 'pr-10' : 'pr-3.5'} ${
             error
               ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20'
-              : 'border-slate-300 dark:border-slate-700 focus:border-indigo-500 focus:ring-indigo-500/20'
+              : 'border-slate-300 dark:border-slate-700 focus:border-violet-500 focus:ring-violet-500/20'
           } ${className}`}
           {...props}
         />
+        {rightElement && (
+          <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center z-10">
+            {rightElement}
+          </div>
+        )}
       </div>
       {error && <p className="mt-1 text-xs text-rose-500 font-medium">{error}</p>}
     </div>

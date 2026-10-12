@@ -6,6 +6,16 @@ export const pedidoService = {
     return res.data
   },
 
+  crearPedidoInvitado: async (datos) => {
+    const res = await api.post('/pedidos/invitado', datos)
+    return res.data
+  },
+
+  rastrearPedido: async (codigo, email) => {
+    const res = await api.get('/pedidos/rastreo', { params: { codigo, email } })
+    return res.data
+  },
+
   misPedidos: async (params = {}) => {
     const res = await api.get('/pedidos/mis-pedidos', { params })
     return res.data

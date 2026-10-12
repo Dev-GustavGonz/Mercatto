@@ -101,9 +101,16 @@ export const AuthProvider = ({ children }) => {
   }
 
   const logout = async () => {
-    await authService.logout()
-    setToken(null)
-    setUsuario(null)
+    try {
+      await authService.logout()
+    } catch (e) {
+      console.warn('Error en logout:', e)
+    } finally {
+      localStorage.removeItem('mercatto_token')
+      localStorage.removeItem('mercatto_user')
+      setToken(null)
+      setUsuario(null)
+    }
   }
 
   const esComprador = usuario?.rol === 'COMPRADOR'

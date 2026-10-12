@@ -4,6 +4,7 @@ import Button from '@/components/common/Button'
 import Input from '@/components/common/Input'
 import Modal from '@/components/common/Modal'
 import { useToast } from '@/hooks/useToast'
+import { formatCurrency } from '@/utils/formatCurrency'
 import { Plus, Trash2, Tag } from 'lucide-react'
 
 export const CouponManager = () => {
@@ -26,33 +27,58 @@ export const CouponManager = () => {
 
   const handleCrear = async (e) => {
     e.preventDefault()
+    const cod = codigo.trim().toUpperCase()
+    if (!cod || cod.length < 3) {
+      error('El código del cupón debe tener al menos 3 caracteres.')
+      return
+    }
+    const valNum = Number(valor)
+    if (isNaN(valNum) || valNum <= 0) {
+      error('El valor del descuento debe ser mayor a 0.')
+      return
+    }
+    if (tipo === 'PORCENTAJE' && valNum > 100) {
+      error('El porcentaje de descuento no puede ser superior al 100%.')
+      return
+    }
+    const minNum = Number(montoMinimo)
+    if (isNaN(minNum) || minNum < 0) {
+      error('El monto mínimo de compra no puede ser negativo.')
+      return
+    }
+
     setLoading(true)
     try {
       await adminService.crearCupon({
-        codigo: codigo.trim().toUpperCase(),
+        codigo: cod,
         tipo,
-        valor: Number(valor),
-        montoMinimo: Number(montoMinimo),
+        valor: valNum,
+        montoMinimo: minNum,
         activo: true,
       })
       success('Cupón creado exitosamente')
+      setCodigo('')
+      setValor(10)
+      setMontoMinimo(50000)
       setModalAbierto(false)
       cargar()
     } catch (err) {
-      error(err.response?.data?.mensaje || 'Error al crear cupón')
+      const msg = err.response?.data?.mensaje || err.response?.data?.message || 'Error al crear cupón'
+      error(msg)
     } finally {
       setLoading(false)
     }
   }
 
   const handleEliminar = async (id) => {
-    if (!window.confirm('¿Eliminar cupón?')) return
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este cupón?')) return
     try {
       await adminService.eliminarCupon(id)
-      success('Cupón eliminado')
+      success('Cupón eliminado con éxito')
       cargar()
-    } catch {
-      error('Error al eliminar cupón')
+    } catch (err) {
+      const msg = err.response?.data?.mensaje || err.response?.data?.message || 'Error al eliminar cupón'
+      error(msg)
     }
   }
 
@@ -78,7 +104,7 @@ export const CouponManager = () => {
                 <h4 className="text-xs font-bold text-slate-900 dark:text-white">{c.codigo}</h4>
               </div>
               <p className="text-[11px] text-slate-500">
-                Descuento: {c.tipo === 'PORCENTAJE' ? `${c.valor}%` : `$${c.valor}`} (Mínimo: ${c.montoMinimo})
+                Descuento: {c.tipo === 'PORCENTAJE' ? `${c.valor}%` : formatCurrency(c.valor)} {c.montoMinimo ? `(Mínimo: ${formatCurrency(c.montoMinimo)})` : ''}
               </p>
             </div>
             <button onClick={() => handleEliminar(c.id)} className="p-1.5 text-slate-400 hover:text-rose-500 cursor-pointer">

@@ -1,10 +1,22 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ShieldCheck, Truck, RefreshCw, Headphones, Settings } from 'lucide-react'
 import { useLanguage } from '@/hooks/useLanguage'
+import MercattoLogo from '@/components/common/MercattoLogo'
 
 export const Footer = () => {
   const { idioma, t } = useLanguage()
+  const location = useLocation()
+
+  // Ocultar footer en las rutas de paneles de administración y vendedor
+  if (
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/panel-vendedor') ||
+    location.pathname.startsWith('/vendedor')
+  ) {
+    return null
+  }
+
   return (
     <footer className="bg-mercatto-dark text-slate-300 mt-12 font-sans">
       {/* Features bar */}
@@ -54,16 +66,8 @@ export const Footer = () => {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <Settings className="text-mercatto-accent w-8 h-8" />
-              <div>
-                <span className="text-2xl font-black tracking-tight text-white leading-none block">
-                  Mercatto
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium tracking-wide">
-                  A Marketplace Theme
-                </span>
-              </div>
+            <Link to="/" className="flex items-center gap-3 mb-4" title="Inicio de Mercatto">
+              <MercattoLogo className="text-3xl text-violet-400" />
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed pr-4">
               La plataforma que une compradores y proveedores directamente. Compra con seguridad y comunícate sin intermediarios.
@@ -75,6 +79,7 @@ export const Footer = () => {
               <li><Link to="/catalogo" className="text-slate-400 hover:text-mercatto-accent transition-colors">Explorar Catálogo</Link></li>
               <li><Link to="/catalogo?orden=ofertas" className="text-slate-400 hover:text-mercatto-accent transition-colors">Ofertas Especiales</Link></li>
               <li><Link to="/favoritos" className="text-slate-400 hover:text-mercatto-accent transition-colors">Lista de Deseos</Link></li>
+              <li><Link to="/rastreo" className="text-violet-400 font-semibold hover:text-white transition-colors">Rastrear mi Pedido</Link></li>
             </ul>
           </div>
           <div>
@@ -98,8 +103,8 @@ export const Footer = () => {
         <div className="pt-8 border-t border-slate-800 text-center text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4">
           <p>© {new Date().getFullYear()} Mercatto Marketplace. Todos los derechos reservados.</p>
           <div className="flex gap-4">
-            <span className="hover:text-mercatto-accent cursor-pointer transition-colors">Privacy Policy</span>
-            <span className="hover:text-mercatto-accent cursor-pointer transition-colors">Terms of Service</span>
+            <Link to="/privacidad" className="hover:text-violet-400 transition-colors">Política de Privacidad</Link>
+            <Link to="/terminos" className="hover:text-violet-400 transition-colors">Términos y Condiciones</Link>
           </div>
         </div>
       </div>

@@ -51,17 +51,26 @@ export const OrderSuccess = ({ pedido }) => {
         </div>
       </div>
 
+      {/* Guest Notice */}
+      <div className="bg-indigo-50/60 dark:bg-slate-800/80 p-4 rounded-xl border border-indigo-100 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 mb-8 flex items-center justify-center gap-2">
+        <span>📧 Hemos enviado el comprobante de pago y número de orden a tu correo electrónico.</span>
+      </div>
+
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-        <Link to="/mis-pedidos">
-          <Button variant="outline" className="w-full sm:w-auto">
-            <Package size={16} className="mr-2" />
-            Ver Mis Pedidos
+        <Link to={`/rastreo?codigo=${encodeURIComponent(pedido.codigo || '')}&email=${encodeURIComponent(pedido.comprador?.email || '')}`}>
+          <Button variant="secondary" className="w-full sm:w-auto border-violet-200 text-violet-700 bg-violet-50 hover:bg-violet-100">
+            <span>Rastrear este Pedido</span>
           </Button>
         </Link>
         <Link to="/catalogo">
           <Button variant="primary" className="w-full sm:w-auto">
             <span>Seguir Comprando</span>
             <ArrowRight size={16} className="ml-2" />
+          </Button>
+        </Link>
+        <Link to="/">
+          <Button variant="outline" className="w-full sm:w-auto">
+            Volver al Inicio
           </Button>
         </Link>
       </div>

@@ -26,13 +26,20 @@ public class PedidoController {
     @Autowired private VendedorService vendedorService;
     @Autowired private UsuarioRepository usuarioRepo;
 
-    // POST /api/pedidos (Crear pedido desde checkout)
+    // POST /api/pedidos (Crear pedido desde checkout con usuario autenticado)
     @PostMapping
     public ResponseEntity<PedidoResponse> crearPedido(
             @Valid @RequestBody PedidoRequest req,
             @AuthenticationPrincipal UserDetails userDetails) {
         Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
         return ResponseEntity.status(201).body(pedidoService.crearPedido(req, usuario));
+    }
+
+    // POST /api/pedidos/invitado (Crear pedido sin registro / Guest Checkout)
+    @PostMapping("/invitado")
+    public ResponseEntity<PedidoResponse> crearPedidoInvitado(
+            @Valid @RequestBody PedidoRequest req) {
+        return ResponseEntity.status(201).body(pedidoService.crearPedidoInvitado(req));
     }
 
     // GET /api/pedidos/mis-pedidos (Historial del comprador)
@@ -43,6 +50,14 @@ public class PedidoController {
             @AuthenticationPrincipal UserDetails userDetails) {
         Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
         return ResponseEntity.ok(pedidoService.listarPorComprador(usuario, pagina, tamano));
+    }
+
+    // GET /api/pedidos/rastreo (Público: Consulta para invitados mediante código y email)
+    @GetMapping("/rastreo")
+    public ResponseEntity<PedidoResponse> rastrearPedido(
+            @RequestParam String codigo,
+            @RequestParam String email) {
+        return ResponseEntity.ok(pedidoService.rastrearPedido(codigo, email));
     }
 
     // GET /api/pedidos/{id}

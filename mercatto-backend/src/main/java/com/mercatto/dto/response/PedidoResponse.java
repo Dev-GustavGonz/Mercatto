@@ -15,6 +15,8 @@ public class PedidoResponse {
     private String estadoPago;
     private String guiaSeguimiento;
     private String empresaEnvio;
+    private String nombreTienda;
+    private Long vendedorId;
     private LocalDateTime fechaCreacion;
 
     private CompradorDTO comprador;
@@ -55,6 +57,12 @@ public class PedidoResponse {
 
     public String getEmpresaEnvio() { return empresaEnvio; }
     public void setEmpresaEnvio(String empresaEnvio) { this.empresaEnvio = empresaEnvio; }
+
+    public String getNombreTienda() { return nombreTienda; }
+    public void setNombreTienda(String nombreTienda) { this.nombreTienda = nombreTienda; }
+
+    public Long getVendedorId() { return vendedorId; }
+    public void setVendedorId(Long vendedorId) { this.vendedorId = vendedorId; }
 
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }

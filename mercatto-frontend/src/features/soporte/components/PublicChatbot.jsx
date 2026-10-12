@@ -184,11 +184,21 @@ export const PublicChatbot = () => {
     }, 600)
   }
 
-  const handleEnviarMensaje = (e) => {
-    e.preventDefault()
-    if (!mensajeInput.trim()) return
+  // Generar o recuperar sessionId persistente para la conversación
+  const [sessionId] = useState(() => {
+    let sid = sessionStorage.getItem('mercatto_chat_sid')
+    if (!sid) {
+      sid = 'session_' + Math.random().toString(36).substring(2, 11)
+      sessionStorage.setItem('mercatto_chat_sid', sid)
+    }
+    return sid
+  })
 
-    const texto = mensajeInput.trim()
+  const handleEnviarMensaje = async (e, textoDirecto = null) => {
+    if (e && e.preventDefault) e.preventDefault()
+    const texto = (textoDirecto !== null ? textoDirecto : mensajeInput).trim()
+    if (!texto) return
+
     setMensajeInput('')
     const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
@@ -198,17 +208,64 @@ export const PublicChatbot = () => {
     ])
 
     const t = texto.toLowerCase()
-
     setEscribiendo(true)
-    setTimeout(() => {
-      setEscribiendo(false)
-      let respuesta = ''
-      let esSoporte = false
 
-      if (t.includes('soporte') || t.includes('humano') || t.includes('asesor') || t.includes('admin') || t.includes('persona') || t.includes('ayuda') || t.includes('contacto')) {
-        respuesta = 'Con gusto te comunico con el equipo de **Atención al Cliente Mercatto**. Puedes escribirnos directamente por WhatsApp o dejarnos tu solicitud por mensaje:'
-        esSoporte = true
-      } else if (t.includes('pago') || t.includes('tarjeta') || t.includes('nequi') || t.includes('banco') || t.includes('pse') || t.includes('contra entrega')) {
+    // Si pide explícitamente contacto con humano/soporte
+    if (t.includes('soporte') || t.includes('humano') || t.includes('asesor') || t.includes('admin') || t.includes('persona')) {
+      setEscribiendo(false)
+      setMensajes((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          remitente: 'bot',
+          texto: 'Con gusto te comunico con el equipo de **Atención al Cliente Mercatto**. Puedes escribirnos directamente por WhatsApp o dejarnos tu solicitud por mensaje:',
+          hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          esOpcionSoporte: true,
+          ofrecerMenu: false
+        }
+      ])
+      return
+    }
+
+    try {
+      // Llamada directa al agente de Inteligencia Artificial en n8n
+      const n8nUrl = import.meta.env.VITE_N8N_WEBHOOK_URL || 'http://localhost:5678/webhook/mercatto-chat'
+      const response = await fetch(n8nUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: texto,
+          sessionId: sessionId
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al conectar con el servidor de IA')
+      }
+
+      const data = await response.json()
+      const respuestaIA = data?.reply || data?.output || 'Disculpa, no pude procesar tu mensaje en este momento.'
+
+      setEscribiendo(false)
+      setMensajes((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          remitente: 'bot',
+          texto: respuestaIA,
+          hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          esOpcionSoporte: false,
+          ofrecerMenu: true
+        }
+      ])
+    } catch (err) {
+      console.warn('Fallo n8n webhook, usando respuestas de respaldo:', err)
+      setEscribiendo(false)
+
+      let respuesta = ''
+      if (t.includes('pago') || t.includes('tarjeta') || t.includes('nequi') || t.includes('banco') || t.includes('pse')) {
         respuesta = RESPUESTAS_BASE.medios_pago
       } else if (t.includes('comprar') || t.includes('pedido') || t.includes('orden')) {
         respuesta = RESPUESTAS_BASE.como_comprar
@@ -218,10 +275,8 @@ export const PublicChatbot = () => {
         respuesta = RESPUESTAS_BASE.cupones
       } else if (t.includes('envio') || t.includes('flete') || t.includes('ciudad') || t.includes('despacho')) {
         respuesta = RESPUESTAS_BASE.envios
-      } else if (t.includes('hola') || t.includes('buenos dias') || t.includes('buenas tardes')) {
-        respuesta = '¡Hola! Es un gusto saludarte. Puedes elegir uno de los temas guiados en el menú o consultarme directamente lo que necesites.'
       } else {
-        respuesta = 'Para brindarte la mejor respuesta sobre tu consulta, puedes elegir uno de los temas frecuentes o comunicarte con un asesor de Atención al Cliente.'
+        respuesta = '¡Hola! En Mercatto estamos para ayudarte. ¿Deseas consultar sobre compras, envíos, métodos de pago o cómo vender con nuestra comisión única del 4%?'
       }
 
       setMensajes((prev) => [
@@ -231,11 +286,11 @@ export const PublicChatbot = () => {
           remitente: 'bot',
           texto: respuesta,
           hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          esOpcionSoporte: esSoporte,
-          ofrecerMenu: !esSoporte
+          esOpcionSoporte: false,
+          ofrecerMenu: true
         }
       ])
-    }, 600)
+    }
   }
 
   const handleEnviarFormulario = async (e) => {
@@ -278,65 +333,108 @@ export const PublicChatbot = () => {
     }
   }
 
+  const reiniciarConversacion = () => {
+    const nuevoSid = 'session_' + Math.random().toString(36).substring(2, 11)
+    sessionStorage.setItem('mercatto_chat_sid', nuevoSid)
+    setMensajes([
+      {
+        id: Date.now(),
+        remitente: 'bot',
+        texto:
+          '¡Hola de nuevo! ✨ Soy el Asistente Inteligente de **Mercatto**. ¿En qué puedo colaborarte hoy? Pregúntame lo que quieras sobre productos, comisiones, pagos o envíos.',
+        hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }
+    ])
+    setVistaActual('chat')
+  }
+
+  const enviarPreguntaRapida = (preguntaTexto) => {
+    setMensajeInput(preguntaTexto)
+    // Disparo inmediato simulando envío
+    const e = { preventDefault: () => {} }
+    setTimeout(() => {
+      handleEnviarMensaje(e, preguntaTexto)
+    }, 50)
+  }
+
+  // Convierte los asteriscos **texto** en negrita limpia de verdad sin mostrar asteriscos
+  const renderizarTextoFormateado = (texto) => {
+    if (!texto) return ''
+    const partes = texto.split(/(\*\*.*?\*\*)/g)
+    return partes.map((parte, i) => {
+      if (parte.startsWith('**') && parte.endsWith('**')) {
+        return (
+          <strong key={i} className="font-bold text-slate-900 dark:text-white">
+            {parte.slice(2, -2)}
+          </strong>
+        )
+      }
+      return parte
+    })
+  }
+
   return (
     <div className="fixed bottom-6 right-6 z-50 font-sans">
-      {/* Botón Flotante */}
+      {/* Botón Flotante Circular IA */}
       {!abierto && (
         <button
           onClick={() => setAbierto(true)}
-          className="group flex items-center gap-3 px-4 py-3.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white shadow-2xl transition-all duration-300 hover:scale-105 cursor-pointer border border-slate-700/60"
-          aria-label="Abrir Asistente Mercatto"
+          className="group relative w-14 h-14 rounded-full bg-gradient-to-tr from-violet-600 via-indigo-600 to-purple-700 hover:from-violet-500 hover:to-purple-600 text-white shadow-xl shadow-violet-600/35 hover:shadow-2xl hover:shadow-violet-600/50 hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer border-2 border-white/30"
+          aria-label="Abrir Asistente Mercatto AI"
+          title="Mercatto AI"
         >
-          <div className="relative">
-            <div className="w-9 h-9 rounded-full bg-indigo-600/30 backdrop-blur-md flex items-center justify-center text-indigo-400">
-              <Sparkles size={18} />
-            </div>
-            <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-slate-900 rounded-full animate-pulse" />
-          </div>
-          <div className="text-left pr-1">
-            <span className="text-[10px] font-bold text-indigo-300 block uppercase tracking-wider leading-none">
-              Mercatto
-            </span>
-            <span className="text-xs font-bold text-white block">
-              Asistente de Atención
-            </span>
+          <div className="relative flex items-center justify-center">
+            <Sparkles size={24} className="text-white group-hover:rotate-12 transition-transform duration-300 drop-shadow" />
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-400 border-2 border-violet-700 rounded-full animate-pulse" />
           </div>
         </button>
       )}
 
-      {/* Ventana de Atención */}
+      {/* Ventana de Atención Flotante */}
       {abierto && (
-        <div className="w-[360px] sm:w-[420px] h-[580px] max-h-[85vh] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden animate-in fade-in duration-200">
+        <div className="w-[360px] sm:w-[420px] h-[600px] max-h-[88vh] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 backdrop-blur-sm">
           
-          {/* Header Institucional Mercatto */}
-          <div className="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+          {/* Header Elegante Degradado */}
+          <div className="px-5 py-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between border-b border-indigo-500/20 shadow-md">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-inner">
-                <Sparkles size={20} />
+              <div className="relative">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold shadow-lg shadow-indigo-500/30">
+                  <Sparkles size={20} />
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-bold text-white tracking-wide">Mercatto</h4>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    En línea
+                  <h4 className="text-sm font-bold text-white tracking-wide">Mercatto Bot</h4>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    IA Activa
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-300">Asistencia y Atención al Cliente</p>
+                <p className="text-[11px] text-slate-300 flex items-center gap-1">
+                  <span>Asistente Oficial con Gemini</span>
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={reiniciarConversacion}
+                className="p-2 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition cursor-pointer text-xs"
+                title="Reiniciar conversación"
+              >
+                <RefreshCw size={15} />
+              </button>
               <button
                 onClick={() => setVistaActual(vistaActual === 'menu_opciones' ? 'chat' : 'menu_opciones')}
-                className="p-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer text-xs flex items-center gap-1"
-                title="Ver temas de ayuda"
+                className="p-2 rounded-xl hover:bg-white/10 text-slate-300 hover:text-white transition cursor-pointer text-xs"
+                title="Guía rápida"
               >
                 <HelpCircle size={16} />
               </button>
               <button
                 onClick={() => setAbierto(false)}
-                className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer"
-                title="Cerrar"
+                className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
+                title="Cerrar ventana"
               >
                 <X size={18} />
               </button>
@@ -344,14 +442,17 @@ export const PublicChatbot = () => {
           </div>
 
           {/* Subheader Informativo */}
-          <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-xs">
-            <span className="text-slate-500 dark:text-slate-400 text-[11px]">¿Aún no tienes cuenta?</span>
+          <div className="px-4 py-2 bg-indigo-50/70 dark:bg-slate-800/80 border-b border-indigo-100 dark:border-slate-800 flex items-center justify-between text-xs">
+            <span className="text-slate-600 dark:text-slate-300 text-[11px] font-medium flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              Comisión fija única: <strong className="text-indigo-600 dark:text-indigo-400">4% por venta</strong>
+            </span>
             <Link
               to="/registro"
               onClick={() => setAbierto(false)}
-              className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 text-[11px]"
+              className="font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 flex items-center gap-1 text-[11px]"
             >
-              <span>Registrarse gratis</span>
+              <span>Vende gratis</span>
               <ExternalLink size={10} />
             </Link>
           </div>
@@ -359,10 +460,10 @@ export const PublicChatbot = () => {
           {/* Contenido Dinámico: Chat o Menú Temas */}
           {vistaActual === 'menu_opciones' ? (
             /* Vista del Menú de Temas Frecuentes */
-            <div className="flex-1 p-4 overflow-y-auto space-y-2.5 bg-slate-50/50 dark:bg-slate-950/40">
+            <div className="flex-1 p-4 overflow-y-auto space-y-2.5 bg-slate-50/70 dark:bg-slate-950/40">
               <div className="flex items-center justify-between pb-1">
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                  Temas de Asistencia
+                  Temas Frecuentes
                 </span>
                 <button
                   onClick={() => setVistaActual('chat')}
@@ -379,11 +480,7 @@ export const PublicChatbot = () => {
                     <button
                       key={op.id}
                       onClick={() => seleccionarOpcion(op.id)}
-                      className={`w-full p-3 rounded-2xl border text-left transition-all duration-200 hover:scale-[1.01] cursor-pointer flex items-center justify-between gap-3 ${
-                        op.destacado
-                          ? 'bg-purple-50/50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800 hover:border-purple-300'
-                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700'
-                      }`}
+                      className="w-full p-3 rounded-2xl border text-left transition-all duration-200 hover:scale-[1.01] cursor-pointer flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 shadow-xs"
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${op.color}`}>
@@ -513,7 +610,7 @@ export const PublicChatbot = () => {
             /* Vista del Historial de Chat */
             <div
               ref={mensajesContainerRef}
-              className="flex-1 p-4 overflow-y-auto space-y-3.5 text-xs bg-slate-50/50 dark:bg-slate-950/40"
+              className="flex-1 p-4 overflow-y-auto space-y-3.5 text-xs bg-slate-50/60 dark:bg-slate-950/50"
             >
               {mensajes.map((m) => {
                 const esBot = m.remitente === 'bot'
@@ -522,109 +619,125 @@ export const PublicChatbot = () => {
                     key={m.id}
                     className={`flex flex-col ${esBot ? 'items-start' : 'items-end'}`}
                   >
-                    <div
-                      className={`max-w-[88%] p-3.5 rounded-2xl leading-relaxed whitespace-pre-line shadow-xs ${
-                        esBot
-                          ? 'bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-slate-800 dark:text-slate-100 rounded-tl-xs'
-                          : 'bg-indigo-600 text-white rounded-tr-xs'
-                      }`}
-                    >
-                      {m.texto}
-
-                      {/* Tarjetas de Atención al Cliente dentro del mensaje */}
-                      {m.esOpcionSoporte && (
-                        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/60 space-y-2">
-                          {/* Opción 1: WhatsApp Institucional */}
-                          <a
-                            href={`https://wa.me/${WHATSAPP_SOPORTE}?text=${MENSAJE_WHATSAPP}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition cursor-pointer shadow-xs"
-                          >
-                            <div className="flex items-center gap-2">
-                              <MessageCircle size={15} />
-                              <span>Atención por WhatsApp</span>
-                            </div>
-                            <ExternalLink size={12} />
-                          </a>
-
-                          {/* Opción 2: Formulario de Solicitud */}
-                          <button
-                            onClick={() => setVistaActual('formulario_contacto')}
-                            className="flex items-center justify-between w-full p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-800 dark:text-white font-semibold transition cursor-pointer border border-slate-200 dark:border-slate-600"
-                          >
-                            <div className="flex items-center gap-2">
-                              <Mail size={14} className="text-indigo-600 dark:text-indigo-400" />
-                              <span>Dejar solicitud formal por correo</span>
-                            </div>
-                            <ChevronRight size={13} />
-                          </button>
+                    <div className="flex items-end gap-2 max-w-[90%]">
+                      {esBot && (
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shrink-0 mb-1 shadow-xs">
+                          <Sparkles size={12} />
                         </div>
                       )}
+                      <div
+                        className={`p-3.5 rounded-2xl leading-relaxed whitespace-pre-line shadow-sm text-xs ${
+                          esBot
+                            ? 'bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700/80 text-slate-800 dark:text-slate-100 rounded-bl-xs'
+                            : 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-br-xs shadow-indigo-500/10'
+                        }`}
+                      >
+                        {renderizarTextoFormateado(m.texto)}
 
-                      {/* Botón sutil para explorar temas si ya leyó una respuesta */}
-                      {m.ofrecerMenu && (
-                        <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700/50">
-                          <button
-                            onClick={() => setVistaActual('menu_opciones')}
-                            className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
-                          >
-                            <HelpCircle size={12} />
-                            <span>Ver otros temas o solicitar asesor</span>
-                          </button>
-                        </div>
-                      )}
+                        {/* Tarjetas de Soporte dentro del mensaje */}
+                        {m.esOpcionSoporte && (
+                          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/60 space-y-2">
+                            <a
+                              href={`https://wa.me/${WHATSAPP_SOPORTE}?text=${MENSAJE_WHATSAPP}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition cursor-pointer shadow-xs"
+                            >
+                              <div className="flex items-center gap-2">
+                                <MessageCircle size={15} />
+                                <span>Hablar por WhatsApp</span>
+                              </div>
+                              <ExternalLink size={12} />
+                            </a>
+
+                            <button
+                              onClick={() => setVistaActual('formulario_contacto')}
+                              className="flex items-center justify-between w-full p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-800 dark:text-white font-semibold transition cursor-pointer border border-slate-200 dark:border-slate-600"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Mail size={14} className="text-indigo-600 dark:text-indigo-400" />
+                                <span>Dejar solicitud por correo</span>
+                              </div>
+                              <ChevronRight size={13} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-[10px] text-slate-400 px-1 mt-1">{m.hora}</span>
+                    <span className="text-[10px] text-slate-400 px-8 mt-1">{m.hora}</span>
                   </div>
                 )
               })}
 
+              {/* Indicador suave de IA Pensando */}
               {escribiendo && (
-                <div className="flex items-center gap-1.5 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-xs w-fit shadow-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce [animation-delay:0.2s]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce [animation-delay:0.4s]" />
+                <div className="flex items-end gap-2">
+                  <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 mb-1">
+                    <Sparkles size={12} />
+                  </div>
+                  <div className="flex items-center gap-1.5 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-bl-xs shadow-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce [animation-delay:0.2s]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-bounce [animation-delay:0.4s]" />
+                  </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* Barra de Acciones y Entrada de Texto (Solo en vista chat) */}
+          {/* Barra de Acciones y Entrada de Texto */}
           {vistaActual === 'chat' && (
-            <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 space-y-2">
-              <div className="flex items-center justify-between px-1">
+            <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+              
+              {/* Chips de Preguntas Frecuentes Rápidas (Scroll invisible suave) */}
+              <div
+                className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
                 <button
                   type="button"
-                  onClick={() => setVistaActual('menu_opciones')}
-                  className="text-[11px] font-bold text-slate-500 hover:text-indigo-600 dark:text-slate-400 flex items-center gap-1 cursor-pointer"
+                  onClick={() => enviarPreguntaRapida('¿Cuánto cobran de comisión a los vendedores?')}
+                  className="px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800 hover:bg-indigo-100 transition whitespace-nowrap cursor-pointer shrink-0"
                 >
-                  <HelpCircle size={12} />
-                  <span>Explorar temas frecuentes</span>
+                  🏷️ ¿Comisiones?
                 </button>
                 <button
                   type="button"
-                  onClick={() => seleccionarOpcion('soporte_directo')}
-                  className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                  onClick={() => enviarPreguntaRapida('¿Cómo abro mi tienda en Mercatto?')}
+                  className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition whitespace-nowrap cursor-pointer shrink-0"
                 >
-                  <Headphones size={12} />
-                  <span>Atención al Cliente</span>
+                  🏪 Abrir tienda
+                </button>
+                <button
+                  type="button"
+                  onClick={() => enviarPreguntaRapida('¿Qué métodos de pago reciben?')}
+                  className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition whitespace-nowrap cursor-pointer shrink-0"
+                >
+                  💳 Métodos de pago
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVistaActual('formulario_contacto')}
+                  className="px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800 hover:bg-emerald-100 transition whitespace-nowrap cursor-pointer shrink-0"
+                >
+                  📞 Asesor humano
                 </button>
               </div>
 
+              {/* Input Moderno Píldora */}
               <form onSubmit={handleEnviarMensaje} className="flex items-center gap-2">
                 <input
                   type="text"
                   value={mensajeInput}
                   onChange={(e) => setMensajeInput(e.target.value)}
-                  placeholder="Escribe tu consulta..."
-                  className="flex-1 text-xs px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-100"
+                  placeholder="Pregúntale a Mercatto Bot..."
+                  className="flex-1 text-xs px-4 py-3 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-slate-100 transition shadow-inner"
                 />
                 <button
                   type="submit"
                   disabled={!mensajeInput.trim()}
-                  className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white transition cursor-pointer shrink-0 shadow-sm"
-                  title="Enviar mensaje"
+                  className="p-3 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-40 text-white transition-all duration-200 cursor-pointer shrink-0 shadow-md shadow-indigo-500/25 active:scale-95 hover:scale-105"
+                  title="Enviar consulta"
                 >
                   <Send size={15} />
                 </button>

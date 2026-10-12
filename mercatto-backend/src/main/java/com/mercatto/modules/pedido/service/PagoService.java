@@ -24,6 +24,26 @@ public class PagoService {
     @Autowired private WompiService wompiService;
 
     @Transactional
+    public Map<String, Object> iniciarPagoInvitado(Long pedidoId, String metodoStr) {
+        Pedido pedido = pedidoRepo.findById(pedidoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
+
+        if (pedido.getEstado() != Pedido.EstadoPedido.PENDIENTE) {
+            throw new BadRequestException("El pedido ya se encuentra en estado: " + pedido.getEstado());
+        }
+
+        return iniciarPago(pedidoId, metodoStr, pedido.getComprador());
+    }
+
+    @Transactional
+    public Map<String, Object> confirmarPagoInvitado(Long pedidoId, String transaccionId) {
+        Pedido pedido = pedidoRepo.findById(pedidoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
+
+        return confirmarPago(pedidoId, transaccionId, pedido.getComprador());
+    }
+
+    @Transactional
     public Map<String, Object> iniciarPago(Long pedidoId, String metodoStr, Usuario usuario) {
         Pedido pedido = pedidoRepo.findById(pedidoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));

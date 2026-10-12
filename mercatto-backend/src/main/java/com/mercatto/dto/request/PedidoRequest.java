@@ -9,6 +9,11 @@ public class PedidoRequest {
     private Long direccionId;
     private DireccionDTO nuevaDireccion;
 
+    // Campos opcionales para compradores invitados (Guest Checkout)
+    private String emailInvitado;
+    private String nombreInvitado;
+    private String telefonoInvitado;
+
     @NotEmpty(message = "El pedido debe contener al menos un producto")
     private List<ItemDTO> items;
 
@@ -23,6 +28,15 @@ public class PedidoRequest {
 
     public DireccionDTO getNuevaDireccion() { return nuevaDireccion; }
     public void setNuevaDireccion(DireccionDTO nuevaDireccion) { this.nuevaDireccion = nuevaDireccion; }
+
+    public String getEmailInvitado() { return emailInvitado; }
+    public void setEmailInvitado(String emailInvitado) { this.emailInvitado = emailInvitado; }
+
+    public String getNombreInvitado() { return nombreInvitado; }
+    public void setNombreInvitado(String nombreInvitado) { this.nombreInvitado = nombreInvitado; }
+
+    public String getTelefonoInvitado() { return telefonoInvitado; }
+    public void setTelefonoInvitado(String telefonoInvitado) { this.telefonoInvitado = telefonoInvitado; }
 
     public List<ItemDTO> getItems() { return items; }
     public void setItems(List<ItemDTO> items) { this.items = items; }

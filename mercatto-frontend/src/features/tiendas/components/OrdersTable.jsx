@@ -21,18 +21,27 @@ export const OrdersTable = ({ pedidos = [], onPedidoActualizado }) => {
   const handleActualizarEstado = async (id, estado, tracking = null, carrier = null) => {
     try {
       await pedidoService.actualizarEstado(id, { estado, guia: tracking, empresa: carrier })
-      success('Estado del pedido actualizado')
+      success('Estado del pedido actualizado exitosamente')
       if (onPedidoActualizado) onPedidoActualizado()
-    } catch {
-      error('Error al actualizar estado')
+    } catch (err) {
+      const msg = err.response?.data?.mensaje || err.response?.data?.message || 'Error al actualizar el estado del pedido'
+      error(msg)
     }
   }
 
   const handleEnviarPedido = async (e) => {
     e.preventDefault()
+    if (!empresa.trim()) {
+      error('Por favor ingresa o selecciona la empresa transportadora.')
+      return
+    }
+    if (!guia.trim() || guia.trim().length < 3) {
+      error('Por favor ingresa un número de guía válido (mínimo 3 caracteres).')
+      return
+    }
     setLoading(true)
     try {
-      await handleActualizarEstado(modalEnvio.id, 'ENVIADO', guia, empresa)
+      await handleActualizarEstado(modalEnvio.id, 'ENVIADO', guia.trim(), empresa.trim())
       setModalEnvio(null)
       setGuia('')
     } finally {

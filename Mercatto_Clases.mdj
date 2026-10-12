@@ -1,0 +1,1059 @@
+{
+  "_type": "Project",
+  "_id": "AAAAAAF-mercatto-project-root",
+  "name": "Mercatto Marketplace Architecture",
+  "ownedElements": [
+    {
+      "_type": "UMLModel",
+      "_id": "AAAAAAF-mercatto-model-root",
+      "_parent": {
+        "": "AAAAAAF-mercatto-project-root"
+      },
+      "name": "Mercatto Domain Model",
+      "ownedElements": [
+        {
+          "_type": "UMLClassDiagram",
+          "_id": "AAAAAAF-diagram-clases-mercatto",
+          "_parent": {
+            "": "AAAAAAF-mercatto-model-root"
+          },
+          "name": "Diagrama de Clases - Mercatto",
+          "defaultDiagram": true,
+          "visible": true,
+          "ownedViews": [
+            {
+              "_type": "UMLPackageView",
+              "_id": "VIEW-pkg-usuario",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-pkg-usuario"
+              },
+              "visible": true,
+              "left": 40,
+              "top": 40,
+              "width": 530,
+              "height": 360,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLPackageView",
+              "_id": "VIEW-pkg-vendedor",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-pkg-vendedor"
+              },
+              "visible": true,
+              "left": 600,
+              "top": 40,
+              "width": 530,
+              "height": 360,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLPackageView",
+              "_id": "VIEW-pkg-producto",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-pkg-producto"
+              },
+              "visible": true,
+              "left": 600,
+              "top": 430,
+              "width": 530,
+              "height": 420,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLPackageView",
+              "_id": "VIEW-pkg-pedido",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-pkg-pedido"
+              },
+              "visible": true,
+              "left": 40,
+              "top": 430,
+              "width": 530,
+              "height": 420,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLPackageView",
+              "_id": "VIEW-pkg-soporte",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-pkg-soporte"
+              },
+              "visible": true,
+              "left": 40,
+              "top": 880,
+              "width": 530,
+              "height": 220,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-Usuario",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-Usuario"
+              },
+              "visible": true,
+              "left": 60,
+              "top": 90,
+              "width": 230,
+              "height": 220,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLEnumerationView",
+              "_id": "VIEW-e-Rol",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-e-Rol"
+              },
+              "visible": true,
+              "left": 320,
+              "top": 90,
+              "width": 130,
+              "height": 110,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-Direccion",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-Direccion"
+              },
+              "visible": true,
+              "left": 320,
+              "top": 220,
+              "width": 230,
+              "height": 160,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-Vendedor",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-Vendedor"
+              },
+              "visible": true,
+              "left": 620,
+              "top": 90,
+              "width": 260,
+              "height": 240,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLEnumerationView",
+              "_id": "VIEW-e-EstadoVendedor",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-e-EstadoVendedor"
+              },
+              "visible": true,
+              "left": 920,
+              "top": 90,
+              "width": 170,
+              "height": 130,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-Producto",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-Producto"
+              },
+              "visible": true,
+              "left": 620,
+              "top": 480,
+              "width": 260,
+              "height": 240,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-Categoria",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-Categoria"
+              },
+              "visible": true,
+              "left": 920,
+              "top": 480,
+              "width": 190,
+              "height": 120,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-ProductoVariante",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-ProductoVariante"
+              },
+              "visible": true,
+              "left": 920,
+              "top": 630,
+              "width": 190,
+              "height": 150,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-Pedido",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-Pedido"
+              },
+              "visible": true,
+              "left": 60,
+              "top": 480,
+              "width": 240,
+              "height": 230,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-PedidoItem",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-PedidoItem"
+              },
+              "visible": true,
+              "left": 330,
+              "top": 480,
+              "width": 220,
+              "height": 130,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-Pago",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-Pago"
+              },
+              "visible": true,
+              "left": 60,
+              "top": 730,
+              "width": 240,
+              "height": 100,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-Cupon",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-Cupon"
+              },
+              "visible": true,
+              "left": 330,
+              "top": 640,
+              "width": 220,
+              "height": 130,
+              "autoResize": false
+            },
+            {
+              "_type": "UMLClassView",
+              "_id": "VIEW-c-TicketSoporte",
+              "_parent": {
+                "": "AAAAAAF-diagram-clases-mercatto"
+              },
+              "model": {
+                "": "AAAAAAF-c-TicketSoporte"
+              },
+              "visible": true,
+              "left": 60,
+              "top": 930,
+              "width": 240,
+              "height": 130,
+              "autoResize": false
+            }
+          ]
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "AAAAAAF-pkg-usuario",
+          "_parent": {
+            "": "AAAAAAF-mercatto-model-root"
+          },
+          "name": "com.mercatto.modules.usuario",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-Usuario",
+              "_parent": {
+                "": "AAAAAAF-pkg-usuario"
+              },
+              "name": "Usuario",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "u1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "u2",
+                  "name": "nombre",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "u3",
+                  "name": "email",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "u4",
+                  "name": "password",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "u5",
+                  "name": "rol",
+                  "type": "Rol",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "u6",
+                  "name": "activo",
+                  "type": "Boolean",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "u7",
+                  "name": "telefono",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "u8",
+                  "name": "fechaCreacion",
+                  "type": "LocalDateTime",
+                  "visibility": "private"
+                }
+              ],
+              "operations": [
+                {
+                  "_type": "UMLOperation",
+                  "_id": "uo1",
+                  "name": "registrar",
+                  "visibility": "public"
+                },
+                {
+                  "_type": "UMLOperation",
+                  "_id": "uo2",
+                  "name": "autenticar",
+                  "visibility": "public"
+                },
+                {
+                  "_type": "UMLOperation",
+                  "_id": "uo3",
+                  "name": "cambiarPassword",
+                  "visibility": "public"
+                }
+              ]
+            },
+            {
+              "_type": "UMLEnumeration",
+              "_id": "AAAAAAF-e-Rol",
+              "_parent": {
+                "": "AAAAAAF-pkg-usuario"
+              },
+              "name": "Rol",
+              "literals": [
+                {
+                  "_type": "UMLEnumerationLiteral",
+                  "_id": "r1",
+                  "name": "COMPRADOR"
+                },
+                {
+                  "_type": "UMLEnumerationLiteral",
+                  "_id": "r2",
+                  "name": "VENDEDOR"
+                },
+                {
+                  "_type": "UMLEnumerationLiteral",
+                  "_id": "r3",
+                  "name": "ADMIN"
+                }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-Direccion",
+              "_parent": {
+                "": "AAAAAAF-pkg-usuario"
+              },
+              "name": "Direccion",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "d1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "d2",
+                  "name": "nombreCompleto",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "d3",
+                  "name": "direccion",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "d4",
+                  "name": "barrio",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "d5",
+                  "name": "ciudad",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "d6",
+                  "name": "departamento",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "d7",
+                  "name": "telefono",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "d8",
+                  "name": "esPredeterminada",
+                  "type": "Boolean",
+                  "visibility": "private"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "AAAAAAF-pkg-vendedor",
+          "_parent": {
+            "": "AAAAAAF-mercatto-model-root"
+          },
+          "name": "com.mercatto.modules.vendedor",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-Vendedor",
+              "_parent": {
+                "": "AAAAAAF-pkg-vendedor"
+              },
+              "name": "Vendedor",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "v1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "v2",
+                  "name": "nombreTienda",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "v3",
+                  "name": "descripcion",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "v4",
+                  "name": "logoUrl",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "v5",
+                  "name": "rutNit",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "v6",
+                  "name": "telefono",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "v7",
+                  "name": "estado",
+                  "type": "EstadoVendedor",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "v8",
+                  "name": "calificacion",
+                  "type": "Double",
+                  "visibility": "private"
+                }
+              ],
+              "operations": [
+                {
+                  "_type": "UMLOperation",
+                  "_id": "vo1",
+                  "name": "solicitarAprobacion",
+                  "visibility": "public"
+                },
+                {
+                  "_type": "UMLOperation",
+                  "_id": "vo2",
+                  "name": "actualizarPerfil",
+                  "visibility": "public"
+                },
+                {
+                  "_type": "UMLOperation",
+                  "_id": "vo3",
+                  "name": "obtenerEstadisticas",
+                  "visibility": "public"
+                }
+              ]
+            },
+            {
+              "_type": "UMLEnumeration",
+              "_id": "AAAAAAF-e-EstadoVendedor",
+              "_parent": {
+                "": "AAAAAAF-pkg-vendedor"
+              },
+              "name": "EstadoVendedor",
+              "literals": [
+                {
+                  "_type": "UMLEnumerationLiteral",
+                  "_id": "ev1",
+                  "name": "PENDIENTE"
+                },
+                {
+                  "_type": "UMLEnumerationLiteral",
+                  "_id": "ev2",
+                  "name": "APROBADO"
+                },
+                {
+                  "_type": "UMLEnumerationLiteral",
+                  "_id": "ev3",
+                  "name": "RECHAZADO"
+                },
+                {
+                  "_type": "UMLEnumerationLiteral",
+                  "_id": "ev4",
+                  "name": "SUSPENDIDO"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "AAAAAAF-pkg-producto",
+          "_parent": {
+            "": "AAAAAAF-mercatto-model-root"
+          },
+          "name": "com.mercatto.modules.producto",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-Categoria",
+              "_parent": {
+                "": "AAAAAAF-pkg-producto"
+              },
+              "name": "Categoria",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "cat1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "cat2",
+                  "name": "nombre",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "cat3",
+                  "name": "slug",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "cat4",
+                  "name": "activo",
+                  "type": "Boolean",
+                  "visibility": "private"
+                }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-Producto",
+              "_parent": {
+                "": "AAAAAAF-pkg-producto"
+              },
+              "name": "Producto",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "p1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "p2",
+                  "name": "titulo",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "p3",
+                  "name": "slug",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "p4",
+                  "name": "descripcion",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "p5",
+                  "name": "precio",
+                  "type": "BigDecimal",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "p6",
+                  "name": "precioOferta",
+                  "type": "BigDecimal",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "p7",
+                  "name": "stockTotal",
+                  "type": "Integer",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "p8",
+                  "name": "activo",
+                  "type": "Boolean",
+                  "visibility": "private"
+                }
+              ],
+              "operations": [
+                {
+                  "_type": "UMLOperation",
+                  "_id": "po1",
+                  "name": "descontarStock",
+                  "visibility": "public"
+                },
+                {
+                  "_type": "UMLOperation",
+                  "_id": "po2",
+                  "name": "reponerStock",
+                  "visibility": "public"
+                }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-ProductoVariante",
+              "_parent": {
+                "": "AAAAAAF-pkg-producto"
+              },
+              "name": "ProductoVariante",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pv1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pv2",
+                  "name": "sku",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pv3",
+                  "name": "nombre",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pv4",
+                  "name": "precio",
+                  "type": "BigDecimal",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pv5",
+                  "name": "stock",
+                  "type": "Integer",
+                  "visibility": "private"
+                }
+              ],
+              "operations": [
+                {
+                  "_type": "UMLOperation",
+                  "_id": "pvo1",
+                  "name": "descontarStock",
+                  "visibility": "public"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "AAAAAAF-pkg-pedido",
+          "_parent": {
+            "": "AAAAAAF-mercatto-model-root"
+          },
+          "name": "com.mercatto.modules.pedido",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-Pedido",
+              "_parent": {
+                "": "AAAAAAF-pkg-pedido"
+              },
+              "name": "Pedido",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "ped1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "ped2",
+                  "name": "numeroPedido",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "ped3",
+                  "name": "subtotal",
+                  "type": "BigDecimal",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "ped4",
+                  "name": "costoEnvio",
+                  "type": "BigDecimal",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "ped5",
+                  "name": "total",
+                  "type": "BigDecimal",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "ped6",
+                  "name": "direccionEnvio",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "ped7",
+                  "name": "fechaCreacion",
+                  "type": "LocalDateTime",
+                  "visibility": "private"
+                }
+              ],
+              "operations": [
+                {
+                  "_type": "UMLOperation",
+                  "_id": "pedo1",
+                  "name": "calcularTotales",
+                  "visibility": "public"
+                }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-PedidoItem",
+              "_parent": {
+                "": "AAAAAAF-pkg-pedido"
+              },
+              "name": "PedidoItem",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pi1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pi2",
+                  "name": "cantidad",
+                  "type": "Integer",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pi3",
+                  "name": "precioUnitario",
+                  "type": "BigDecimal",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pi4",
+                  "name": "subtotal",
+                  "type": "BigDecimal",
+                  "visibility": "private"
+                }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-Pago",
+              "_parent": {
+                "": "AAAAAAF-pkg-pedido"
+              },
+              "name": "Pago",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pag1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pag2",
+                  "name": "referenciaPago",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "pag3",
+                  "name": "monto",
+                  "type": "BigDecimal",
+                  "visibility": "private"
+                }
+              ],
+              "operations": [
+                {
+                  "_type": "UMLOperation",
+                  "_id": "pago1",
+                  "name": "confirmarPago",
+                  "visibility": "public"
+                }
+              ]
+            },
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-Cupon",
+              "_parent": {
+                "": "AAAAAAF-pkg-pedido"
+              },
+              "name": "Cupon",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "cup1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "cup2",
+                  "name": "codigo",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "cup3",
+                  "name": "porcentajeDescuento",
+                  "type": "Double",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "cup4",
+                  "name": "activo",
+                  "type": "Boolean",
+                  "visibility": "private"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "UMLPackage",
+          "_id": "AAAAAAF-pkg-soporte",
+          "_parent": {
+            "": "AAAAAAF-mercatto-model-root"
+          },
+          "name": "com.mercatto.modules.soporte",
+          "ownedElements": [
+            {
+              "_type": "UMLClass",
+              "_id": "AAAAAAF-c-TicketSoporte",
+              "_parent": {
+                "": "AAAAAAF-pkg-soporte"
+              },
+              "name": "TicketSoporte",
+              "attributes": [
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "tic1",
+                  "name": "id",
+                  "type": "Long",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "tic2",
+                  "name": "radicado",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "tic3",
+                  "name": "asunto",
+                  "type": "String",
+                  "visibility": "private"
+                },
+                {
+                  "_type": "UMLAttribute",
+                  "_id": "tic4",
+                  "name": "estado",
+                  "type": "String",
+                  "visibility": "private"
+                }
+              ],
+              "operations": [
+                {
+                  "_type": "UMLOperation",
+                  "_id": "tico1",
+                  "name": "cerrarTicket",
+                  "visibility": "public"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

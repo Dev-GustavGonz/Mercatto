@@ -69,8 +69,19 @@ export const ProductForm = ({ productoInicial = null, onGuardado, onCancelar }) 
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (!titulo || titulo.trim().length < 3) {
+      error('El título debe tener al menos 3 caracteres')
+      return
+    }
+
     if (!categoriaId) {
       error('Selecciona una categoría para el producto')
+      return
+    }
+
+    if (!descripcion || descripcion.trim().length < 10) {
+      error('La descripción debe tener al menos 10 caracteres')
       return
     }
 
@@ -79,13 +90,13 @@ export const ProductForm = ({ productoInicial = null, onGuardado, onCancelar }) 
     const stockNum = Number(stock)
 
     if (isNaN(precioNum) || precioNum <= 0) {
-      error('El precio normal debe ser un valor mayor a 0')
+      error('El precio normal debe ser un valor numérico mayor a 0')
       return
     }
 
     if (precioOfertaNum !== null) {
       if (isNaN(precioOfertaNum) || precioOfertaNum <= 0) {
-        error('El precio de oferta debe ser mayor a 0')
+        error('El precio de oferta debe ser un valor numérico mayor a 0')
         return
       }
       if (precioOfertaNum >= precioNum) {
@@ -97,6 +108,29 @@ export const ProductForm = ({ productoInicial = null, onGuardado, onCancelar }) 
     if (isNaN(stockNum) || stockNum < 0) {
       error('El stock disponible no puede ser negativo')
       return
+    }
+
+    const imagenesValidas = imagenes.filter(url => url && typeof url === 'string' && url.trim().length > 0)
+    if (imagenesValidas.length === 0) {
+      error('Agrega al menos una imagen para tu producto')
+      return
+    }
+
+    // Validar variantes si existen
+    for (let i = 0; i < variantes.length; i++) {
+      const v = variantes[i]
+      if (v.nombre && v.nombre.trim()) {
+        const vPrecio = Number(v.precio)
+        const vStock = Number(v.stock)
+        if (isNaN(vPrecio) || vPrecio <= 0) {
+          error(`La variante "${v.nombre}" debe tener un precio mayor a 0`)
+          return
+        }
+        if (isNaN(vStock) || vStock < 0) {
+          error(`La variante "${v.nombre}" no puede tener stock negativo`)
+          return
+        }
+      }
     }
 
     setLoading(true)

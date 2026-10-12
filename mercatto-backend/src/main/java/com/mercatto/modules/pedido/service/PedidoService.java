@@ -50,6 +50,58 @@ public class PedidoService {
     @Autowired private CuponRepository cuponRepo;
     @Autowired private PagoRepository pagoRepo;
     @Autowired private EmailService emailService;
+    @Autowired private com.mercatto.modules.usuario.repository.UsuarioRepository usuarioRepo;
+    @Autowired private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public PedidoResponse crearPedidoInvitado(PedidoRequest req) {
+        if (req.getEmailInvitado() == null || req.getEmailInvitado().trim().isEmpty()) {
+            throw new BadRequestException("El correo electrónico es obligatorio para compras como invitado.");
+        }
+
+        String email = req.getEmailInvitado().trim().toLowerCase();
+        // Validación estricta de formato email
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new BadRequestException("El formato del correo electrónico es inválido.");
+        }
+
+        String nombre = req.getNombreInvitado() != null && !req.getNombreInvitado().trim().isEmpty()
+                ? req.getNombreInvitado().trim()
+                : (req.getNuevaDireccion() != null && req.getNuevaDireccion().getNombreCompleto() != null
+                    ? req.getNuevaDireccion().getNombreCompleto().trim()
+                    : "Comprador Invitado");
+
+        String telefono = req.getTelefonoInvitado() != null && !req.getTelefonoInvitado().trim().isEmpty()
+                ? req.getTelefonoInvitado().trim()
+                : (req.getNuevaDireccion() != null ? req.getNuevaDireccion().getTelefono() : null);
+
+        // Si el usuario ya existe con ese email, asociamos el pedido a su cuenta existente
+        Usuario comprador = usuarioRepo.findByEmail(email).orElseGet(() -> {
+            Usuario nuevo = new Usuario();
+            nuevo.setEmail(email);
+            nuevo.setNombre(nombre);
+            nuevo.setTelefono(telefono);
+            nuevo.setRol(Usuario.Rol.COMPRADOR);
+            nuevo.setActivo(true);
+            nuevo.setEmailVerificado(false);
+            nuevo.setFechaRegistro(LocalDateTime.now());
+            // Generar password seguro encriptado
+            nuevo.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            return usuarioRepo.save(nuevo);
+        });
+
+        // Asegurar que la dirección tenga el nombre y teléfono si vinieron vacíos
+        if (req.getNuevaDireccion() != null) {
+            if (req.getNuevaDireccion().getNombreCompleto() == null || req.getNuevaDireccion().getNombreCompleto().isEmpty()) {
+                req.getNuevaDireccion().setNombreCompleto(nombre);
+            }
+            if (req.getNuevaDireccion().getTelefono() == null || req.getNuevaDireccion().getTelefono().isEmpty()) {
+                req.getNuevaDireccion().setTelefono(telefono);
+            }
+        }
+
+        return crearPedido(req, comprador);
+    }
 
     @Transactional
     public PedidoResponse crearPedido(PedidoRequest req, Usuario comprador) {
@@ -270,6 +322,21 @@ public class PedidoService {
         return convertirAResponse(pedido);
     }
 
+    public PedidoResponse rastrearPedido(String codigo, String email) {
+        if (codigo == null || codigo.trim().isEmpty() || email == null || email.trim().isEmpty()) {
+            throw new BadRequestException("Debes proporcionar el código de pedido y el correo electrónico.");
+        }
+        Pedido pedido = pedidoRepo.findByCodigo(codigo.trim().toUpperCase())
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró ningún pedido con el código: " + codigo));
+
+        if (pedido.getComprador() == null || pedido.getComprador().getEmail() == null ||
+            !pedido.getComprador().getEmail().equalsIgnoreCase(email.trim())) {
+            throw new BadRequestException("El correo electrónico proporcionado no coincide con el registrado en este pedido.");
+        }
+
+        return convertirAResponse(pedido);
+    }
+
     @Transactional
     public PedidoResponse actualizarEstado(Long id, String nuevoEstadoStr, String guia, String empresa) {
         Pedido pedido = pedidoRepo.findById(id)
@@ -326,7 +393,7 @@ public class PedidoService {
             res.setDireccion(dDto);
         }
 
-        if (p.getItems() != null) {
+        if (p.getItems() != null && !p.getItems().isEmpty()) {
             res.setItems(p.getItems().stream().map(i -> {
                 PedidoResponse.ItemDTO itemDto = new PedidoResponse.ItemDTO();
                 itemDto.setId(i.getId());
@@ -337,10 +404,21 @@ public class PedidoService {
                 itemDto.setPrecioUnitario(i.getPrecioUnitario());
                 itemDto.setCantidad(i.getCantidad());
                 itemDto.setSubtotal(i.getSubtotal());
-                itemDto.setVendedorId(i.getVendedor().getId());
-                itemDto.setNombreTienda(i.getVendedor().getNombreTienda());
+                if (i.getVendedor() != null) {
+                    itemDto.setVendedorId(i.getVendedor().getId());
+                    itemDto.setNombreTienda(i.getVendedor().getNombreTienda());
+                }
                 return itemDto;
             }).collect(Collectors.toList()));
+
+            // Asignar tienda principal al pedido para la auditoría de marketplace
+            p.getItems().stream()
+                .filter(i -> i.getVendedor() != null && i.getVendedor().getNombreTienda() != null)
+                .findFirst()
+                .ifPresent(i -> {
+                    res.setNombreTienda(i.getVendedor().getNombreTienda());
+                    res.setVendedorId(i.getVendedor().getId());
+                });
         }
 
         return res;

@@ -43,6 +43,10 @@ api.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem('mercatto_token')
         localStorage.removeItem('mercatto_user')
+        const rutaActual = window.location.pathname
+        if (rutaActual.startsWith('/admin') || rutaActual.startsWith('/vendedor') || rutaActual.startsWith('/perfil') || rutaActual.startsWith('/panel-vendedor')) {
+          window.location.href = '/login'
+        }
       }
     }
 

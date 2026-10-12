@@ -31,6 +31,16 @@ public class PagoController {
         return ResponseEntity.ok(res);
     }
 
+    // POST /api/pagos/iniciar-invitado (Público para pagos de invitados)
+    @PostMapping("/iniciar-invitado")
+    public ResponseEntity<?> iniciarPagoInvitado(@RequestBody Map<String, Object> req) {
+        Long pedidoId = Long.valueOf(req.get("pedidoId").toString());
+        String metodo = req.getOrDefault("metodo", "WOMPI").toString();
+
+        Map<String, Object> res = pagoService.iniciarPagoInvitado(pedidoId, metodo);
+        return ResponseEntity.ok(res);
+    }
+
     // POST /api/pagos/confirmar
     @PostMapping("/confirmar")
     public ResponseEntity<?> confirmarPago(
@@ -41,6 +51,16 @@ public class PagoController {
         String transaccionId = (String) req.get("transaccionId");
 
         Map<String, Object> res = pagoService.confirmarPago(pedidoId, transaccionId, usuario);
+        return ResponseEntity.ok(res);
+    }
+
+    // POST /api/pagos/confirmar-invitado (Público para confirmar pago de invitado)
+    @PostMapping("/confirmar-invitado")
+    public ResponseEntity<?> confirmarPagoInvitado(@RequestBody Map<String, Object> req) {
+        Long pedidoId = Long.valueOf(req.get("pedidoId").toString());
+        String transaccionId = (String) req.get("transaccionId");
+
+        Map<String, Object> res = pagoService.confirmarPagoInvitado(pedidoId, transaccionId);
         return ResponseEntity.ok(res);
     }
 

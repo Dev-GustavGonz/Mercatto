@@ -5,8 +5,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { useFavorites } from '@/hooks/useFavorites'
 import { productoService } from '@/features/productos'
-import StarRating from '@/components/common/StarRating'
-import { ShoppingCart, Heart, MessageSquare, Store } from 'lucide-react'
+import { formatCurrency } from '@/utils/formatCurrency'
+import { ShoppingCart, Heart, MessageSquare, Store, Star, Zap } from 'lucide-react'
 
 export const ProductCard = ({ producto, onContactClick }) => {
   const { agregarItem } = useCart()
@@ -22,6 +22,19 @@ export const ProductCard = ({ producto, onContactClick }) => {
     producto.imagenes?.[0]?.url ||
     'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=60'
 
+  // Cálculo de descuento real basado únicamente en datos verídicos de la base de datos
+  const tieneDescuentoReal = Boolean(
+    producto.precioOferta && 
+    Number(producto.precioOferta) > 0 && 
+    Number(producto.precioOferta) < Number(producto.precio)
+  )
+
+  const porcentajeDescuento = tieneDescuentoReal
+    ? Math.round(((producto.precio - producto.precioOferta) / producto.precio) * 100)
+    : 0
+
+  const precioFinal = tieneDescuentoReal ? producto.precioOferta : producto.precio
+
   const handleToggleFavorito = async (e) => {
     e.preventDefault()
     e.stopPropagation()
@@ -33,9 +46,9 @@ export const ProductCard = ({ producto, onContactClick }) => {
     try {
       const res = await productoService.toggleFavorito(producto.id)
       toggleFavoriteId(producto.id)
-      success(res.mensaje)
+      success(res?.mensaje || 'Favorito actualizado')
     } catch {
-      // Error manejado
+      // Manejo silencioso
     }
   }
 
@@ -60,89 +73,101 @@ export const ProductCard = ({ producto, onContactClick }) => {
   return (
     <div 
       onClick={() => navigate(`/producto/${producto.id}`)}
-      className="group bg-mercatto-light rounded-3xl p-5 transition-all duration-300 flex flex-col relative h-[380px] hover:-translate-y-1 cursor-pointer select-none"
+      className="group bg-white rounded-3xl p-4 transition-all duration-300 flex flex-col relative h-[390px] border border-slate-100 hover:border-violet-200 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1.5 cursor-pointer select-none"
     >
-      {/* Favorite Button Top Right */}
+      {/* Insignia de descuento real */}
+      {tieneDescuentoReal && (
+        <div className="absolute top-4 left-4 z-10 bg-rose-500 text-white text-[11px] font-black px-2.5 py-1 rounded-full shadow-md flex items-center gap-0.5">
+          <Zap size={11} className="fill-white" />
+          <span>-{porcentajeDescuento}%</span>
+        </div>
+      )}
+
+      {/* Botón de favoritos con efecto pop */}
       <button
         onClick={handleToggleFavorito}
-        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white shadow-sm text-slate-400 hover:text-mercatto-accent hover:scale-110 transition-all cursor-pointer opacity-0 group-hover:opacity-100 sm:opacity-100"
+        className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:scale-115 active:scale-95 transition-all cursor-pointer"
         title="Guardar en favoritos"
       >
-        <Heart size={16} className={esFavorito ? 'text-mercatto-accent fill-mercatto-accent' : ''} />
+        <Heart 
+          size={16} 
+          className={esFavorito ? 'text-rose-500 fill-rose-500' : 'transition-colors'} 
+        />
       </button>
 
-      {/* Rating Badge Top Left */}
-      <div className="absolute top-5 left-5 z-10 bg-white px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
-        <StarRating rating={1} max={1} size={14} className="text-slate-800" />
-        <span className="text-xs font-bold text-slate-800">
-          {producto.calificacion != null ? producto.calificacion.toFixed(1) : '0.0'}
-        </span>
-      </div>
-
-      {/* Image container */}
-      <Link to={`/producto/${producto.id}`} className="relative h-48 w-full flex items-center justify-center mt-6">
+      {/* Contenedor de Imagen con fondo suave */}
+      <div className="relative h-44 w-full flex items-center justify-center rounded-2xl bg-slate-50/80 p-3 mt-4 overflow-hidden group-hover:bg-violet-50/30 transition-colors">
         <img
           src={imagenPrincipal}
           alt={producto.titulo}
-          className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-md"
+          className="max-h-full max-w-full object-contain group-hover:scale-108 transition-transform duration-500 drop-shadow-sm"
           loading="lazy"
         />
-      </Link>
+      </div>
 
-      {/* Content */}
-      <div className="mt-auto flex justify-between items-end">
-        <div className="flex-1 min-w-0 pr-2">
-          {producto.marca && (
-            <span className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase block truncate">
-              {producto.marca}
-            </span>
-          )}
-
-          <Link to={`/producto/${producto.id}`}>
-            <h3 className="text-base sm:text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-mercatto-accent transition-colors" title={producto.titulo}>
-              {producto.titulo}
-            </h3>
-          </Link>
-
-          {producto.vendedor?.nombreTienda && (
-            <Link
-              to={`/tienda/${producto.vendedor.id || producto.vendedor.usuarioId}`}
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition max-w-full truncate mt-0.5"
-              title={`Visitar tienda oficial ${producto.vendedor.nombreTienda}`}
-            >
-              <Store size={11} className="shrink-0" />
-              <span className="truncate">{producto.vendedor.nombreTienda}</span>
-            </Link>
-          )}
-
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-sm font-semibold text-slate-800">${producto.precio}</span>
-            {producto.precioOferta && (
-              <span className="text-xs text-slate-400 line-through">${producto.precioOferta}</span>
-            )}
-            {!producto.precioOferta && (
-              <span className="text-xs text-slate-400 line-through">${(producto.precio * 1.1).toFixed(2)}</span>
-            )}
-          </div>
+      {/* Calificación y Tienda */}
+      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+        <div className="flex items-center gap-1 font-bold text-slate-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
+          <Star size={12} className="text-amber-500 fill-amber-500" />
+          <span>{producto.calificacion != null ? Number(producto.calificacion).toFixed(1) : '5.0'}</span>
         </div>
 
-        {/* Action Buttons Bottom Right */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleContactarDirecto}
-            className="bg-white hover:bg-indigo-50 border border-slate-200 text-slate-500 hover:text-indigo-600 h-10 w-10 rounded-full flex items-center justify-center shadow-sm transition-all hover:scale-105 cursor-pointer"
-            title="Preguntar al vendedor"
+        {producto.vendedor?.nombreTienda && (
+          <span 
+            onClick={(e) => {
+              e.stopPropagation()
+              navigate(`/tienda/${producto.vendedor.id || producto.vendedor.usuarioId}`)
+            }}
+            className="inline-flex items-center gap-1 font-medium text-slate-500 hover:text-violet-600 transition truncate max-w-[140px]"
+            title={`Ver tienda ${producto.vendedor.nombreTienda}`}
           >
-            <MessageSquare size={17} />
-          </button>
+            <Store size={12} className="shrink-0 text-violet-500" />
+            <span className="truncate">{producto.vendedor.nombreTienda}</span>
+          </span>
+        )}
+      </div>
+
+      {/* Título de Producto */}
+      <div className="mt-2 flex-1">
+        <h3 
+          className="text-sm sm:text-base font-bold text-slate-800 line-clamp-2 group-hover:text-violet-600 transition-colors leading-snug"
+          title={producto.titulo}
+        >
+          {producto.titulo}
+        </h3>
+      </div>
+
+      {/* Precios y Botones de Acción */}
+      <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
+        <div>
+          <div className="text-lg font-black text-slate-900 tracking-tight">
+            {formatCurrency(precioFinal)}
+          </div>
+          {tieneDescuentoReal && (
+            <div className="text-xs text-slate-400 line-through">
+              {formatCurrency(producto.precio)}
+            </div>
+          )}
+        </div>
+
+        {/* Botones de Contacto y Compra */}
+        <div className="flex items-center gap-2">
+          {onContactClick && (
+            <button
+              onClick={handleContactarDirecto}
+              className="p-2.5 rounded-full bg-slate-50 hover:bg-violet-50 text-slate-600 hover:text-violet-600 border border-slate-200 transition-all hover:scale-105"
+              title="Preguntar al vendedor"
+            >
+              <MessageSquare size={15} />
+            </button>
+          )}
 
           <button
             onClick={handleAddToCart}
-            className="bg-slate-900 group-hover:bg-mercatto-accent text-white h-10 w-10 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-105 cursor-pointer"
+            className="p-2.5 rounded-full bg-slate-900 group-hover:bg-violet-600 text-white shadow-md hover:shadow-violet-500/25 transition-all hover:scale-110 active:scale-95"
             title="Añadir al Carrito"
           >
-            <ShoppingCart size={18} />
+            <ShoppingCart size={16} />
           </button>
         </div>
       </div>

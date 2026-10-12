@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { ToastProvider } from './context/ToastContext'
@@ -9,20 +9,21 @@ import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 // Common Layout & Components
 import Spinner from './components/common/Spinner'
+import ErrorBoundary from './components/common/ErrorBoundary'
 
 // General / Public Pages
-import { Home, AboutUs, NotFound } from './features/public'
+import { Home, AboutUs, NotFound, Terminos, Privacidad } from './features/public'
 
 // Domain / Feature Entities
 import { Login, Registro } from './features/auth'
 import { Catalogo, DetalleProducto, Categoria, Busqueda, Favoritos } from './features/productos'
-import { Carrito, Checkout, MisPedidos, PagoExitoso, PagoCancelado, CartDrawer } from './features/pedidos'
+import { Carrito, Checkout, MisPedidos, PagoExitoso, PagoCancelado, CartDrawer, RastreoPedido } from './features/pedidos'
 import { DirectorioTiendas, VitrinaTienda, PanelVendedor } from './features/tiendas'
 import { PanelAdmin } from './features/admin'
 import { Perfil } from './features/usuario'
 import { Mensajes } from './features/mensajes'
 import { PublicChatbot } from './features/soporte'
-
+import ScrollToTop from './components/common/ScrollToTop'
 
 // Protected Route Wrapper for Vendor
 const RutaVendedor = ({ children }) => {
@@ -72,7 +73,111 @@ const RutaProtegida = ({ children }) => {
   return children
 }
 
-import ScrollToTop from './components/common/ScrollToTop'
+const AppLayout = () => {
+  const location = useLocation()
+  const esRutaPanel =
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/panel-vendedor') ||
+    location.pathname.startsWith('/vendedor')
+
+  return (
+    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+      <Navbar />
+      <CartDrawer />
+      <PublicChatbot />
+
+      <main className={esRutaPanel ? "flex-1 w-full" : "flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6"}>
+        <Routes>
+          {/* Public Marketplace routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/catalogo" element={<Catalogo />} />
+          <Route path="/categoria/:id" element={<Categoria />} />
+          <Route path="/buscar" element={<Busqueda />} />
+          <Route path="/tiendas" element={<DirectorioTiendas />} />
+          <Route path="/tienda/:id" element={<VitrinaTienda />} />
+          <Route path="/producto/:id" element={<DetalleProducto />} />
+          <Route path="/carrito" element={<Carrito />} />
+          <Route path="/rastreo" element={<RastreoPedido />} />
+          <Route path="/terminos" element={<Terminos />} />
+          <Route path="/privacidad" element={<Privacidad />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Registro />} />
+
+          {/* Buyer protected routes */}
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/pago/exitoso" element={<PagoExitoso />} />
+          <Route path="/pago/cancelado" element={<PagoCancelado />} />
+          <Route
+            path="/perfil"
+            element={
+              <RutaProtegida>
+                <Perfil />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/mis-pedidos"
+            element={
+              <RutaProtegida>
+                <MisPedidos />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/favoritos"
+            element={
+              <RutaProtegida>
+                <Favoritos />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/mensajes"
+            element={
+              <RutaProtegida>
+                <Mensajes />
+              </RutaProtegida>
+            }
+          />
+
+          {/* Vendor Panel */}
+          <Route
+            path="/vendedor"
+            element={
+              <RutaVendedor>
+                <PanelVendedor />
+              </RutaVendedor>
+            }
+          />
+          <Route
+            path="/panel-vendedor"
+            element={
+              <RutaVendedor>
+                <PanelVendedor />
+              </RutaVendedor>
+            }
+          />
+
+          {/* Admin Panel */}
+          <Route
+            path="/admin"
+            element={
+              <RutaAdmin>
+                <PanelAdmin />
+              </RutaAdmin>
+            }
+          />
+
+          {/* 404 Fallback */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+
+      {!esRutaPanel && <Footer />}
+    </div>
+  )
+}
 
 function App() {
   return (
@@ -83,98 +188,9 @@ function App() {
           <FavoritesProvider>
             <CartProvider>
               <LanguageProvider>
-                <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
-                  <Navbar />
-                  <CartDrawer />
-                  <PublicChatbot />
-
-                <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-                  <Routes>
-                    {/* Public Marketplace routes */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/about" element={<AboutUs />} />
-                    <Route path="/catalogo" element={<Catalogo />} />
-                    <Route path="/categoria/:id" element={<Categoria />} />
-                    <Route path="/buscar" element={<Busqueda />} />
-                    <Route path="/tiendas" element={<DirectorioTiendas />} />
-                    <Route path="/tienda/:id" element={<VitrinaTienda />} />
-                    <Route path="/producto/:id" element={<DetalleProducto />} />
-                    <Route path="/carrito" element={<Carrito />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/registro" element={<Registro />} />
-
-                    {/* Buyer protected routes */}
-                    <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/pago/exitoso" element={<PagoExitoso />} />
-                    <Route path="/pago/cancelado" element={<PagoCancelado />} />
-                    <Route
-                      path="/perfil"
-                      element={
-                        <RutaProtegida>
-                          <Perfil />
-                        </RutaProtegida>
-                      }
-                    />
-                    <Route
-                      path="/mis-pedidos"
-                      element={
-                        <RutaProtegida>
-                          <MisPedidos />
-                        </RutaProtegida>
-                      }
-                    />
-                    <Route
-                      path="/favoritos"
-                      element={
-                        <RutaProtegida>
-                          <Favoritos />
-                        </RutaProtegida>
-                      }
-                    />
-                    <Route
-                      path="/mensajes"
-                      element={
-                        <RutaProtegida>
-                          <Mensajes />
-                        </RutaProtegida>
-                      }
-                    />
-
-                    {/* Vendor Panel */}
-                    <Route
-                      path="/vendedor"
-                      element={
-                        <RutaVendedor>
-                          <PanelVendedor />
-                        </RutaVendedor>
-                      }
-                    />
-                    <Route
-                      path="/panel-vendedor"
-                      element={
-                        <RutaVendedor>
-                          <PanelVendedor />
-                        </RutaVendedor>
-                      }
-                    />
-
-                    {/* Admin Panel */}
-                    <Route
-                      path="/admin"
-                      element={
-                        <RutaAdmin>
-                          <PanelAdmin />
-                        </RutaAdmin>
-                      }
-                    />
-
-                    {/* 404 Fallback */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-
-                <Footer />
-              </div>
+                <ErrorBoundary>
+                  <AppLayout />
+                </ErrorBoundary>
               </LanguageProvider>
             </CartProvider>
           </FavoritesProvider>

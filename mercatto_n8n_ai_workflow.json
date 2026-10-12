@@ -1,0 +1,135 @@
+{
+  "name": "Mercatto AI Agent Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mercatto-chat",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "e1a90c12-32cb-4654-8e12-37801844e101",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "mercatto-chat"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "Eres MercattoBot, el asistente inteligente y amigable de 'Mercatto', el marketplace líder en Colombia.\n\nTu misión es ayudar a compradores y visitantes con:\n1. Información sobre cómo comprar de forma segura.\n2. Explicar cómo vender en Mercatto (sin planes ni mensualidades, solo un 4% de comisión fija por venta).\n3. Recomendar productos o categorías (Moda, Tecnología, Hogar, Calzado, Belleza).\n4. Resolver dudas sobre métodos de pago asegurados (Wompi, Tarjetas de crédito/débito, PSE, Nequi y Bancolombia) y envíos con guía a toda Colombia.\n\nDirectrices de tono y estilo:\n- Habla siempre en español con tono cálido, profesional, entusiasta y servicial.\n- Respuestas concisas, bien formateadas con emojis y viñetas cuando sea útil.\n- Si no sabes algo específico sobre el stock exacto en tiempo real, invita amablemente al usuario a explorar el catálogo oficial en Mercatto o contactar al vendedor mediante el chat directo gratuito."
+        }
+      },
+      "id": "b34e8f19-72a1-4d1a-8219-94711314a202",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "c5f21d30-4b11-4829-9e45-d8654a11b303",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        460,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook Trigger').item.json.body.sessionId || 'default' }}"
+      },
+      "id": "a98d3c44-59b8-4c12-9c12-87123910c404",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        580,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"reply\": {{ JSON.stringify($json.output) }}\n}",
+        "options": {}
+      },
+      "id": "f87e1a22-90ab-41c3-88cd-58190284e505",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        840,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

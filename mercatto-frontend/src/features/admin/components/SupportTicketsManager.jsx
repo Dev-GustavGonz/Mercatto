@@ -52,7 +52,14 @@ export const SupportTicketsManager = () => {
 
   const handleResponder = async (e) => {
     e.preventDefault()
-    if (!ticketSeleccionado || !respuestaTexto.trim()) return
+    if (!ticketSeleccionado) {
+      mostrarError('Por favor selecciona un ticket para responder.')
+      return
+    }
+    if (!respuestaTexto.trim() || respuestaTexto.trim().length < 5) {
+      mostrarError('Por favor redacta una respuesta clara (mínimo 5 caracteres).')
+      return
+    }
 
     setEnviandoRespuesta(true)
     try {
@@ -66,7 +73,7 @@ export const SupportTicketsManager = () => {
       cargarTickets()
     } catch (err) {
       console.error('Error respondiendo ticket:', err)
-      mostrarError(err.response?.data?.message || 'Error al responder el ticket')
+      mostrarError(err.response?.data?.message || err.response?.data?.mensaje || 'Error al responder el ticket')
     } finally {
       setEnviandoRespuesta(false)
     }

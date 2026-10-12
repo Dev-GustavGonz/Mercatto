@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
@@ -76,19 +76,19 @@ export const Mensajes = () => {
   useEffect(() => {
     if (!usuario?.id) return
 
-    // TÃ³pico a escuchar: si es ADMIN escucha el global, si no, escucha sus propios mensajes
-    const topic = usuario.rol === 'ADMIN' 
+    // Tópico a escuchar: si es ADMIN escucha el global, si no, escucha sus propios mensajes
+    const topic = usuario?.rol === 'ADMIN' 
       ? '/topic/mensajes/admin' 
-      : `/topic/mensajes/${usuario.id}`
+      : `/topic/mensajes/${usuario?.id}`
 
     const desuscribir = wsService.suscribir(topic, (nuevoMsg) => {
       if (!nuevoMsg || !nuevoMsg.id) return
 
-      // Si el mensaje pertenece a la conversaciÃ³n actualmente abierta en pantalla
+      // Si el mensaje pertenece a la conversación actualmente abierta en pantalla
       setContactoActivo(currentContacto => {
         if (!currentContacto) return currentContacto
 
-        const esAdmin = usuario.rol === 'ADMIN'
+        const esAdmin = usuario?.rol === 'ADMIN'
         let perteneceAEstaConversacion = false
 
         if (esAdmin) {

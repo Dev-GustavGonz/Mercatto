@@ -76,23 +76,32 @@ export const VendorProfile = ({ perfil, onActualizado, onPerfilActualizado }) =>
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!nombreTienda.trim() || nombreTienda.trim().length < 3) {
+      error('El nombre comercial de la tienda debe tener al menos 3 caracteres.')
+      return
+    }
+    if (ciudad && ciudad.trim().length > 0 && ciudad.trim().length < 2) {
+      error('Por favor ingresa una ciudad de despacho válida.')
+      return
+    }
     setLoading(true)
     try {
       await vendedorService.actualizarPerfil({
-        nombreTienda,
-        descripcion,
-        logoUrl,
-        portadaUrl,
-        ciudad,
-        direccion,
-        cuentaBancaria,
-        banco,
+        nombreTienda: nombreTienda.trim(),
+        descripcion: descripcion.trim(),
+        logoUrl: logoUrl.trim(),
+        portadaUrl: portadaUrl.trim(),
+        ciudad: ciudad.trim(),
+        direccion: direccion.trim(),
+        cuentaBancaria: cuentaBancaria.trim(),
+        banco: banco.trim(),
       })
       success('¡Perfil e imágenes de tu tienda actualizados con éxito!')
       if (onActualizado) onActualizado()
       if (onPerfilActualizado) onPerfilActualizado()
-    } catch {
-      error('Error al actualizar datos de la tienda')
+    } catch (err) {
+      const msg = err.response?.data?.mensaje || err.response?.data?.message || 'Error al actualizar datos de la tienda'
+      error(msg)
     } finally {
       setLoading(false)
     }
