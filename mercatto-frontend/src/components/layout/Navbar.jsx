@@ -113,220 +113,220 @@ export const Navbar = () => {
 
   return (
     <header 
-      className={`sticky top-0 z-50 w-full pt-3 px-4 sm:px-6 lg:px-8 pointer-events-none transition-all duration-300 ease-in-out ${
+      className={`sticky top-0 z-50 w-full bg-white/95 backdrop-blur-xl transition-all duration-300 ease-in-out ${
         navVisible || menuMobile 
           ? 'translate-y-0 opacity-100' 
-          : '-translate-y-28 opacity-0 pointer-events-none'
+          : '-translate-y-full opacity-0 pointer-events-none'
       }`}
     >
-      {/* CÁPSULA FLOTANTE ULTRA MODERNA (GLASSMORPHISM) */}
-      <div className="max-w-[1440px] mx-auto bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-full shadow-lg shadow-violet-500/5 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4 pointer-events-auto transition-all">
+      {/* BARRA DE NAVEGACIÓN FULL-WIDTH LIMPIA SIN BORDES DE CAJA */}
+      <div className="w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-4 sm:gap-6 pointer-events-auto transition-all">
         
-        {/* LOGO OFICIAL MERCATTO */}
-        <Link 
-          to="/" 
-          className="flex items-center shrink-0 transition-transform"
-          title="Ir al inicio de Mercatto"
-        >
-          <MercattoLogo />
-        </Link>
+        {/* BLOQUE IZQUIERDO: LOGO + DIVISOR SUTIL + NAVEGACIÓN EDITORIAL */}
+        <div className="flex items-center gap-4 lg:gap-5 shrink-0">
+          {/* LOGO OFICIAL MERCATTO */}
+          <Link 
+            to="/" 
+            className="flex items-center shrink-0 transition-transform"
+            title="Ir al inicio de Mercatto"
+          >
+            <MercattoLogo />
+          </Link>
+
+          <span className="hidden lg:block h-5 w-px bg-slate-200/80" />
+
+          {/* ENLACES SUPERIORES SEGÚN EL ROL DEL USUARIO */}
+          <nav className="hidden lg:flex items-center gap-1 text-[13.5px] font-semibold text-slate-600">
+            
+            {/* 1. Catálogo desplegable (disponible para todos para inspeccionar productos) */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setDropdownShop(true)}
+              onMouseLeave={() => setDropdownShop(false)}
+            >
+              <button 
+                onClick={() => setDropdownShop(!dropdownShop)}
+                className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+                  location.pathname.startsWith('/catalogo')
+                    ? 'text-emerald-800 bg-emerald-50/90 font-bold'
+                    : 'hover:text-slate-950 hover:bg-slate-100/80'
+                }`}
+              >
+                <span>Catálogo</span>
+                <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${dropdownShop ? 'rotate-180 text-emerald-600' : ''}`} />
+              </button>
+
+              {dropdownShop && (
+                <div className="absolute top-full left-0 pt-2 w-[420px] z-50 animate-in fade-in">
+                  <div className="bg-white border border-slate-100 rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.12)] p-4 overflow-hidden text-slate-800">
+                    {/* Accesos rápidos superiores */}
+                    <div className="grid grid-cols-2 gap-2 pb-3 border-b border-slate-100">
+                      <Link
+                        to="/catalogo"
+                        onClick={() => setDropdownShop(false)}
+                        className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50/80 text-xs font-bold text-slate-800 hover:text-emerald-700 transition"
+                      >
+                        <ShoppingBag size={15} className="text-emerald-600" />
+                        <span>Todo el Catálogo</span>
+                      </Link>
+                      <Link
+                        to="/tiendas"
+                        onClick={() => setDropdownShop(false)}
+                        className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50/80 text-xs font-bold text-slate-800 hover:text-emerald-700 transition"
+                      >
+                        <Store size={15} className="text-violet-600" />
+                        <span>Tiendas Oficiales</span>
+                      </Link>
+                    </div>
+
+                    {/* Contenido Dinámico: Categorías y Marcas de la BD */}
+                    <div className="grid grid-cols-2 gap-4 py-3">
+                      {/* Categorías */}
+                      <div>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 flex items-center gap-1">
+                          <Layers size={12} className="text-emerald-600" />
+                          <span>Categorías</span>
+                        </span>
+                        <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                          {categorias && categorias.length > 0 ? (
+                            categorias.slice(0, 5).map((cat) => (
+                              <Link
+                                key={cat.id}
+                                to={`/catalogo?categoriaId=${cat.id}`}
+                                onClick={() => setDropdownShop(false)}
+                                className="block px-2 py-1 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950 transition truncate"
+                              >
+                                {cat.nombre}
+                              </Link>
+                            ))
+                          ) : (
+                            <span className="text-[11px] text-slate-400 italic">Cargando categorías...</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Marcas */}
+                      <div>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 flex items-center gap-1">
+                          <Tag size={12} className="text-violet-500" />
+                          <span>Marcas Oficiales</span>
+                        </span>
+                        <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                          {marcas && marcas.length > 0 ? (
+                            marcas.slice(0, 5).map((m) => (
+                              <Link
+                                key={m}
+                                to={`/catalogo?marca=${encodeURIComponent(m)}`}
+                                onClick={() => setDropdownShop(false)}
+                                className="block px-2 py-1 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950 transition truncate"
+                              >
+                                {m}
+                              </Link>
+                            ))
+                          ) : (
+                            <span className="text-[11px] text-slate-400 italic">Cargando marcas...</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer del dropdown */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                      <Link
+                        to="/catalogo?orden=ventas"
+                        onClick={() => setDropdownShop(false)}
+                        className="text-slate-500 hover:text-slate-950 font-medium flex items-center gap-1"
+                      >
+                        <Sparkles size={12} className="text-amber-500" />
+                        <span>Más Vendidos</span>
+                      </Link>
+                      <Link
+                        to="/catalogo?orden=recientes"
+                        onClick={() => setDropdownShop(false)}
+                        className="text-slate-500 hover:text-emerald-700 font-medium flex items-center gap-1"
+                      >
+                        <Package size={12} className="text-emerald-500" />
+                        <span>Nuevos Productos</span>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 2. Opciones SOLO para Compradores / Usuarios Generales */}
+            {!esAdminOVendedor && (
+              <>
+                <Link 
+                  to="/tiendas" 
+                  className={`px-3.5 py-1.5 rounded-full transition-all ${
+                    location.pathname.startsWith('/tienda')
+                      ? 'text-emerald-800 bg-emerald-50/90 font-bold'
+                      : 'hover:text-slate-950 hover:bg-slate-100/80'
+                  }`}
+                >
+                  Tiendas Oficiales
+                </Link>
+              </>
+            )}
+
+            {/* 3. Botón de acceso exclusivo para VENDEDOR */}
+            {esVendedor && (
+              <Link 
+                to="/panel-vendedor" 
+                className="px-4 py-1.5 rounded-full bg-[#051f18] text-emerald-300 hover:bg-emerald-700 hover:text-white transition flex items-center gap-1.5 shadow-xs text-xs font-extrabold ml-1"
+                title="Ir a mi panel de vendedor"
+              >
+                <Store size={14} />
+                <span>Panel Vendedor</span>
+              </Link>
+            )}
+
+            {/* 4. Botón de acceso exclusivo para ADMIN */}
+            {esAdmin && (
+              <Link 
+                to="/admin" 
+                className="px-4 py-1.5 rounded-full bg-[#051f18] text-emerald-300 hover:bg-emerald-700 hover:text-white transition flex items-center gap-1.5 shadow-xs text-xs font-extrabold ml-1"
+                title="Ir al panel central de administración"
+              >
+                <Shield size={14} />
+                <span>Panel Admin</span>
+              </Link>
+            )}
+
+          </nav>
+        </div>
 
         {/* BUSCADOR REDONDEADO CENTRAL */}
         <div className="flex-1 max-w-md hidden md:block">
           <SearchBar placeholder={esAdmin ? "Buscar en catálogo o tiendas..." : esVendedor ? "Buscar productos en el mercado..." : "Buscar productos, marcas y tiendas..."} />
         </div>
 
-        {/* ENLACES SUPERIORES SEGÚN EL ROL DEL USUARIO */}
-        <nav className="hidden lg:flex items-center gap-1.5 text-sm font-bold text-slate-700">
-          
-          {/* 1. Catálogo desplegable (disponible para todos para inspeccionar productos) */}
-          <div 
-            className="relative"
-            onMouseEnter={() => setDropdownShop(true)}
-            onMouseLeave={() => setDropdownShop(false)}
-          >
-            <button 
-              onClick={() => setDropdownShop(!dropdownShop)}
-              className={`px-3.5 py-1.5 rounded-full transition-colors flex items-center gap-1 cursor-pointer ${
-                location.pathname.startsWith('/catalogo') ? 'text-violet-700 bg-violet-50 font-extrabold' : 'hover:text-violet-600'
-              }`}
-            >
-              <span>Catálogo</span>
-              <ChevronDown size={14} className={`transition-transform duration-200 ${dropdownShop ? 'rotate-180' : ''}`} />
-            </button>
-
-            {dropdownShop && (
-              <div className="absolute top-full left-0 pt-2 w-[420px] z-50 animate-in fade-in">
-                <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl p-4 overflow-hidden text-slate-800">
-                  {/* Accesos rápidos superiores */}
-                  <div className="grid grid-cols-2 gap-2 pb-3 border-b border-slate-100">
-                    <Link
-                      to="/catalogo"
-                      onClick={() => setDropdownShop(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-violet-50 text-xs font-bold text-slate-800 hover:text-violet-600 transition"
-                    >
-                      <ShoppingBag size={16} className="text-violet-600" />
-                      <span>Todo el Catálogo</span>
-                    </Link>
-                    <Link
-                      to="/tiendas"
-                      onClick={() => setDropdownShop(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-violet-50 text-xs font-bold text-slate-800 hover:text-violet-600 transition"
-                    >
-                      <Store size={16} className="text-violet-600" />
-                      <span>Tiendas Oficiales</span>
-                    </Link>
-                  </div>
-
-                  {/* Contenido Dinámico: Categorías y Marcas de la BD */}
-                  <div className="grid grid-cols-2 gap-4 py-3">
-                    {/* Categorías */}
-                    <div>
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 flex items-center gap-1">
-                        <Layers size={12} className="text-violet-500" />
-                        <span>Categorías</span>
-                      </span>
-                      <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
-                        {categorias && categorias.length > 0 ? (
-                          categorias.slice(0, 5).map((cat) => (
-                            <Link
-                              key={cat.id}
-                              to={`/catalogo?categoriaId=${cat.id}`}
-                              onClick={() => setDropdownShop(false)}
-                              className="block px-2 py-1 rounded-lg text-xs font-medium text-slate-600 hover:bg-violet-50 hover:text-violet-600 transition truncate"
-                            >
-                              {cat.nombre}
-                            </Link>
-                          ))
-                        ) : (
-                          <span className="text-[11px] text-slate-400 italic">Cargando categorías...</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Marcas */}
-                    <div>
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 flex items-center gap-1">
-                        <Tag size={12} className="text-violet-500" />
-                        <span>Marcas Oficiales</span>
-                      </span>
-                      <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
-                        {marcas && marcas.length > 0 ? (
-                          marcas.slice(0, 5).map((m) => (
-                            <Link
-                              key={m}
-                              to={`/catalogo?marca=${encodeURIComponent(m)}`}
-                              onClick={() => setDropdownShop(false)}
-                              className="block px-2 py-1 rounded-lg text-xs font-medium text-slate-600 hover:bg-violet-50 hover:text-violet-600 transition truncate"
-                            >
-                              {m}
-                            </Link>
-                          ))
-                        ) : (
-                          <span className="text-[11px] text-slate-400 italic">Cargando marcas...</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Footer del dropdown */}
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                    <Link
-                      to="/catalogo?orden=ventas"
-                      onClick={() => setDropdownShop(false)}
-                      className="text-slate-500 hover:text-violet-600 font-medium flex items-center gap-1"
-                    >
-                      <Sparkles size={12} className="text-amber-500" />
-                      <span>Más Vendidos</span>
-                    </Link>
-                    <Link
-                      to="/catalogo?orden=recientes"
-                      onClick={() => setDropdownShop(false)}
-                      className="text-slate-500 hover:text-violet-600 font-medium flex items-center gap-1"
-                    >
-                      <Package size={12} className="text-emerald-500" />
-                      <span>Nuevos Productos</span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 2. Opciones SOLO para Compradores / Usuarios Generales */}
-          {!esAdminOVendedor && (
-            <>
-              <Link 
-                to="/tiendas" 
-                className={`px-3 py-1.5 rounded-full transition-colors ${
-                  location.pathname.startsWith('/tienda') ? 'text-violet-600 bg-violet-50' : 'hover:text-violet-600'
-                }`}
-              >
-                Tiendas Oficiales
-              </Link>
-
-              <Link 
-                to="/about" 
-                className={`px-3 py-1.5 rounded-full transition-colors ${
-                  location.pathname === '/about' ? 'text-violet-600 bg-violet-50' : 'hover:text-violet-600'
-                }`}
-              >
-                Nosotros
-              </Link>
-            </>
-          )}
-
-          {/* 3. Botón de acceso exclusivo para VENDEDOR */}
-          {esVendedor && (
-            <Link 
-              to="/panel-vendedor" 
-              className="px-4 py-1.5 rounded-full bg-violet-600 text-white hover:bg-violet-700 transition flex items-center gap-1.5 shadow-md shadow-violet-500/20 text-xs font-black ml-1"
-              title="Ir a mi panel de vendedor"
-            >
-              <Store size={14} />
-              <span>Panel Vendedor</span>
-            </Link>
-          )}
-
-          {/* 4. Botón de acceso exclusivo para ADMIN */}
-          {esAdmin && (
-            <Link 
-              to="/admin" 
-              className="px-4 py-1.5 rounded-full bg-violet-600 text-white hover:bg-violet-700 transition flex items-center gap-1.5 shadow-md shadow-violet-500/20 text-xs font-black ml-1"
-              title="Ir al panel central de administración"
-            >
-              <Shield size={14} />
-              <span>Panel Admin</span>
-            </Link>
-          )}
-
-        </nav>
-
         {/* ACCIONES Y BOTONES DERECHA */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           
-          {/* Selector de Idioma */}
+          {/* Selector de Idioma (Pastilla limpia sin borde duro) */}
           <div className="relative hidden sm:block">
             <button 
               onClick={() => setDropdownLang(!dropdownLang)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-slate-200 text-xs font-bold text-slate-700 hover:text-violet-600 transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/85 hover:bg-slate-200/70 text-xs font-semibold text-slate-700 hover:text-slate-950 transition cursor-pointer"
               title="Cambiar idioma"
             >
-              <Globe size={13} className="text-violet-600" />
+              <Globe size={13} className="text-emerald-600" />
               <span>{idioma === 'EN' ? 'EN' : 'ES'}</span>
-              <ChevronDown size={12} />
+              <ChevronDown size={12} className="text-slate-400" />
             </button>
             {dropdownLang && (
-              <div className="absolute right-0 mt-2 w-28 bg-white border border-slate-200 rounded-2xl shadow-xl py-1.5 z-50 text-xs font-bold">
+              <div className="absolute right-0 mt-2 w-32 bg-white border border-slate-100 rounded-2xl shadow-[0_15px_40px_rgba(15,23,42,0.12)] py-1.5 z-50 text-xs font-semibold">
                 <button 
                   onClick={() => { cambiarIdioma('es'); setDropdownLang(false); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-violet-50 text-slate-700 cursor-pointer"
+                  className="w-full text-left px-3.5 py-1.5 hover:bg-slate-50 text-slate-700 cursor-pointer"
                 >
                   🇨🇴 Español
                 </button>
                 <button 
                   onClick={() => { cambiarIdioma('en'); setDropdownLang(false); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-violet-50 text-slate-700 cursor-pointer"
+                  className="w-full text-left px-3.5 py-1.5 hover:bg-slate-50 text-slate-700 cursor-pointer"
                 >
                   🇺🇸 English
                 </button>
@@ -334,16 +334,18 @@ export const Navbar = () => {
             )}
           </div>
 
+          <span className="hidden sm:block h-5 w-px bg-slate-200/80" />
+
           {/* Carrito de Compras (SOLO para compradores, NO vendedor ni admin) */}
           {!esAdminOVendedor && (
             <button
               onClick={() => setDrawerAbierto(true)}
-              className="text-slate-700 hover:text-violet-600 transition relative p-1.5 cursor-pointer"
+              className="w-9 h-9 rounded-full hover:bg-slate-100 text-slate-700 hover:text-slate-950 transition relative flex items-center justify-center cursor-pointer"
               title="Carrito de compras"
             >
-              <ShoppingBag size={22} />
+              <ShoppingBag size={19} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-violet-600 text-white text-[10px] font-black w-5 h-5 min-w-[20px] min-h-[20px] rounded-full flex items-center justify-center aspect-square shadow-[0_0_10px_2px_rgba(124,58,237,0.55)] border border-violet-400/40 leading-none select-none">
+                <span className="absolute -top-0.5 -right-0.5 bg-[#051f18] text-emerald-300 text-[10px] font-black w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded-full flex items-center justify-center border border-white leading-none select-none">
                   {totalItems}
                 </span>
               )}
@@ -354,12 +356,12 @@ export const Navbar = () => {
           {autenticado && !esAdminOVendedor && (
             <Link
               to="/favoritos"
-              className="text-slate-700 hover:text-rose-500 transition relative p-1.5 hidden sm:block"
+              className="w-9 h-9 rounded-full hover:bg-rose-50 text-slate-700 hover:text-rose-500 transition relative hidden sm:flex items-center justify-center"
               title="Mis Favoritos"
             >
-              <Heart size={22} />
+              <Heart size={19} />
               {favoriteIds?.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black w-5 h-5 min-w-[20px] min-h-[20px] rounded-full flex items-center justify-center aspect-square shadow-[0_0_10px_2px_rgba(244,63,94,0.55)] border border-rose-400/40 leading-none select-none">
+                <span className="absolute -top-0.5 -right-0.5 bg-rose-500 text-white text-[10px] font-black w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded-full flex items-center justify-center border border-white leading-none select-none">
                   {favoriteIds.length}
                 </span>
               )}
@@ -371,8 +373,8 @@ export const Navbar = () => {
             <div className="relative">
               <button
                 onClick={() => setDropdownUser(!dropdownUser)}
-                className={`w-9 h-9 rounded-full text-white flex items-center justify-center font-black text-xs shadow-md border-2 border-white hover:scale-105 transition cursor-pointer ${
-                  esAdmin ? 'bg-violet-700' : esVendedor ? 'bg-indigo-600' : 'bg-slate-900'
+                className={`w-9 h-9 rounded-full text-white flex items-center justify-center font-black text-xs shadow-xs border border-slate-200 hover:scale-105 transition cursor-pointer ${
+                  esAdmin ? 'bg-violet-700' : esVendedor ? 'bg-[#051f18] text-emerald-300' : 'bg-[#051f18] text-emerald-300'
                 }`}
                 title="Opciones de cuenta"
               >
@@ -545,10 +547,10 @@ export const Navbar = () => {
           ) : (
             <Link
               to="/login"
-              className="text-slate-700 hover:text-violet-600 hover:bg-violet-50 transition p-1.5 rounded-full cursor-pointer flex items-center justify-center"
+              className="w-9 h-9 rounded-full hover:bg-slate-100 text-slate-700 hover:text-slate-950 transition flex items-center justify-center cursor-pointer"
               title="Iniciar sesión"
             >
-              <User size={22} />
+              <User size={19} />
             </Link>
           )}
 
@@ -565,7 +567,7 @@ export const Navbar = () => {
 
       {/* Menú Móvil desplegable adaptado al Rol */}
       {menuMobile && (
-        <div className="lg:hidden mt-2 max-w-[1440px] mx-auto bg-white rounded-3xl p-4 shadow-xl border border-slate-100 space-y-3 pointer-events-auto">
+        <div className="lg:hidden w-full bg-white px-4 sm:px-6 py-4 space-y-3 pointer-events-auto">
           <SearchBar placeholder="Buscar en catálogo..." />
           <div className="flex flex-col gap-1 font-bold text-sm text-slate-700">
             <Link to="/catalogo" onClick={() => setMenuMobile(false)} className="px-3 py-2 rounded-xl hover:bg-violet-50">

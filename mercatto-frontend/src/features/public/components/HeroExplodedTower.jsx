@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { 
-  Laptop, 
-  Shirt, 
-  Activity, 
-  Home, 
-  Sparkles, 
-  ArrowRight, 
-  ShieldCheck, 
-  Truck, 
-  Eye, 
-  ShoppingBag
+import {
+  Laptop,
+  Shirt,
+  Activity,
+  Home,
+  Sparkles,
+  ArrowRight,
+  Flame,
+  Layers
 } from 'lucide-react'
 import { formatCurrency } from '@/utils/formatCurrency'
 
@@ -21,124 +19,198 @@ export const HeroExplodedTower = ({ categorias = [], productos = [], onAddToCart
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const containerRef = useRef(null)
 
-  // Mapeo estilizado de las 4 categorías principales oficiales de la base de datos de Mercatto
+  // Configuración de las 4 verticales oficiales de Mercatto
   const officialCategoryConfigs = useMemo(() => [
+    {
+      dbId: 4,
+      nombreDefecto: 'Deportes y Fitness',
+      shortLabel: 'Deportes & Fitness',
+      slugDefecto: 'deportes-fitness',
+      icono: Activity,
+      color: '#10b981',
+      ctaBg: '#34d399',
+      ctaText: '#022c22',
+      glow: 'rgba(16, 185, 129, 0.24)',
+      accentGradient: 'from-emerald-300 via-teal-200 to-emerald-400',
+      headline: 'TODO EL RENDIMIENTO PRO,',
+      highlight: 'EN UN SOLO LUGAR.',
+      description: 'Conecta directo con tiendas oficiales verificadas en Colombia. Equipamiento de alto impacto, suplementación y tecnología deportiva con pago seguro Wompi.',
+      defaultImage: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=900&auto=format&fit=crop&q=80',
+      orbitImages: [
+        { url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&auto=format&fit=crop&q=80', tag: 'Running Pro', frame: 'from-emerald-500 to-teal-700' },
+        { url: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&auto=format&fit=crop&q=80', tag: 'Pesas & Gym', frame: 'from-violet-600 to-indigo-900' },
+        { url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&auto=format&fit=crop&q=80', tag: 'Smart Fitness', frame: 'from-amber-500 to-orange-700' },
+        { url: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=400&auto=format&fit=crop&q=80', tag: 'CrossTraining', frame: 'from-sky-500 to-blue-800' }
+      ],
+      stats: [
+        { label: 'Grado Profesional', val: 'Alta Resistencia', sub: 'Materiales Certificados' },
+        { label: 'Cobertura Nacional', val: 'Despacho 24-48h', sub: 'Envío Protegido' },
+        { label: 'Respaldo Oficial', val: 'Compra Segura', sub: 'Pasarela Wompi Colombia' }
+      ]
+    },
     {
       dbId: 1,
       nombreDefecto: 'Tecnología y Electrónica',
+      shortLabel: 'Tecnología Pro',
       slugDefecto: 'tecnologia-electronica',
-      badge: 'TECH & PRODUCTIVIDAD',
       icono: Laptop,
-      color: '#38bdf8', // Azul Cobalto
-      glow: 'rgba(56, 189, 248, 0.22)',
-      gradient: 'from-sky-400 via-blue-300 to-indigo-200',
-      headline: 'Potencia Digital &',
-      highlight: 'Dispositivos de Vanguardia.',
-      description: 'Laptops, smartphones, audio de alta fidelidad y componentes de alto rendimiento para creadores y profesionales.',
-      defaultImage: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&auto=format&fit=crop&q=80',
+      color: '#34d399',
+      ctaBg: '#34d399',
+      ctaText: '#022c22',
+      glow: 'rgba(139, 92, 246, 0.24)',
+      accentGradient: 'from-emerald-300 via-cyan-200 to-violet-300',
+      headline: 'POTENCIA DIGITAL &',
+      highlight: 'HARDWARE DE VANGUARDIA.',
+      description: 'Laptops, smartphones flagship, audio de alta fidelidad y periféricos Pro con garantía nacional directa de distribuidores autorizados.',
+      defaultImage: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=900&auto=format&fit=crop&q=80',
+      orbitImages: [
+        { url: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&auto=format&fit=crop&q=80', tag: 'Workstations', frame: 'from-sky-500 to-indigo-800' },
+        { url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=80', tag: 'Audio Hi-Res', frame: 'from-violet-600 to-purple-900' },
+        { url: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400&auto=format&fit=crop&q=80', tag: 'Wearables', frame: 'from-emerald-500 to-teal-800' },
+        { url: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&auto=format&fit=crop&q=80', tag: 'Flagship 5G', frame: 'from-amber-500 to-rose-700' }
+      ],
       stats: [
-        { label: 'Procesamiento', val: 'Intel & M-Series', sub: 'Alto Rendimiento' },
-        { label: 'Pantallas', val: 'Retina & OLED', sub: 'Hasta 240Hz' },
-        { label: 'Garantía Oficial', val: '2 Años Nacional', sub: 'En Colombia' }
+        { label: 'Procesamiento', val: 'Serie Pro & Ultra', sub: 'Máximo Rendimiento' },
+        { label: 'Pantallas', val: 'OLED & Retina', sub: 'Hasta 240Hz' },
+        { label: 'Garantía Oficial', val: '100% Verificada', sub: 'En Toda Colombia' }
       ]
     },
     {
       dbId: 2,
       nombreDefecto: 'Moda y Ropa',
+      shortLabel: 'Moda & Streetwear',
       slugDefecto: 'moda-ropa',
-      badge: 'STREETWEAR & TENDENCIA',
       icono: Shirt,
-      color: '#ef4444', // Rojo Fuego
-      glow: 'rgba(239, 68, 68, 0.22)',
-      gradient: 'from-red-400 via-rose-300 to-amber-300',
-      headline: 'Estilo Urbano &',
-      highlight: 'Colecciones de Temporada.',
-      description: 'Prendas exclusivas, calzado deportivo de colección y accesorios con autenticidad y calidad 100% verificada.',
-      defaultImage: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80',
+      color: '#a78bfa',
+      ctaBg: '#34d399',
+      ctaText: '#022c22',
+      glow: 'rgba(167, 139, 250, 0.24)',
+      accentGradient: 'from-emerald-300 via-violet-200 to-fuchsia-300',
+      headline: 'ESTILO URBANO &',
+      highlight: 'EDICIONES EXCLUSIVAS.',
+      description: 'Prendas de autor, calzado deportivo de colección y accesorios originales con autenticidad garantizada y envíos rápidos.',
+      defaultImage: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&auto=format&fit=crop&q=80',
+      orbitImages: [
+        { url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&auto=format&fit=crop&q=80', tag: 'Sneakers Drop', frame: 'from-rose-500 to-red-800' },
+        { url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=400&auto=format&fit=crop&q=80', tag: 'Streetwear', frame: 'from-violet-600 to-indigo-900' },
+        { url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&auto=format&fit=crop&q=80', tag: 'Accesorios', frame: 'from-emerald-500 to-teal-800' },
+        { url: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&auto=format&fit=crop&q=80', tag: 'Outerwear', frame: 'from-amber-500 to-orange-800' }
+      ],
       stats: [
-        { label: 'Autenticidad', val: '100% Verificada', sub: 'Control de Calidad' },
-        { label: 'Drops Semanales', val: 'Ediciones Limitadas', sub: 'Primeras Marcas' },
-        { label: 'Envíos Nacionales', val: 'A Toda Colombia', sub: 'Seguro Wompi' }
-      ]
-    },
-    {
-      dbId: 4,
-      nombreDefecto: 'Deportes y Fitness',
-      slugDefecto: 'deportes-fitness',
-      badge: 'RENDIMIENTO Y SALUD',
-      icono: Activity,
-      color: '#10b981', // Verde Esmeralda
-      glow: 'rgba(16, 185, 129, 0.22)',
-      gradient: 'from-emerald-400 via-teal-300 to-cyan-300',
-      headline: 'Equipamiento Pro &',
-      highlight: 'Máximo Rendimiento Físico.',
-      description: 'Implementos para entrenamiento, indumentaria deportiva de alto impacto y accesorios para superar tus marcas.',
-      defaultImage: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&auto=format&fit=crop&q=80',
-      stats: [
-        { label: 'Grado Pro', val: 'Alta Resistencia', sub: 'Materiales Premium' },
-        { label: 'Variedad', val: 'Multidisciplina', sub: 'Crossfit / Gym / Running' },
-        { label: 'Despacho Rápido', val: '24-48 Horas', sub: 'Cobertura Nacional' }
+        { label: 'Autenticidad', val: 'Sello Original', sub: 'Tiendas Oficiales' },
+        { label: 'Temporada 2026', val: 'Drops Semanales', sub: 'Stock Inmediato' },
+        { label: 'Cambios Fáciles', val: 'Compra Protegida', sub: 'Respaldo Mercatto' }
       ]
     },
     {
       dbId: 3,
       nombreDefecto: 'Hogar y Muebles',
+      shortLabel: 'Hogar & Setup',
       slugDefecto: 'hogar-muebles',
-      badge: 'CONFORT & ESPACIOS',
       icono: Home,
-      color: '#f59e0b', // Ámbar Oro
-      glow: 'rgba(245, 158, 11, 0.22)',
-      gradient: 'from-amber-400 via-orange-300 to-yellow-200',
-      headline: 'Diseño Moderno &',
-      highlight: 'Espacios que Inspiran.',
-      description: 'Mobiliario ergonómico, iluminación ambiental y artículos de confort para transformar tu hogar o tu setup de trabajo.',
-      defaultImage: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=800&auto=format&fit=crop&q=80',
+      color: '#34d399',
+      ctaBg: '#34d399',
+      ctaText: '#022c22',
+      glow: 'rgba(16, 185, 129, 0.24)',
+      accentGradient: 'from-emerald-300 via-amber-200 to-teal-300',
+      headline: 'DISEÑO MODERNO &',
+      highlight: 'ESPACIOS QUE INSPIRAN.',
+      description: 'Mobiliario ergonómico, iluminación inteligente y equipamiento de confort para transformar tu hogar o tu estudio profesional.',
+      defaultImage: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=900&auto=format&fit=crop&q=80',
+      orbitImages: [
+        { url: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=400&auto=format&fit=crop&q=80', tag: 'Diseño Interior', frame: 'from-emerald-500 to-teal-800' },
+        { url: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=400&auto=format&fit=crop&q=80', tag: 'Ergonomía Pro', frame: 'from-amber-500 to-orange-800' },
+        { url: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=400&auto=format&fit=crop&q=80', tag: 'Smart Home', frame: 'from-violet-600 to-indigo-900' },
+        { url: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=400&auto=format&fit=crop&q=80', tag: 'Cocina & Autor', frame: 'from-sky-500 to-blue-800' }
+      ],
       stats: [
-        { label: 'Ergonomía', val: 'Diseño Certificado', sub: 'Postura y Confort' },
-        { label: 'Acabados', val: 'Madera & Metal', sub: 'Durabilidad Asegurada' },
-        { label: 'Entrega Segura', val: 'Embalaje Especial', sub: 'Todo Colombia' }
+        { label: 'Ergonomía', val: 'Confort Premium', sub: 'Calidad de Exportación' },
+        { label: 'Acabados', val: 'Alta Durabilidad', sub: 'Maderas & Metales' },
+        { label: 'Logística', val: 'Embalaje Seguro', sub: 'Cobertura Colombia' }
       ]
     }
   ], [])
 
-  // Construir las 4 pestañas enlazando con la base de datos real
+  // Enlazar las 4 pestañas con datos reales de categorías y productos del catálogo
   const activePillars = useMemo(() => {
     return officialCategoryConfigs.map((cfg) => {
-      // Buscar en la lista de categorias reales de la BD
       const dbCategory = categorias.find((c) => c.id === cfg.dbId) || null
       const catId = dbCategory?.id || cfg.dbId
       const catNombre = dbCategory?.nombre || cfg.nombreDefecto
 
-      // Buscar si hay un producto real de esa categoria en los productos cargados
-      const realProd = productos.find((p) => {
+      const categoryProducts = productos.filter((p) => {
         if (!p) return false
         return p.categoria?.id === catId || p.categoriaId === catId
-      }) || null
+      })
+
+      const realProd = categoryProducts[0] || productos[0] || null
+
+      const orbitCards = cfg.orbitImages.map((orb, idx) => {
+        const candidate = categoryProducts[idx] || productos[idx] || null
+        const imgUrl =
+          candidate?.imagenes?.find((i) => i.principal)?.url ||
+          candidate?.imagenes?.[0]?.url ||
+          candidate?.imagenUrl ||
+          orb.url
+
+        return {
+          id: candidate?.id || null,
+          title: candidate?.titulo || candidate?.nombre || orb.tag,
+          price: candidate?.precioOferta || candidate?.precio || null,
+          tag: orb.tag,
+          image: imgUrl,
+          frame: orb.frame
+        }
+      })
 
       return {
         ...cfg,
         id: catId,
         nombre: catNombre,
         realProduct: realProd,
-        displayImage: realProd?.imagenUrl || (realProd?.imagenes && realProd.imagenes[0]?.url) || cfg.defaultImage,
+        displayImage:
+          realProd?.imagenes?.find((i) => i.principal)?.url ||
+          realProd?.imagenes?.[0]?.url ||
+          realProd?.imagenUrl ||
+          cfg.defaultImage,
         productTitle: realProd?.titulo || realProd?.nombre || catNombre,
-        productPrice: realProd?.precio || null
+        productPrice: realProd?.precioOferta || realProd?.precio || null,
+        orbitCards
       }
     })
   }, [categorias, productos, officialCategoryConfigs])
 
   const currentPillar = activePillars[activeIndex] || activePillars[0]
 
-  // Ciclo automático suave de 6.5 segundos (se pausa si el usuario pasa el ratón por encima)
+  // Rotación automática cada 4 segundos; recupera los cambios al volver a la pestaña.
   useEffect(() => {
-    if (isPaused) return
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % activePillars.length)
-    }, 6500)
-    return () => clearInterval(interval)
+    if (isPaused || activePillars.length < 2) return
+
+    const rotationInterval = 4000
+    let nextChange = Date.now() + rotationInterval
+
+    const rotateIfDue = () => {
+      const now = Date.now()
+      if (now < nextChange) return
+
+      const elapsedRotations = Math.floor((now - nextChange) / rotationInterval) + 1
+      nextChange += elapsedRotations * rotationInterval
+      setActiveIndex((prev) => (prev + elapsedRotations) % activePillars.length)
+    }
+
+    const interval = setInterval(rotateIfDue, 1000)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') rotateIfDue()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [isPaused, activePillars.length])
 
-  // Parallax interactivo con el ratón
+
   const handleMouseMove = (e) => {
     if (!containerRef.current) return
     const rect = containerRef.current.getBoundingClientRect()
@@ -158,177 +230,233 @@ export const HeroExplodedTower = ({ categorias = [], productos = [], onAddToCart
 
   const IconoActual = currentPillar.icono || Sparkles
 
+  // Configuraciones de estilo para las 4 tarjetas superpuestas (2 a la izquierda y 2 a la derecha)
+  const orbitStyles = [
+    { rotate: -8, badgeColor: 'bg-emerald-400 text-slate-950', offsetClass: '-translate-x-2 xl:-translate-x-4' },
+    { rotate: -12, badgeColor: 'bg-violet-500 text-white', offsetClass: 'translate-x-3 xl:translate-x-5' },
+    { rotate: 8, badgeColor: 'bg-amber-400 text-slate-950', offsetClass: 'translate-x-2 xl:translate-x-4' },
+    { rotate: 12, badgeColor: 'bg-emerald-400 text-slate-950', offsetClass: '-translate-x-3 xl:-translate-x-5' }
+  ]
+
+  const renderFloatingCard = (card, idx) => {
+    const st = orbitStyles[idx] || orbitStyles[0]
+    const parallaxX = mousePos.x * (idx % 2 === 0 ? 18 : -18)
+    const parallaxY = mousePos.y * (idx < 2 ? 14 : -14)
+
+    return (
+      <div
+        key={idx}
+        onClick={() =>
+          card.id
+            ? navigate(`/producto/${card.id}`)
+            : handleNavigateToCategory(currentPillar.id)
+        }
+        style={{
+          transform: `translate3d(${parallaxX}px, ${parallaxY}px, 0) rotate(${st.rotate}deg)`
+        }}
+        className={`relative w-32 h-36 sm:w-36 sm:h-44 rounded-3xl p-1.5 bg-gradient-to-br ${card.frame} ${st.offsetClass} shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] border border-white/25 cursor-pointer group transition-transform duration-300 ease-out hover:scale-110 hover:z-30`}
+      >
+        {/* Etiqueta flotante superior */}
+        <div
+          className={`absolute -top-2.5 left-3 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-md z-10 ${st.badgeColor}`}
+        >
+          {card.price ? formatCurrency(card.price) : card.tag}
+        </div>
+
+        {/* Marco interno con imagen y overlay oscuro */}
+        <div className="w-full h-full rounded-2xl overflow-hidden bg-slate-950 relative">
+          <img
+            src={card.image}
+            alt={card.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+          <div className="absolute bottom-2.5 left-2.5 right-2.5 text-left">
+            <p className="text-[9px] font-extrabold text-emerald-300 uppercase tracking-wider truncate">
+              {card.tag}
+            </p>
+            <p className="text-[11px] font-bold text-white truncate">
+              {card.title}
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const leftCards = currentPillar.orbitCards.slice(0, 2)
+  const rightCards = currentPillar.orbitCards.slice(2, 4)
+
   return (
-    <div 
+    /* ======================================================================= */
+    /* CONTENEDOR HERO 100% FULL-WIDTH SIN BORDES EXTERNOS NI MÁRGENES FORZADOS*/
+    /* ======================================================================= */
+    <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={handleMouseLeave}
-      className="w-full h-[calc(100vh-85px)] min-h-[580px] max-h-[820px] relative rounded-[36px] bg-[#030508] border border-violet-950/40 p-6 sm:p-10 flex flex-col justify-between overflow-hidden shadow-[0_30px_90px_-20px_rgba(109,40,217,0.3)] select-none transition-colors duration-1000"
+      className="relative w-full min-h-[620px] lg:min-h-[680px] bg-gradient-to-b from-[#030907] via-[#05130e] to-[#0b0f19] text-white overflow-hidden select-none border-b border-white/10"
     >
-      {/* ATMÓSFERA PROFUNDA DE NEÓN ADAPTATIVA SEGÚN LA CATEGORÍA ACTIVA */}
-      <div 
-        className="absolute inset-0 transition-all duration-1000 pointer-events-none"
+      {/* Textura de imagen de fondo sutil en la parte inferior con fusión limpia */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-2/3 opacity-20 transition-all duration-1000 pointer-events-none bg-cover bg-center"
         style={{
-          background: `radial-gradient(circle at 68% 50%, ${currentPillar.glow} 0%, rgba(3, 5, 8, 0.95) 70%)`
+          backgroundImage: `url('${currentPillar.displayImage}')`,
+          maskImage: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 85%)',
+          WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 85%)'
         }}
       />
-      <div 
-        className="absolute -top-32 right-1/4 w-[550px] h-[550px] rounded-full blur-[160px] pointer-events-none transition-all duration-1000 opacity-60"
-        style={{ backgroundColor: currentPillar.color }}
+
+      {/* Atmósfera radial adaptativa a pantalla completa */}
+      <div
+        className="absolute inset-0 transition-all duration-1000 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 50% 45%, ${currentPillar.glow} 0%, rgba(5, 11, 9, 0.88) 65%, transparent 100%)`
+        }}
       />
-      <div className="absolute -bottom-32 left-1/4 w-[450px] h-[450px] bg-violet-900/10 rounded-full blur-[140px] pointer-events-none" />
 
-      {/* ========================================================================= */}
-      {/* 1. BARRA SUPERIOR: BADGE MERCATTO + EXACTAMENTE 4 PESTAÑAS (CERO SCROLL) */}
-      {/* ========================================================================= */}
-      <div className="relative z-20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        {/* Badge Institucional */}
-        <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900/80 border border-slate-800 backdrop-blur-xl">
-          <span 
-            className="w-2 h-2 rounded-full animate-ping" 
-            style={{ backgroundColor: currentPillar.color }} 
-          />
-          <span className="text-[11px] font-black tracking-widest uppercase text-slate-300">
-            MERCATTO SHOWCASE // 2026
-          </span>
-        </div>
+      {/* Resplandores ambientales laterales */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/15 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-violet-600/20 rounded-full blur-[130px] pointer-events-none" />
 
-        {/* EXACTAMENTE 4 CÁPSULAS FIJAS LIMPIAS (SIN BARRAS DE SCROLL NI DESBORDAMIENTO) */}
-        <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800/80 p-1 rounded-2xl backdrop-blur-xl">
-          {activePillars.map((pillar, idx) => {
-            const isSelected = idx === activeIndex
-            const PillarIcon = pillar.icono || Sparkles
-            return (
-              <button
-                key={pillar.id}
-                onClick={() => setActiveIndex(idx)}
-                className={`relative px-3.5 py-1.5 rounded-xl text-xs font-black transition-all duration-300 flex items-center gap-2 cursor-pointer ${
-                  isSelected 
-                    ? 'text-white shadow-lg' 
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                style={{
-                  backgroundColor: isSelected ? 'rgba(15, 23, 42, 0.95)' : 'transparent',
-                  borderColor: isSelected ? pillar.color : 'transparent'
-                }}
-              >
-                <PillarIcon size={14} style={{ color: isSelected ? pillar.color : 'currentColor' }} />
-                <span>{pillar.nombre}</span>
-
-                {/* Línea indicadora activa */}
-                {isSelected && (
-                  <span 
-                    className="absolute -bottom-1 left-2 right-2 h-0.5 rounded-full shadow-md" 
-                    style={{ backgroundColor: pillar.color }}
-                  />
-                )}
-              </button>
-            )
+      {/* Líneas de perspectiva radiales a ancho completo */}
+      <svg
+        className="absolute inset-0 w-full h-full opacity-[0.14] pointer-events-none"
+        viewBox="0 0 1600 800"
+        preserveAspectRatio="none"
+      >
+        <g stroke="url(#mercattoFullRayGrad)" strokeWidth="1.2">
+          {[...Array(32)].map((_, i) => {
+            const angle = (i / 32) * Math.PI * 2
+            const x2 = 800 + Math.cos(angle) * 1200
+            const y2 = 380 + Math.sin(angle) * 800
+            return <line key={i} x1="800" y1="380" x2={x2} y2={y2} />
           })}
-        </div>
-      </div>
+        </g>
+        <defs>
+          <radialGradient id="mercattoFullRayGrad" cx="50%" cy="48%" r="55%">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0" />
+            <stop offset="35%" stopColor="#34d399" stopOpacity="0.65" />
+            <stop offset="80%" stopColor="#8b5cf6" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0.05" />
+          </radialGradient>
+        </defs>
+      </svg>
 
-      {/* ========================================================================= */}
-      {/* 2. ESCENARIO CENTRAL: CONTENIDO DINÁMICO + ESCAPARATE DE PRODUCTO 3D       */}
-      {/* ========================================================================= */}
-      <div className="relative z-20 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center my-auto">
-        
-        {/* COLUMNA IZQUIERDA: INFORMACIÓN DE LA CATEGORÍA Y REDIRECCIÓN AL CATÁLOGO */}
-        <div className="lg:col-span-6 space-y-4 max-w-xl">
-          
-          {/* Badge del Pilar Activo */}
-          <div 
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-lg border text-xs font-bold tracking-wide backdrop-blur-md"
-            style={{
-              borderColor: `${currentPillar.color}40`,
-              backgroundColor: `${currentPillar.color}15`,
-              color: currentPillar.color
-            }}
-          >
-            <IconoActual size={14} />
-            <span>{currentPillar.badge}</span>
+      {/* ===================================================================== */}
+      {/* CONTENEDOR FLUIDO INTERNO PARA ALINEAR EL CONTENIDO                   */}
+      {/* ===================================================================== */}
+      <div className="relative z-20 container max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-10 py-7 sm:py-10 min-h-[620px] lg:min-h-[680px] flex flex-col justify-between gap-8">
+
+        {/* 1. NAVEGACIÓN SUPERIOR INTEGRADA (LOGO + PILL TABS DE ALTO CONTRASTE) */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+
+          {/* Identidad izquierda */}
+          <div className="flex items-center gap-2.5 self-start lg:self-auto">
+
           </div>
 
-          {/* Título Principal */}
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.1] uppercase">
-            {currentPillar.headline}{' '}
-            <span className={`text-transparent bg-clip-text bg-gradient-to-r ${currentPillar.gradient}`}>
-              {currentPillar.highlight}
-            </span>
-          </h1>
+        </div>
 
-          {/* Descripción */}
-          <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
-            {currentPillar.description}
-          </p>
 
-          {/* Botón de Acción Directa hacia el Catálogo Filtrado con categoriaId */}
-          <div className="pt-2 flex flex-wrap items-center gap-4">
-            <button
-              onClick={() => handleNavigateToCategory(currentPillar.id)}
-              className="px-6 py-3.5 rounded-2xl text-white font-black text-xs sm:text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
-              style={{
-                backgroundColor: currentPillar.color,
-                boxShadow: `0 10px 30px -5px ${currentPillar.color}60`
-              }}
-            >
-              <span>Explorar {currentPillar.nombre}</span>
-              <ArrowRight size={16} />
-            </button>
+        {/* 2. ESCENARIO CENTRAL: GRILLA FLUIDA (TARJETAS IZQUIERDA + TEXTO CENTRAL + TARJETAS DERECHA) */}
+        <div className="my-auto grid grid-cols-1 lg:grid-cols-12 items-center gap-6 py-4">
 
-            {/* Badges de Confianza de Mercatto */}
-            <div className="flex items-center gap-3 text-slate-400 text-[11px] font-semibold">
-              <span className="flex items-center gap-1">
-                <Truck size={13} className="text-violet-400" />
-                <span>Envíos Wompi a Colombia</span>
+          {/* Columna Izquierda: 2 Tarjetas Flotantes Superpuestas */}
+          <div className="hidden lg:flex lg:col-span-2 flex-col items-center justify-center gap-6">
+            {leftCards.map((card, i) => renderFloatingCard(card, i))}
+          </div>
+
+          {/* Columna Central: Textos Principales, Subtítulos y Botones CTA */}
+          <div className="lg:col-span-8 flex flex-col items-center justify-center text-center px-2 sm:px-6 z-20">
+
+
+
+            {/* Título Principal en Mayúsculas de Alto Impacto */}
+            <h1 className="max-w-4xl mx-auto text-3xl sm:text-5xl xl:text-6xl font-extrabold text-white tracking-tight leading-[1.06] uppercase drop-shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
+              {currentPillar.headline}
+              <span
+                className={`block mt-1.5 text-transparent bg-clip-text bg-gradient-to-r ${currentPillar.accentGradient}`}
+              >
+                {currentPillar.highlight}
               </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <ShieldCheck size={13} className="text-emerald-400" />
-                <span>Garantía Oficial</span>
-              </span>
+            </h1>
+
+            {/* Subtítulo Descriptivo */}
+            <p className="mt-5 max-w-2xl mx-auto text-xs sm:text-base text-slate-200/90 font-medium leading-relaxed">
+              {currentPillar.description}
+            </p>
+
+            {/* Botones de Llamada a la Acción (CTA) */}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <button
+                onClick={() => handleNavigateToCategory(currentPillar.id)}
+                className="px-7 py-3.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_40px_-5px_rgba(52,211,153,0.65)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2.5 cursor-pointer"
+              >
+                <span>Explorar {currentPillar.nombre}</span>
+                <ArrowRight size={16} className="stroke-[2.5]" />
+              </button>
+
+
+            </div>
+
+            {/* Tarjetas flotantes en pantallas medianas/tablets (debajo del CTA para no chocar con el texto) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 lg:hidden">
+              {currentPillar.orbitCards.map((card, idx) => renderFloatingCard(card, idx))}
             </div>
           </div>
 
+          {/* Columna Derecha: 2 Tarjetas Flotantes Superpuestas */}
+          <div className="hidden lg:flex lg:col-span-2 flex-col items-center justify-center gap-6">
+            {rightCards.map((card, i) => renderFloatingCard(card, i + 2))}
+          </div>
+
         </div>
 
-        {/* COLUMNA DERECHA: ESCAPARATE DE PRODUCTO FOTOREALISTA CON PARALLAX 3D */}
-        <div className="lg:col-span-6 relative flex items-center justify-center">
-          
-          {/* Tarjeta flotante con inclinación 3D que redirige al hacer clic */}
-          <div 
-            className="relative w-full max-w-[480px] aspect-[4/3] rounded-3xl overflow-hidden transition-transform duration-300 ease-out cursor-pointer group"
-            onClick={() => {
-              if (currentPillar.realProduct?.id) {
-                navigate(`/producto/${currentPillar.realProduct.id}`)
-              } else {
-                handleNavigateToCategory(currentPillar.id)
-              }
-            }}
-            style={{
-              transform: `perspective(1000px) rotateY(${mousePos.x * 12}deg) rotateX(${-mousePos.y * 10}deg) scale(${isPaused ? 1.03 : 1.0})`,
-              boxShadow: `0 25px 60px -15px ${currentPillar.color}40`
-            }}
+        {/* 3. BASE DEL HERO: TARJETAS PRO TRANSLÚCIDAS Y DESTACADO DE CATEGORÍA */}
+        <div className="pt-5 border-t border-white/10 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+
+          <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {currentPillar.stats.map((st, i) => (
+              <div
+                key={i}
+                className="p-3.5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 backdrop-blur-xl flex items-center justify-between transition-all duration-300"
+              >
+                <div>
+                  <p className="text-[10px] font-bold text-emerald-300/90 uppercase tracking-wider">
+                    {st.label}
+                  </p>
+                  <p className="text-sm sm:text-base font-extrabold text-white tracking-tight mt-0.5">
+                    {st.val}
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-medium">{st.sub}</p>
+                </div>
+                <div className="w-1.5 h-8 rounded-full bg-gradient-to-b from-emerald-400 to-violet-500" />
+              </div>
+            ))}
+          </div>
+
+          {/* Mini-Card Destacada del Producto Insignia */}
+          <div
+            onClick={() =>
+              currentPillar.realProduct?.id
+                ? navigate(`/producto/${currentPillar.realProduct.id}`)
+                : handleNavigateToCategory(currentPillar.id)
+            }
+            className="md:col-span-4 p-3 rounded-2xl bg-gradient-to-r from-slate-900/90 via-emerald-950/70 to-violet-950/80 border border-emerald-400/30 backdrop-blur-xl flex items-center justify-between gap-3 cursor-pointer group hover:border-emerald-400/70 transition-all"
           >
-            {/* Imagen del Producto Real o Fotografía Insignia */}
-            <img 
-              src={currentPillar.displayImage} 
-              alt={currentPillar.productTitle}
-              className="w-full h-full object-cover object-center transform transition-transform duration-700 group-hover:scale-105"
-            />
-
-            {/* Viñeta y reflejo de luz */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#030508] via-transparent to-transparent opacity-80" />
-            <div className="absolute inset-0 border border-white/10 rounded-3xl pointer-events-none" />
-
-            {/* Ficha flotante sobre la imagen con precio y nombre real */}
-            <div className="absolute bottom-4 left-4 right-4 p-3.5 rounded-2xl bg-slate-950/85 border border-slate-800/80 backdrop-blur-xl flex items-center justify-between">
-              <div className="space-y-0.5">
-                <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                  {currentPillar.realProduct ? 'Producto en Catálogo' : 'Insignia de Categoría'}
-                </p>
-                <p className="text-xs sm:text-sm font-black text-white truncate max-w-[220px]">
+            <div className="flex items-center gap-3 min-w-0">
+              <img
+                src={currentPillar.displayImage}
+                alt={currentPillar.productTitle}
+                className="w-12 h-12 rounded-xl object-cover border border-white/15 shrink-0 group-hover:scale-105 transition-transform"
+              />
+              <div className="min-w-0">
+                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-300 block">
+                  DESTACADO PRO
+                </span>
+                <p className="text-xs font-extrabold text-white truncate">
                   {currentPillar.productTitle}
                 </p>
                 {currentPillar.productPrice && (
@@ -337,47 +465,16 @@ export const HeroExplodedTower = ({ categorias = [], productos = [], onAddToCart
                   </p>
                 )}
               </div>
+            </div>
 
-              <div 
-                className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"
-                style={{
-                  backgroundColor: `${currentPillar.color}25`,
-                  color: currentPillar.color,
-                  border: `1px solid ${currentPillar.color}40`
-                }}
-              >
-                <span>Ver en Catálogo</span>
-                <ArrowRight size={12} />
-              </div>
+            <div className="w-8 h-8 rounded-full bg-emerald-400/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shrink-0 group-hover:bg-emerald-400 group-hover:text-slate-950 transition-colors">
+              <ArrowRight size={14} />
             </div>
           </div>
 
         </div>
 
       </div>
-
-      {/* ========================================================================= */}
-      {/* 3. BARRA INFERIOR: MÉTRICAS Y TELEMETRÍA DE LA CATEGORÍA ACTIVA           */}
-      {/* ========================================================================= */}
-      <div className="relative z-20 pt-4 border-t border-slate-900/80 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {currentPillar.stats.map((st, i) => (
-          <div 
-            key={i} 
-            className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/60 backdrop-blur-md flex items-center justify-between transition-all duration-500 hover:border-slate-700"
-          >
-            <div>
-              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{st.label}</p>
-              <p className="text-lg font-black text-white tracking-tight">{st.val}</p>
-              <p className="text-[10px] text-slate-500 font-mono">{st.sub}</p>
-            </div>
-            <div 
-              className="w-2 h-8 rounded-full opacity-70"
-              style={{ backgroundColor: currentPillar.color }}
-            />
-          </div>
-        ))}
-      </div>
-
     </div>
   )
 }

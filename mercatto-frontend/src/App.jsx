@@ -79,6 +79,7 @@ const AppLayout = () => {
     location.pathname.startsWith('/admin') ||
     location.pathname.startsWith('/panel-vendedor') ||
     location.pathname.startsWith('/vendedor')
+  const esHome = location.pathname === '/'
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
@@ -86,7 +87,7 @@ const AppLayout = () => {
       <CartDrawer />
       <PublicChatbot />
 
-      <main className={esRutaPanel ? "flex-1 w-full" : "flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6"}>
+      <main className={esRutaPanel || esHome ? "flex-1 w-full" : "flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6"}>
         <Routes>
           {/* Public Marketplace routes */}
           <Route path="/" element={<Home />} />

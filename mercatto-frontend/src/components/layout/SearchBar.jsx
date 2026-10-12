@@ -60,26 +60,30 @@ export const SearchBar = ({ className = '', placeholder = 'Buscar productos...' 
 
   return (
     <div ref={wrapperRef} className={`relative w-full ${className}`}>
-      <form onSubmit={handleSearch} className="flex w-full">
+      <form 
+        onSubmit={handleSearch} 
+        className="flex items-center w-full bg-slate-100/85 hover:bg-slate-100 focus-within:bg-white border border-slate-200/75 focus-within:border-emerald-600/40 focus-within:ring-4 focus-within:ring-emerald-500/10 rounded-full p-1 transition-all duration-200"
+      >
         <input
           type="text"
           value={termino}
           onChange={(e) => setTermino(e.target.value)}
           onFocus={() => termino.trim().length >= 2 && setMostrarSugerencias(true)}
           placeholder={placeholder}
-          className="w-full pl-5 pr-4 py-2.5 bg-slate-100 border border-slate-200 rounded-l-full text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-mercatto-accent/20 text-slate-800 placeholder-slate-400 transition-all"
+          className="w-full pl-4 pr-2 py-1.5 bg-transparent text-xs sm:text-sm focus:outline-none text-slate-800 placeholder-slate-400 font-medium"
         />
         <button 
           type="submit" 
-          className="bg-mercatto-accent hover:bg-violet-600 text-white px-6 rounded-r-full flex items-center justify-center transition-colors shadow-sm hover:shadow-md hover:shadow-indigo-300"
+          className="w-8 h-8 rounded-full bg-[#051f18] hover:bg-emerald-600 text-emerald-300 hover:text-white flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer shadow-xs"
+          title="Buscar"
         >
-          {cargando ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+          {cargando ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
         </button>
       </form>
 
       {/* Ventana flotante de sugerencias */}
       {mostrarSugerencias && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-2xl shadow-[0_20px_50px_rgba(15,23,42,0.12)] z-50 overflow-hidden">
           {sugerencias.length > 0 ? (
             <ul className="py-2">
               {sugerencias.map((prod) => (

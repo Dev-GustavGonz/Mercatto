@@ -25,7 +25,7 @@ export const MercattoLogo = ({ className = '', showText = true, size = 28 }) => 
 
   return (
     <span 
-      className={`inline-block font-['Pacifico',cursive] text-2xl sm:text-3xl font-normal text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-all duration-200 select-none tracking-wide hover:scale-105 drop-shadow-[0_2px_12px_rgba(139,92,246,0.35)] ${className}`}
+      className={`inline-block font-['Pacifico',cursive] text-2xl sm:text-3xl font-normal text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-all duration-200 select-none tracking-wide hover:scale-105 drop-shadow-[0_1px_6px_rgba(139,92,246,0.18)] ${className}`}
       style={{
         fontFamily: "'Pacifico', 'Caveat', cursive, sans-serif"
       }}
