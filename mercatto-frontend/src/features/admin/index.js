@@ -1,7 +1,0 @@
-export { default as PanelAdmin } from './pages/PanelAdmin'
-export { default as AdminStats } from './components/AdminStats'
-export { default as CategoryManager } from './components/CategoryManager'
-export { default as CouponManager } from './components/CouponManager'
-export { default as VendorsTable } from './components/VendorsTable'
-export { default as SupportTicketsManager } from './components/SupportTicketsManager'
-export { default as adminService } from './services/adminService'
