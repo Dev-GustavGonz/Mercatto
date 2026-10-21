@@ -21,3 +21,7 @@ mercatto-backend/uploads/
 *.iml
 .DS_Store
 Thumbs.db
+
+# Secretos (no subir al repositorio)
+mercatto-frontend/.env
+mercatto-frontend/.env.production

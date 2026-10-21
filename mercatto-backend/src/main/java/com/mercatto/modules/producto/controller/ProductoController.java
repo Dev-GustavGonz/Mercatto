@@ -124,8 +124,10 @@ public class ProductoController {
         try {
             Map<String, Object> res = cloudinaryService.subirImagen(archivo);
             return ResponseEntity.ok(res);
-        } catch (IOException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Error al subir la imagen: " + e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", "Error al subir la imagen: " + e.getMessage()));
         }
     }
 }

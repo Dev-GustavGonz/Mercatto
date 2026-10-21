@@ -33,11 +33,11 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
     Page<Producto> buscarPorTexto(@Param("termino") String termino, Pageable pageable);
 
     @Query("SELECT p FROM Producto p WHERE p.activo = true AND " +
-           "(:categoriaId IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
-           "(:marca IS NULL OR LOWER(p.marca) = LOWER(:marca)) AND " +
-           "(:precioMin IS NULL OR p.precio >= :precioMin) AND " +
-           "(:precioMax IS NULL OR p.precio <= :precioMax) AND " +
-           "(:termino IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', :termino, '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', :termino, '%')))")
+           "(CAST(:categoriaId AS long) IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
+           "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
+           "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
+           "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
+           "(CAST(:termino AS string) IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')))")
     Page<Producto> filtrarCatalogo(
         @Param("categoriaId") Long categoriaId,
         @Param("marca") String marca,
@@ -62,11 +62,11 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
 
     // Filtrar productos exclusivos de una tienda
     @Query("SELECT p FROM Producto p WHERE p.vendedor.id = :vendedorId AND p.activo = true AND " +
-           "(:categoriaId IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
-           "(:marca IS NULL OR LOWER(p.marca) = LOWER(:marca)) AND " +
-           "(:precioMin IS NULL OR p.precio >= :precioMin) AND " +
-           "(:precioMax IS NULL OR p.precio <= :precioMax) AND " +
-           "(:termino IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', :termino, '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', :termino, '%')))")
+           "(CAST(:categoriaId AS long) IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
+           "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
+           "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
+           "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
+           "(CAST(:termino AS string) IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')))")
     Page<Producto> filtrarPorTienda(
         @Param("vendedorId") Long vendedorId,
         @Param("categoriaId") Long categoriaId,

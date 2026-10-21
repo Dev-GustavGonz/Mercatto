@@ -78,6 +78,22 @@ public class GlobalExceptionHandler {
     }
 
     // ──────────────────────────────────────────
+    // 400 — Argumento ilegal o validación fallida
+    // ──────────────────────────────────────────
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    // ──────────────────────────────────────────
+    // 400 — Tamaño máximo de subida excedido
+    // ──────────────────────────────────────────
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleMaxUploadSize(org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "El archivo supera el tamaño máximo permitido de 2 MB.");
+    }
+
+    // ──────────────────────────────────────────
     // 409 — Conflicto de negocio (estado ilegal)
     // ──────────────────────────────────────────
     @ExceptionHandler(IllegalStateException.class)
