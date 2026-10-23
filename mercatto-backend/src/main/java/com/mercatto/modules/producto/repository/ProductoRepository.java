@@ -49,6 +49,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
 
     List<Producto> findTop8ByActivoTrueOrderByFechaCreacionDesc();
     List<Producto> findTop8ByDestacadoTrueAndActivoTrueOrderByTotalVentasDesc();
+    List<Producto> findTop8ByActivoTrueOrderByTotalVentasDesc();
+    List<Producto> findTop12ByActivoTrueOrderByTotalVentasDesc();
     long countByVendedor(Vendedor vendedor);
     long countByVendedorAndActivoTrue(Vendedor vendedor);
 

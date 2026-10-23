@@ -68,20 +68,147 @@ public class VendedorService {
         return convertirAResponse(vendedorRepo.save(v));
     }
 
+    public double obtenerTasaComision(Vendedor.TipoSuscripcion plan) {
+        if (plan == null) return 0.10;
+        switch (plan) {
+            case PRO: return 0.05;
+            case ELITE: return 0.02;
+            case STARTER:
+            default: return 0.10;
+        }
+    }
+
     public Map<String, Object> obtenerEstadisticas(Vendedor vendedor) {
         Map<String, Object> stats = new HashMap<>();
         double ventasBrutas = pedidoRepo.sumIngresosByVendedor(vendedor) != null ? pedidoRepo.sumIngresosByVendedor(vendedor) : 0.0;
-        double comisionAdmin = ventasBrutas * 0.04;
-        double ingresosNetos = ventasBrutas * 0.96;
+        double tasaComision = obtenerTasaComision(vendedor.getTipoSuscripcion());
+        double comisionAdmin = ventasBrutas * tasaComision;
+        double ingresosNetos = ventasBrutas - comisionAdmin; // resultado = valor - porcentaje
 
         stats.put("totalProductos", productoRepo.countByVendedor(vendedor));
         stats.put("totalPedidos", pedidoRepo.countByVendedor(vendedor));
         stats.put("ventasBrutas", ventasBrutas);
+        stats.put("tasaComision", tasaComision * 100);
         stats.put("comisionAdmin", comisionAdmin);
-        stats.put("ingresosTotales", ingresosNetos); // Dinero neto que le llega al vendedor tras el 4%
+        stats.put("ingresosTotales", ingresosNetos); // Dinero neto que le llega a la tienda
         stats.put("calificacion", vendedor.getCalificacion());
         stats.put("totalVentas", vendedor.getTotalVentas());
+        stats.put("planActual", vendedor.getTipoSuscripcion() != null ? vendedor.getTipoSuscripcion().name() : "STARTER");
         return stats;
+    }
+
+    public Map<String, Object> obtenerModeloPredictivo(Vendedor vendedor) {
+        Map<String, Object> modelo = new HashMap<>();
+        
+        long totalProductos = productoRepo.countByVendedor(vendedor);
+        long totalPedidos = pedidoRepo.countByVendedor(vendedor);
+        Double ventasHistoricas = pedidoRepo.sumIngresosByVendedor(vendedor);
+        if (ventasHistoricas == null) ventasHistoricas = 0.0;
+        
+        Vendedor.TipoSuscripcion planActual = vendedor.getTipoSuscripcion() != null 
+                ? vendedor.getTipoSuscripcion() 
+                : Vendedor.TipoSuscripcion.STARTER;
+        double tasaActual = obtenerTasaComision(planActual);
+        
+        // Ticket promedio histórico o estimado por productos
+        double ticketPromedio = 85000.0;
+        if (totalPedidos > 0 && ventasHistoricas > 0) {
+            ticketPromedio = Math.round(ventasHistoricas / totalPedidos);
+        } else if (totalProductos > 0) {
+            ticketPromedio = 115000.0;
+        }
+
+        // Estimación mensual base de compras según tracción de catálogo
+        int comprasBase = (int) Math.max(12, totalProductos * 4 + totalPedidos * 2);
+
+        // 1. Escenario Conservador (-25%)
+        int comprasConservador = (int) Math.max(5, Math.round(comprasBase * 0.75));
+        double valorConservador = comprasConservador * ticketPromedio;
+        double comisionConservador = valorConservador * tasaActual;
+        double netoConservador = valorConservador - comisionConservador;
+
+        // 2. Escenario Esperado (Base)
+        int comprasEsperado = comprasBase;
+        double valorEsperado = comprasEsperado * ticketPromedio;
+        double comisionEsperado = valorEsperado * tasaActual;
+        double netoEsperado = valorEsperado - comisionEsperado;
+
+        // 3. Escenario Optimista (+35%)
+        int comprasOptimista = (int) Math.round(comprasBase * 1.35);
+        double valorOptimista = comprasOptimista * ticketPromedio;
+        double comisionOptimista = valorOptimista * tasaActual;
+        double netoOptimista = valorOptimista - comisionOptimista;
+
+        // Comparativa por Planes sobre el volumen Esperado
+        double comisionStarter = valorEsperado * 0.10;
+        double netoStarter = valorEsperado - comisionStarter;
+        
+        double comisionPro = valorEsperado * 0.05;
+        double netoPro = valorEsperado - comisionPro;
+        
+        double comisionElite = valorEsperado * 0.02;
+        double netoElite = valorEsperado - comisionElite;
+
+        modelo.put("nombreTienda", vendedor.getNombreTienda());
+        modelo.put("planActual", planActual.name());
+        modelo.put("porcentajePlanActual", tasaActual * 100);
+        modelo.put("totalProductos", totalProductos);
+        modelo.put("totalPedidosHistoricos", totalPedidos);
+        modelo.put("ventasHistoricas", ventasHistoricas);
+        modelo.put("ticketPromedio", ticketPromedio);
+
+        // Resultado directo según regla: resultado = valor - porcentaje
+        modelo.put("comprasEstimadas", comprasEsperado);
+        modelo.put("valorVentasEstimado", valorEsperado);
+        modelo.put("comisionEstimada", comisionEsperado);
+        modelo.put("gananciaNetaEsperada", netoEsperado);
+
+        Map<String, Object> escenarios = new HashMap<>();
+        escenarios.put("conservador", Map.of(
+            "compras", comprasConservador,
+            "valorVentas", valorConservador,
+            "comision", comisionConservador,
+            "gananciaNeta", netoConservador
+        ));
+        escenarios.put("esperado", Map.of(
+            "compras", comprasEsperado,
+            "valorVentas", valorEsperado,
+            "comision", comisionEsperado,
+            "gananciaNeta", netoEsperado
+        ));
+        escenarios.put("optimista", Map.of(
+            "compras", comprasOptimista,
+            "valorVentas", valorOptimista,
+            "comision", comisionOptimista,
+            "gananciaNeta", netoOptimista
+        ));
+        modelo.put("escenarios", escenarios);
+
+        Map<String, Object> comparativaPlanes = new HashMap<>();
+        comparativaPlanes.put("STARTER", Map.of(
+            "nombre", "Plan Starter",
+            "porcentaje", 10.0,
+            "comision", comisionStarter,
+            "gananciaNeta", netoStarter,
+            "ahorroFrenteStarter", 0.0
+        ));
+        comparativaPlanes.put("PRO", Map.of(
+            "nombre", "Plan Profesional",
+            "porcentaje", 5.0,
+            "comision", comisionPro,
+            "gananciaNeta", netoPro,
+            "ahorroFrenteStarter", comisionStarter - comisionPro
+        ));
+        comparativaPlanes.put("ELITE", Map.of(
+            "nombre", "Plan Elite Premium",
+            "porcentaje", 2.0,
+            "comision", comisionElite,
+            "gananciaNeta", netoElite,
+            "ahorroFrenteStarter", comisionStarter - comisionElite
+        ));
+        modelo.put("comparativaPlanes", comparativaPlanes);
+
+        return modelo;
     }
 
     public VendedorResponse convertirAResponse(Vendedor v) {

@@ -53,6 +53,12 @@ public class ProductoController {
         return ResponseEntity.ok(productoService.obtenerDestacados());
     }
 
+    // GET /api/productos/mas-vendidos
+    @GetMapping("/mas-vendidos")
+    public ResponseEntity<List<ProductoResponse>> masVendidos() {
+        return ResponseEntity.ok(productoService.obtenerMasVendidos());
+    }
+
     // GET /api/productos/nuevos
     @GetMapping("/nuevos")
     public ResponseEntity<List<ProductoResponse>> nuevos() {

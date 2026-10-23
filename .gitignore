@@ -25,3 +25,13 @@ Thumbs.db
 # Secretos (no subir al repositorio)
 mercatto-frontend/.env
 mercatto-frontend/.env.production
+
+# Python
+modelo_predictivo/__pycache__/
+*.pyc
+
+# Frontend sub-repo
+mercatto-frontend/
+
+package-lock.json
+

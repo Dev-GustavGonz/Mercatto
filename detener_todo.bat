@@ -14,8 +14,11 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr :5173 ^| findstr LISTENING') 
     taskkill /F /PID %%a > nul 2>&1
 )
 
-echo [2/3] Liberando puerto 8080 (Backend Spring Boot)...
+echo [2/3] Liberando puertos del Backend (8080 y 8085)...
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8080 ^| findstr LISTENING') do (
+    taskkill /F /PID %%a > nul 2>&1
+)
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8085 ^| findstr LISTENING') do (
     taskkill /F /PID %%a > nul 2>&1
 )
 

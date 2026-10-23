@@ -79,6 +79,11 @@ public class ProductoService {
                 .stream().map(this::convertirAResponse).collect(Collectors.toList());
     }
 
+    public List<ProductoResponse> obtenerMasVendidos() {
+        return productoRepo.findTop8ByActivoTrueOrderByTotalVentasDesc()
+                .stream().map(this::convertirAResponse).collect(Collectors.toList());
+    }
+
     public List<ProductoResponse> obtenerNuevos() {
         return productoRepo.findTop8ByActivoTrueOrderByFechaCreacionDesc()
                 .stream().map(this::convertirAResponse).collect(Collectors.toList());

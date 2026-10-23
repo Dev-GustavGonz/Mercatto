@@ -1,0 +1,45 @@
+{
+  "mejor_modelo": "Random Forest",
+  "resultados": {
+    "Regresión Lineal": {
+      "mae": 17768665.6433495,
+      "rmse": 71552817.84342271,
+      "r2": -0.9265205680298114,
+      "mape": 74.28053896155731
+    },
+    "Ridge Regression": {
+      "mae": 17684723.01467329,
+      "rmse": 71052975.47553407,
+      "r2": -0.8996986147818522,
+      "mape": 74.2782893717801
+    },
+    "Random Forest": {
+      "mae": 6920454.610251738,
+      "rmse": 17195814.70984486,
+      "r2": 0.8887331788476426,
+      "mape": 26.88778951069321
+    },
+    "Gradient Boosting": {
+      "mae": 7179993.994263754,
+      "rmse": 17760902.584631708,
+      "r2": 0.8813001332340391,
+      "mape": 26.187985076569486
+    }
+  },
+  "features": [
+    "mes",
+    "temporada_alta",
+    "categoria",
+    "plan_suscripcion",
+    "productos_activos",
+    "visitas_tienda",
+    "carritos_creados",
+    "reputacion",
+    "ticket_promedio"
+  ],
+  "planes_comision": {
+    "STARTER": 10.0,
+    "PRO": 5.0,
+    "ELITE": 2.0
+  }
+}

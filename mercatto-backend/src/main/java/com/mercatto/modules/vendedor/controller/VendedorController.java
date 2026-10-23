@@ -51,6 +51,14 @@ public class VendedorController {
         return ResponseEntity.ok(vendedorService.actualizarSuscripcion(usuario, plan));
     }
 
+    // GET /api/vendedor/modelo-predictivo
+    @GetMapping("/modelo-predictivo")
+    public ResponseEntity<Map<String, Object>> modeloPredictivo(@AuthenticationPrincipal UserDetails userDetails) {
+        Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
+        Vendedor vendedor = vendedorService.obtenerPorUsuario(usuario);
+        return ResponseEntity.ok(vendedorService.obtenerModeloPredictivo(vendedor));
+    }
+
     // GET /api/vendedor/stats
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> stats(@AuthenticationPrincipal UserDetails userDetails) {

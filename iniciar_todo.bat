@@ -13,21 +13,21 @@ echo.
 echo [1/4] Verificando servicio de MySQL (Puerto 3306)...
 netstat -ano | findstr :3306 | findstr LISTENING > nul
 if %errorlevel% neq 0 (
-    echo [AVISO] MySQL no detectado en puerto 3306. Intentando iniciar servicio MySQL80...
-    net start MySQL80 > nul 2>&1
+    echo [AVISO] MySQL no detectado en puerto 3306. Intentando iniciar servicio MySQL...
+    net start MySQL84 > nul 2>&1 || net start MySQL80 > nul 2>&1 || net start MySQL > nul 2>&1
 ) else (
     echo [OK] MySQL esta activo en puerto 3306.
 )
 echo.
 
 :: 2. Iniciar Backend (Spring Boot)
-echo [2/4] Iniciando Backend Spring Boot (Puerto 8080)...
-start "[1/3] Mercatto Backend (Spring Boot)" cmd /k "cd /d c:\proyecto\Mercatto\mercatto-backend && mvn spring-boot:run"
+echo [2/4] Iniciando Backend Spring Boot (Puerto 8085)...
+start "[1/3] Mercatto Backend (Spring Boot)" cmd /k "cd /d C:\Users\gjgh2\Downloads\mercatto\mercatto\mercatto-backend && mvn spring-boot:run"
 echo.
 
 :: 3. Iniciar Frontend (Vite)
 echo [3/4] Iniciando Frontend React + Vite (Puerto 5173)...
-start "[2/3] Mercatto Frontend (Vite)" cmd /k "cd /d c:\proyecto\Mercatto\mercatto-frontend && npm run dev"
+start "[2/3] Mercatto Frontend (Vite)" cmd /k "cd /d C:\Users\gjgh2\Downloads\mercatto\mercatto\mercatto-frontend && npm run dev"
 echo.
 
 :: 4. Iniciar n8n
