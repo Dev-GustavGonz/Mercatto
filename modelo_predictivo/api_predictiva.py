@@ -15,6 +15,7 @@ import json
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from prediccion_tienda import predecir_tienda
+from prediccion_admin import predecir_administrador
 
 app = Flask(__name__)
 CORS(app) # Habilita llamadas desde React en Vite
@@ -88,6 +89,48 @@ def predict():
         categoria=categoria,
         mes=mes,
         reputacion=reputacion
+    )
+
+    return jsonify(resultado)
+
+@app.route('/api/predict/admin', methods=['GET', 'POST'])
+def predict_admin():
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or {}
+    else:
+        data = request.args.to_dict()
+
+    try:
+        starter = int(data.get('starter', data.get('tiendas_starter', 5)))
+    except (ValueError, TypeError):
+        starter = 5
+
+    try:
+        pro = int(data.get('pro', data.get('tiendas_pro', 3)))
+    except (ValueError, TypeError):
+        pro = 3
+
+    try:
+        elite = int(data.get('elite', data.get('tiendas_elite', 2)))
+    except (ValueError, TypeError):
+        elite = 2
+
+    try:
+        ticket = float(data.get('ticket', data.get('ticket_promedio', 120000.0)))
+    except (ValueError, TypeError):
+        ticket = 120000.0
+
+    try:
+        mes = int(data.get('mes', 10))
+    except (ValueError, TypeError):
+        mes = 10
+
+    resultado = predecir_administrador(
+        tiendas_starter=starter,
+        tiendas_pro=pro,
+        tiendas_elite=elite,
+        ticket_promedio=ticket,
+        mes=mes
     )
 
     return jsonify(resultado)

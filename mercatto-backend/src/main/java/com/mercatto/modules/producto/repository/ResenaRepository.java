@@ -21,4 +21,6 @@ public interface ResenaRepository extends JpaRepository<Resena, Long> {
     Double calcularPromedioCalificacion(@Param("producto") Producto producto);
 
     long countByProducto(Producto producto);
+    long countByUsuario(Usuario usuario);
+    void deleteByUsuario(Usuario usuario);
 }

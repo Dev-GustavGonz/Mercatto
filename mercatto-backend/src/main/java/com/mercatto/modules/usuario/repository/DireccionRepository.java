@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface DireccionRepository extends JpaRepository<Direccion, Long> {
     List<Direccion> findByUsuario(Usuario usuario);
     Optional<Direccion> findByUsuarioAndEsPrincipalTrue(Usuario usuario);
+    void deleteByUsuario(Usuario usuario);
 }

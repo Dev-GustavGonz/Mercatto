@@ -78,6 +78,16 @@ public class VendedorService {
         }
     }
 
+    public double obtenerCuotaMensual(Vendedor.TipoSuscripcion plan) {
+        if (plan == null) return 0.0;
+        switch (plan) {
+            case PRO: return 49000.0;
+            case ELITE: return 99000.0;
+            case STARTER:
+            default: return 0.0;
+        }
+    }
+
     public Map<String, Object> obtenerEstadisticas(Vendedor vendedor) {
         Map<String, Object> stats = new HashMap<>();
         double ventasBrutas = pedidoRepo.sumIngresosByVendedor(vendedor) != null ? pedidoRepo.sumIngresosByVendedor(vendedor) : 0.0;
@@ -233,8 +243,11 @@ public class VendedorService {
         res.setTipoSuscripcion(v.getTipoSuscripcion() != null ? v.getTipoSuscripcion().name() : "STARTER");
         Double ventasBrutas = pedidoRepo.sumIngresosByVendedor(v);
         if (ventasBrutas == null) ventasBrutas = 0.0;
-        double comision = ventasBrutas * 0.04;
-        double neto = ventasBrutas * 0.96;
+        double tasaComision = obtenerTasaComision(v.getTipoSuscripcion());
+        double comision = Math.round(ventasBrutas * tasaComision * 100.0) / 100.0;
+        double neto = Math.round((ventasBrutas - comision) * 100.0) / 100.0;
+        res.setPorcentajeComision(tasaComision * 100.0);
+        res.setCuotaMensualPlan(obtenerCuotaMensual(v.getTipoSuscripcion()));
 
         res.setVentasBrutas(ventasBrutas);
         res.setComisionAdmin(comision);

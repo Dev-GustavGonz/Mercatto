@@ -27,6 +27,8 @@ public class VendedorResponse {
     private String cuentaBancaria;
     private LocalDateTime fechaRegistro;
     private String tipoSuscripcion;
+    private Double porcentajeComision;
+    private Double cuotaMensualPlan;
     private LocalDateTime fechaExpiracionSuscripcion;
 
     public VendedorResponse() {}
@@ -105,4 +107,10 @@ public class VendedorResponse {
 
     public LocalDateTime getFechaExpiracionSuscripcion() { return fechaExpiracionSuscripcion; }
     public void setFechaExpiracionSuscripcion(LocalDateTime fechaExpiracionSuscripcion) { this.fechaExpiracionSuscripcion = fechaExpiracionSuscripcion; }
+
+    public Double getPorcentajeComision() { return porcentajeComision; }
+    public void setPorcentajeComision(Double porcentajeComision) { this.porcentajeComision = porcentajeComision; }
+
+    public Double getCuotaMensualPlan() { return cuotaMensualPlan; }
+    public void setCuotaMensualPlan(Double cuotaMensualPlan) { this.cuotaMensualPlan = cuotaMensualPlan; }
 }
