@@ -25,8 +25,13 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     @Query("SELECT COUNT(DISTINCT p) FROM Pedido p JOIN p.items item WHERE item.vendedor = :vendedor")
     long countByVendedor(@Param("vendedor") Vendedor vendedor);
 
-    @Query("SELECT COALESCE(SUM(item.subtotal), 0.0) FROM Pedido p JOIN p.items item WHERE item.vendedor = :vendedor AND p.estado != com.mercatto.modules.pedido.model.Pedido$EstadoPedido.PENDIENTE AND p.estado != com.mercatto.modules.pedido.model.Pedido$EstadoPedido.CANCELADO")
+    // Ingresos distribuidos a la tienda exclusivamente cuando el pedido ha sido marcado como ENTREGADO
+    @Query("SELECT COALESCE(SUM(item.subtotal), 0.0) FROM Pedido p JOIN p.items item WHERE item.vendedor = :vendedor AND p.estado = com.mercatto.modules.pedido.model.Pedido$EstadoPedido.ENTREGADO")
     Double sumIngresosByVendedor(@Param("vendedor") Vendedor vendedor);
+
+    // Fondos en custodia de Mercatto vía Wompi a la espera de entrega
+    @Query("SELECT COALESCE(SUM(item.subtotal), 0.0) FROM Pedido p JOIN p.items item WHERE item.vendedor = :vendedor AND (p.estado = com.mercatto.modules.pedido.model.Pedido$EstadoPedido.PAGADO OR p.estado = com.mercatto.modules.pedido.model.Pedido$EstadoPedido.EN_PREPARACION OR p.estado = com.mercatto.modules.pedido.model.Pedido$EstadoPedido.ENVIADO)")
+    Double sumIngresosEnCustodiaByVendedor(@Param("vendedor") Vendedor vendedor);
 
     @Query("SELECT COALESCE(SUM(p.total), 0.0) FROM Pedido p WHERE p.estado != com.mercatto.modules.pedido.model.Pedido$EstadoPedido.PENDIENTE AND p.estado != com.mercatto.modules.pedido.model.Pedido$EstadoPedido.CANCELADO")
     Double sumIngresosTotales();

@@ -348,9 +348,11 @@ public class PedidoService {
         if (guia != null) pedido.setGuiaSeguimiento(guia);
         if (empresa != null) pedido.setEmpresaEnvio(empresa);
 
-        if (nuevoEstado == Pedido.EstadoPedido.PAGADO && pedido.getPago() != null) {
+        if ((nuevoEstado == Pedido.EstadoPedido.PAGADO || nuevoEstado == Pedido.EstadoPedido.ENTREGADO) && pedido.getPago() != null) {
             pedido.getPago().setEstado(Pago.EstadoPago.APROBADO);
-            pedido.getPago().setFechaPago(LocalDateTime.now());
+            if (pedido.getPago().getFechaPago() == null) {
+                pedido.getPago().setFechaPago(LocalDateTime.now());
+            }
             pagoRepo.save(pedido.getPago());
         }
 
