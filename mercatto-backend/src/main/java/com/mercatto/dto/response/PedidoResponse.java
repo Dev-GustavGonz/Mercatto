@@ -19,6 +19,10 @@ public class PedidoResponse {
     private Long vendedorId;
     private LocalDateTime fechaCreacion;
 
+    private Double montoComision;
+    private Double netoVendedor;
+    private String estadoDesembolso;
+
     private CompradorDTO comprador;
     private DireccionDTO direccion;
     private List<ItemDTO> items;
@@ -66,6 +70,15 @@ public class PedidoResponse {
 
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    public Double getMontoComision() { return montoComision; }
+    public void setMontoComision(Double montoComision) { this.montoComision = montoComision; }
+
+    public Double getNetoVendedor() { return netoVendedor; }
+    public void setNetoVendedor(Double netoVendedor) { this.netoVendedor = netoVendedor; }
+
+    public String getEstadoDesembolso() { return estadoDesembolso; }
+    public void setEstadoDesembolso(String estadoDesembolso) { this.estadoDesembolso = estadoDesembolso; }
 
     public CompradorDTO getComprador() { return comprador; }
     public void setComprador(CompradorDTO comprador) { this.comprador = comprador; }

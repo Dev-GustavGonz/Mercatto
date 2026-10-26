@@ -392,9 +392,79 @@ public class PedidoService {
                 pedido.getPago().setFechaPago(LocalDateTime.now());
             }
             pagoRepo.save(pedido.getPago());
+        } else if (nuevoEstado == Pedido.EstadoPedido.CANCELADO) {
+            if (pedido.getEstado() != Pedido.EstadoPedido.CANCELADO) {
+                revertirStock(pedido);
+            }
+            if (pedido.getPago() != null) {
+                if (pedido.getPago().getEstado() == Pago.EstadoPago.APROBADO) {
+                    pedido.getPago().setEstado(Pago.EstadoPago.REEMBOLSADO);
+                } else {
+                    pedido.getPago().setEstado(Pago.EstadoPago.RECHAZADO);
+                }
+                pagoRepo.save(pedido.getPago());
+            }
         }
 
         return convertirAResponse(pedidoRepo.save(pedido));
+    }
+
+    @Transactional
+    public PedidoResponse cancelarPedido(Long id, Usuario usuario) {
+        Pedido pedido = pedidoRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
+
+        boolean esComprador = pedido.getComprador() != null && pedido.getComprador().getId().equals(usuario.getId());
+        boolean esAdmin = usuario.getRol() == Usuario.Rol.ADMIN;
+        boolean esVendedorDelPedido = pedido.getItems() != null && pedido.getItems().stream()
+                .anyMatch(i -> i.getVendedor() != null && i.getVendedor().getUsuario() != null && i.getVendedor().getUsuario().getId().equals(usuario.getId()));
+
+        if (!esComprador && !esAdmin && !esVendedorDelPedido) {
+            throw new UnauthorizedException("No tienes permiso para cancelar este pedido.");
+        }
+
+        if (pedido.getEstado() == Pedido.EstadoPedido.CANCELADO) {
+            throw new BadRequestException("El pedido ya se encuentra cancelado.");
+        }
+
+        if (pedido.getEstado() == Pedido.EstadoPedido.ENTREGADO) {
+            throw new BadRequestException("No es posible cancelar un pedido que ya ha sido entregado.");
+        }
+
+        if (esComprador && pedido.getEstado() == Pedido.EstadoPedido.ENVIADO) {
+            throw new BadRequestException("El pedido ya está en camino. Por favor comunícate con la tienda o soporte para coordinar la novedad.");
+        }
+
+        revertirStock(pedido);
+
+        pedido.setEstado(Pedido.EstadoPedido.CANCELADO);
+        if (pedido.getPago() != null) {
+            if (pedido.getPago().getEstado() == Pago.EstadoPago.APROBADO) {
+                pedido.getPago().setEstado(Pago.EstadoPago.REEMBOLSADO);
+            } else {
+                pedido.getPago().setEstado(Pago.EstadoPago.RECHAZADO);
+            }
+            pagoRepo.save(pedido.getPago());
+        }
+
+        return convertirAResponse(pedidoRepo.save(pedido));
+    }
+
+    private void revertirStock(Pedido pedido) {
+        if (pedido.getItems() != null) {
+            for (PedidoItem item : pedido.getItems()) {
+                if (item.getVariante() != null) {
+                    ProductoVariante v = item.getVariante();
+                    v.setStock(v.getStock() + item.getCantidad());
+                    varianteRepo.save(v);
+                }
+                if (item.getProducto() != null) {
+                    Producto prod = item.getProducto();
+                    prod.setStock(prod.getStock() + item.getCantidad());
+                    productoRepo.save(prod);
+                }
+            }
+        }
     }
 
     public PedidoResponse convertirAResponse(Pedido p) {
@@ -463,6 +533,29 @@ public class PedidoService {
                     res.setNombreTienda(i.getVendedor().getNombreTienda());
                     res.setVendedorId(i.getVendedor().getId());
                 });
+
+            double sumaComision = p.getItems().stream()
+                .filter(i -> i.getMontoComision() != null)
+                .mapToDouble(PedidoItem::getMontoComision)
+                .sum();
+            double sumaNeto = p.getItems().stream()
+                .filter(i -> i.getNetoVendedor() != null)
+                .mapToDouble(PedidoItem::getNetoVendedor)
+                .sum();
+
+            res.setMontoComision(Math.round(sumaComision * 100.0) / 100.0);
+            res.setNetoVendedor(Math.round(sumaNeto * 100.0) / 100.0);
+        } else {
+            res.setMontoComision(0.0);
+            res.setNetoVendedor(p.getTotal());
+        }
+
+        if (p.getEstado() == Pedido.EstadoPedido.ENTREGADO) {
+            res.setEstadoDesembolso("DESEMBOLSADO");
+        } else if (p.getEstado() == Pedido.EstadoPedido.CANCELADO) {
+            res.setEstadoDesembolso("CANCELADO");
+        } else {
+            res.setEstadoDesembolso("EN_CUSTODIA");
         }
 
         return res;

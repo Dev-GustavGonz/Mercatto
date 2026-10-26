@@ -52,7 +52,7 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.listarPorComprador(usuario, pagina, tamano));
     }
 
-    // GET /api/pedidos/rastreo (Público: Consulta para invitados mediante código y email)
+    // GET /api/pedidos/rastreo (Publico: Consulta para invitados mediante codigo y email)
     @GetMapping("/rastreo")
     public ResponseEntity<PedidoResponse> rastrearPedido(
             @RequestParam String codigo,
@@ -81,7 +81,7 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.listarPorVendedor(vendedor, pagina, tamano));
     }
 
-    // PATCH /api/pedidos/{id}/estado (Actualizar estado de envío / entrega)
+    // PATCH /api/pedidos/{id}/estado (Actualizar estado de envio / entrega)
     @PatchMapping("/{id}/estado")
     @PreAuthorize("hasAnyRole('VENDEDOR', 'ADMIN')")
     public ResponseEntity<PedidoResponse> actualizarEstado(
@@ -90,5 +90,14 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.actualizarEstado(
                 id, datos.get("estado"), datos.get("guia"), datos.get("empresa")
         ));
+    }
+
+    // POST /api/pedidos/{id}/cancelar (Permite al comprador, vendedor o admin cancelar el pedido y revertir stock)
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<PedidoResponse> cancelarPedido(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
+        return ResponseEntity.ok(pedidoService.cancelarPedido(id, usuario));
     }
 }
