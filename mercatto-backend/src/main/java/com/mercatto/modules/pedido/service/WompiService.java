@@ -68,6 +68,9 @@ public class WompiService {
         data.put("customerPhoneNumber", telefonoCliente);
         data.put("redirectUrl", "http://localhost:5173/pago/exitoso?ref=" + referencia);
 
+        boolean esPlaceholder = publicKey == null || publicKey.isBlank() || publicKey.contains("Q5yDA9xoKdePzhSGeVe9KvxXQKIO5Ade");
+        data.put("esSandboxSimulado", esPlaceholder);
+
         return data;
     }
 
