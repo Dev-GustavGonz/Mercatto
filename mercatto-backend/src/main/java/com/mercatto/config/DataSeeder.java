@@ -2,7 +2,6 @@ package com.mercatto.config;
 
 import com.mercatto.modules.pedido.model.Cupon;
 import com.mercatto.modules.usuario.model.Usuario;
-import com.mercatto.modules.vendedor.model.Vendedor;
 import com.mercatto.modules.pedido.repository.CuponRepository;
 import com.mercatto.modules.usuario.repository.UsuarioRepository;
 import com.mercatto.modules.vendedor.repository.VendedorRepository;
@@ -20,7 +19,7 @@ public class DataSeeder {
                                       CuponRepository cuponRepository,
                                       PasswordEncoder passwordEncoder) {
         return args -> {
-            // Asegurar Admin
+            // Asegurar Admin inicial
             Usuario admin = usuarioRepository.findByEmail("admin@mercatto.com").orElseGet(() -> {
                 Usuario u = new Usuario();
                 u.setEmail("admin@mercatto.com");
@@ -33,44 +32,14 @@ public class DataSeeder {
             admin.setPassword(passwordEncoder.encode("123456"));
             usuarioRepository.save(admin);
 
-            // Asegurar Vendedor
-            Usuario vendedorUser = usuarioRepository.findByEmail("vendedor@mercatto.com").orElseGet(() -> {
-                Usuario u = new Usuario();
-                u.setEmail("vendedor@mercatto.com");
-                u.setNombre("Vendedor Prueba");
-                u.setRol(Usuario.Rol.VENDEDOR);
-                u.setActivo(true);
-                u.setEmailVerificado(true);
-                return u;
+            // Eliminar usuarios y tiendas de prueba previos de la base de datos
+            usuarioRepository.findByEmail("vendedor@mercatto.com").ifPresent(v -> {
+                vendedorRepository.findByUsuario(v).ifPresent(vendedorRepository::delete);
+                usuarioRepository.delete(v);
             });
-            vendedorUser.setPassword(passwordEncoder.encode("123456"));
-            vendedorUser = usuarioRepository.save(vendedorUser);
+            usuarioRepository.findByEmail("comprador@mercatto.com").ifPresent(usuarioRepository::delete);
 
-            if (vendedorRepository.findByUsuario(vendedorUser).isEmpty()) {
-                Vendedor perfilVendedor = new Vendedor();
-                perfilVendedor.setUsuario(vendedorUser);
-                perfilVendedor.setNombreTienda("Tienda de Prueba");
-                perfilVendedor.setTipo(Vendedor.Tipo.PERSONA_NATURAL);
-                perfilVendedor.setEstado(Vendedor.Estado.APROBADO);
-                perfilVendedor.setTipoSuscripcion(Vendedor.TipoSuscripcion.PRO);
-                vendedorRepository.save(perfilVendedor);
-            }
-
-            // Asegurar Comprador
-            Usuario comprador = usuarioRepository.findByEmail("comprador@mercatto.com").orElseGet(() -> {
-                Usuario u = new Usuario();
-                u.setEmail("comprador@mercatto.com");
-                u.setNombre("Comprador Prueba");
-                u.setRol(Usuario.Rol.COMPRADOR);
-                u.setActivo(true);
-                u.setEmailVerificado(true);
-                return u;
-            });
-            comprador.setPassword(passwordEncoder.encode("123456"));
-            comprador.setTokensChat(25);
-            usuarioRepository.save(comprador);
-
-            // Asegurar Cupones de Demostración
+            // Asegurar Cupones del Marketplace
             if (cuponRepository.findByCodigoIgnoreCaseAndActivoTrue("MERCATTO10").isEmpty()) {
                 Cupon c1 = new Cupon();
                 c1.setCodigo("MERCATTO10");
@@ -93,14 +62,6 @@ public class DataSeeder {
                 c2.setActivo(true);
                 cuponRepository.save(c2);
             }
-
-            System.out.println("=========================================");
-            System.out.println("USUARIOS Y CUPONES DE PRUEBA ACTIVADOS");
-            System.out.println("Admin: admin@mercatto.com / 123456");
-            System.out.println("Vendedor: vendedor@mercatto.com / 123456");
-            System.out.println("Comprador: comprador@mercatto.com / 123456 (25 Tokens)");
-            System.out.println("Cupones listos: 'MERCATTO10' y 'BIENVENIDA'");
-            System.out.println("=========================================");
         };
     }
 }
