@@ -52,6 +52,7 @@ public class PedidoService {
     @Autowired private EmailService emailService;
     @Autowired private com.mercatto.modules.usuario.repository.UsuarioRepository usuarioRepo;
     @Autowired private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    @Autowired private com.mercatto.modules.vendedor.service.VendedorService vendedorService;
 
     @Transactional
     public PedidoResponse crearPedidoInvitado(PedidoRequest req) {
@@ -179,7 +180,8 @@ public class PedidoService {
             PedidoItem item = new PedidoItem();
             item.setProducto(producto);
             item.setVariante(variante);
-            item.setVendedor(producto.getVendedor());
+            Vendedor vendedorItem = producto.getVendedor();
+            item.setVendedor(vendedorItem);
             item.setNombreProducto(producto.getTitulo());
             item.setNombreVariante(nombreVariante);
             item.setImagenUrl(imagenUrl);
@@ -187,6 +189,20 @@ public class PedidoService {
             item.setCantidad(itemDto.getCantidad());
             double itemSubtotal = precioUnitario * itemDto.getCantidad();
             item.setSubtotal(itemSubtotal);
+
+            // Congelar plan y comisión al momento de la compra
+            Vendedor.TipoSuscripcion planAlMomento = (vendedorItem != null && vendedorItem.getTipoSuscripcion() != null)
+                    ? vendedorItem.getTipoSuscripcion()
+                    : Vendedor.TipoSuscripcion.STARTER;
+            double tasaComision = vendedorService.obtenerTasaComision(planAlMomento);
+            double porcentajeComision = Math.round(tasaComision * 100.0 * 10.0) / 10.0;
+            double montoComision = Math.round(itemSubtotal * tasaComision * 100.0) / 100.0;
+            double netoVendedor = Math.round((itemSubtotal - montoComision) * 100.0) / 100.0;
+
+            item.setPlanVendedor(planAlMomento.name());
+            item.setPorcentajeComision(porcentajeComision);
+            item.setMontoComision(montoComision);
+            item.setNetoVendedor(netoVendedor);
 
             items.add(item);
             subtotal += itemSubtotal;
@@ -406,6 +422,10 @@ public class PedidoService {
                 itemDto.setPrecioUnitario(i.getPrecioUnitario());
                 itemDto.setCantidad(i.getCantidad());
                 itemDto.setSubtotal(i.getSubtotal());
+                itemDto.setPlanVendedor(i.getPlanVendedor());
+                itemDto.setPorcentajeComision(i.getPorcentajeComision());
+                itemDto.setMontoComision(i.getMontoComision());
+                itemDto.setNetoVendedor(i.getNetoVendedor());
                 if (i.getVendedor() != null) {
                     itemDto.setVendedorId(i.getVendedor().getId());
                     itemDto.setNombreTienda(i.getVendedor().getNombreTienda());

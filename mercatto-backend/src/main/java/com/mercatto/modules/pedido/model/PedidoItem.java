@@ -55,6 +55,19 @@ public class PedidoItem {
     @Column(nullable = false)
     private Double subtotal;
 
+    // Snapshot inmutable del plan y comisión al momento de la compra
+    @Column(name = "plan_vendedor", length = 30)
+    private String planVendedor;
+
+    @Column(name = "porcentaje_comision")
+    private Double porcentajeComision;
+
+    @Column(name = "monto_comision")
+    private Double montoComision;
+
+    @Column(name = "neto_vendedor")
+    private Double netoVendedor;
+
     public PedidoItem() {}
 
     // Getters and Setters
@@ -90,4 +103,16 @@ public class PedidoItem {
 
     public Double getSubtotal() { return subtotal; }
     public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
+
+    public String getPlanVendedor() { return planVendedor; }
+    public void setPlanVendedor(String planVendedor) { this.planVendedor = planVendedor; }
+
+    public Double getPorcentajeComision() { return porcentajeComision; }
+    public void setPorcentajeComision(Double porcentajeComision) { this.porcentajeComision = porcentajeComision; }
+
+    public Double getMontoComision() { return montoComision; }
+    public void setMontoComision(Double montoComision) { this.montoComision = montoComision; }
+
+    public Double getNetoVendedor() { return netoVendedor; }
+    public void setNetoVendedor(Double netoVendedor) { this.netoVendedor = netoVendedor; }
 }

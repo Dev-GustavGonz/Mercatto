@@ -51,18 +51,21 @@ public class AdminService {
         if (ventasTotales == null) ventasTotales = 0.0;
         stats.setIngresosTotales(ventasTotales);
 
-        // Ganancias reales del Administrador calculadas según el plan de cada tienda:
-        // 1) Comisiones por venta: STARTER 10%, PRO 5%, ELITE 2%
+        // Ganancias reales de Mercatto calculadas según el plan al momento de cada compra:
+        // 1) Comisiones por venta congeladas
         // 2) Cuotas de suscripción mensual: STARTER $0, PRO $49.000, ELITE $99.000
-        double totalComisiones = 0.0;
+        Double comisionesCongeladasTotales = pedidoRepo.sumComisionesTotalesMercatto();
+        double totalComisiones = (comisionesCongeladasTotales != null && comisionesCongeladasTotales > 0) ? comisionesCongeladasTotales : 0.0;
         double totalSuscripciones = 0.0;
 
         List<Vendedor> todosVendedores = vendedorRepo.findAll();
         for (Vendedor v : todosVendedores) {
-            Double ventasTienda = pedidoRepo.sumIngresosByVendedor(v);
-            if (ventasTienda == null) ventasTienda = 0.0;
-            double tasa = vendedorService.obtenerTasaComision(v.getTipoSuscripcion());
-            totalComisiones += (ventasTienda * tasa);
+            if (totalComisiones == 0.0) {
+                Double ventasTienda = pedidoRepo.sumIngresosByVendedor(v);
+                if (ventasTienda == null) ventasTienda = 0.0;
+                double tasa = vendedorService.obtenerTasaComision(v.getTipoSuscripcion());
+                totalComisiones += (ventasTienda * tasa);
+            }
             totalSuscripciones += vendedorService.obtenerCuotaMensual(v.getTipoSuscripcion());
         }
 
@@ -101,8 +104,20 @@ public class AdminService {
             if (ventasTienda == null) ventasTienda = 0.0;
 
             double tasaComision = vendedorService.obtenerTasaComision(plan);
-            double comisionRetenida = Math.round(ventasTienda * tasaComision * 100.0) / 100.0;
-            double netoALiquidar = Math.round((ventasTienda - comisionRetenida) * 100.0) / 100.0;
+            Double sumComisionTienda = pedidoRepo.sumComisionByVendedor(v);
+            Double sumNetoTienda = pedidoRepo.sumNetoByVendedor(v);
+            double comisionRetenida;
+            double netoALiquidar;
+
+            if (sumComisionTienda != null && sumComisionTienda > 0) {
+                comisionRetenida = Math.round(sumComisionTienda * 100.0) / 100.0;
+                netoALiquidar = sumNetoTienda != null
+                        ? Math.round(sumNetoTienda * 100.0) / 100.0
+                        : Math.round((ventasTienda - comisionRetenida) * 100.0) / 100.0;
+            } else {
+                comisionRetenida = Math.round(ventasTienda * tasaComision * 100.0) / 100.0;
+                netoALiquidar = Math.round((ventasTienda - comisionRetenida) * 100.0) / 100.0;
+            }
             double cuotaMensual = vendedorService.obtenerCuotaMensual(plan);
 
             totalComisionesRetenidas += comisionRetenida;

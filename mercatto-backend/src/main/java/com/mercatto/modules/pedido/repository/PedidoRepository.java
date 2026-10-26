@@ -35,4 +35,16 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     @Query("SELECT COALESCE(SUM(p.total), 0.0) FROM Pedido p WHERE p.estado != com.mercatto.modules.pedido.model.Pedido$EstadoPedido.PENDIENTE AND p.estado != com.mercatto.modules.pedido.model.Pedido$EstadoPedido.CANCELADO")
     Double sumIngresosTotales();
+
+    // Comisiones retenidas congeladas por ventas de una tienda (según el plan al momento de la compra)
+    @Query("SELECT COALESCE(SUM(item.montoComision), 0.0) FROM Pedido p JOIN p.items item WHERE item.vendedor = :vendedor AND p.estado = com.mercatto.modules.pedido.model.Pedido$EstadoPedido.ENTREGADO")
+    Double sumComisionByVendedor(@Param("vendedor") Vendedor vendedor);
+
+    // Ingresos netos congelados para la tienda tras entrega
+    @Query("SELECT COALESCE(SUM(item.netoVendedor), 0.0) FROM Pedido p JOIN p.items item WHERE item.vendedor = :vendedor AND p.estado = com.mercatto.modules.pedido.model.Pedido$EstadoPedido.ENTREGADO")
+    Double sumNetoByVendedor(@Param("vendedor") Vendedor vendedor);
+
+    // Comisiones totales congeladas para la plataforma Mercatto
+    @Query("SELECT COALESCE(SUM(item.montoComision), 0.0) FROM Pedido p JOIN p.items item WHERE p.estado != com.mercatto.modules.pedido.model.Pedido$EstadoPedido.PENDIENTE AND p.estado != com.mercatto.modules.pedido.model.Pedido$EstadoPedido.CANCELADO")
+    Double sumComisionesTotalesMercatto();
 }

@@ -14,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class SoporteService {
@@ -30,7 +32,7 @@ public class SoporteService {
                 req.getNombre(),
                 req.getEmail(),
                 req.getTelefono(),
-                req.getAsunto() != null && !req.getAsunto().isBlank() ? req.getAsunto() : "Consulta desde Chat Asistente Mercatto",
+                req.getAsunto() != null && !req.getAsunto().isBlank() ? req.getAsunto() : "Consulta desde Asistente Mercatto",
                 req.getMensaje()
         );
 
@@ -55,6 +57,14 @@ public class SoporteService {
         } catch (Exception ignored) {}
 
         return guardado;
+    }
+
+    // Listar tickets del usuario autenticado por su email
+    public List<TicketSoporte> obtenerTicketsPorEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return Collections.emptyList();
+        }
+        return ticketRepo.findByEmailIgnoreCaseOrderByFechaCreacionDesc(email.trim());
     }
 
     // Listar tickets para el panel de administración

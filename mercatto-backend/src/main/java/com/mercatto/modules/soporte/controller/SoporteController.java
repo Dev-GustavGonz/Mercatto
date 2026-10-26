@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -23,6 +25,15 @@ public class SoporteController {
     @PostMapping("/ticket")
     public ResponseEntity<TicketSoporte> crearTicket(@Valid @RequestBody TicketSoporteRequest req) {
         return ResponseEntity.status(201).body(soporteService.crearTicket(req));
+    }
+
+    // GET /api/soporte/mis-tickets (Usuario autenticado: comprador, vendedor o admin)
+    @GetMapping("/mis-tickets")
+    public ResponseEntity<List<TicketSoporte>> misTickets(Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(soporteService.obtenerTicketsPorEmail(auth.getName()));
     }
 
     // GET /api/soporte/admin/tickets (Solo ADMIN)

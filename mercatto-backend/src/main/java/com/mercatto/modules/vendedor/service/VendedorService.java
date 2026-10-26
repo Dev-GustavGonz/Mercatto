@@ -95,16 +95,31 @@ public class VendedorService {
         Double enCustodia = pedidoRepo.sumIngresosEnCustodiaByVendedor(vendedor);
         double ventasEnCustodia = enCustodia != null ? enCustodia : 0.0;
 
+        // Comisiones y neto congelados por compra (no cambian si la tienda modifica su plan después)
+        Double sumComisionCongelada = pedidoRepo.sumComisionByVendedor(vendedor);
+        Double sumNetoCongelado = pedidoRepo.sumNetoByVendedor(vendedor);
+
         double tasaComision = obtenerTasaComision(vendedor.getTipoSuscripcion());
-        double comisionAdmin = ventasBrutas * tasaComision;
-        double ingresosNetos = ventasBrutas - comisionAdmin; // Dinero neto distribuido a la tienda tras entrega
+        double comisionMercatto;
+        double ingresosNetos;
+
+        if (sumComisionCongelada != null && sumComisionCongelada > 0) {
+            comisionMercatto = Math.round(sumComisionCongelada * 100.0) / 100.0;
+            ingresosNetos = sumNetoCongelado != null
+                    ? Math.round(sumNetoCongelado * 100.0) / 100.0
+                    : Math.round((ventasBrutas - comisionMercatto) * 100.0) / 100.0;
+        } else {
+            comisionMercatto = Math.round(ventasBrutas * tasaComision * 100.0) / 100.0;
+            ingresosNetos = Math.round((ventasBrutas - comisionMercatto) * 100.0) / 100.0;
+        }
 
         stats.put("totalProductos", productoRepo.countByVendedor(vendedor));
         stats.put("totalPedidos", pedidoRepo.countByVendedor(vendedor));
         stats.put("ventasBrutas", ventasBrutas);
         stats.put("ventasEnCustodia", ventasEnCustodia);
         stats.put("tasaComision", tasaComision * 100);
-        stats.put("comisionAdmin", comisionAdmin);
+        stats.put("comisionMercatto", comisionMercatto);
+        stats.put("comisionAdmin", comisionMercatto);
         stats.put("ingresosTotales", ingresosNetos); // Dinero neto distribuido a la tienda tras entrega
         stats.put("calificacion", vendedor.getCalificacion());
         stats.put("totalVentas", vendedor.getTotalVentas());

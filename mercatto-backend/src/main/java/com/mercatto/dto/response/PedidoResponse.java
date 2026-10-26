@@ -122,6 +122,12 @@ public class PedidoResponse {
         private String nombreTienda;
         private Long vendedorId;
 
+        // Snapshot de comisión según plan al momento de la compra
+        private String planVendedor;
+        private Double porcentajeComision;
+        private Double montoComision;
+        private Double netoVendedor;
+
         public ItemDTO() {}
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
@@ -143,5 +149,14 @@ public class PedidoResponse {
         public void setNombreTienda(String nombreTienda) { this.nombreTienda = nombreTienda; }
         public Long getVendedorId() { return vendedorId; }
         public void setVendedorId(Long vendedorId) { this.vendedorId = vendedorId; }
+
+        public String getPlanVendedor() { return planVendedor; }
+        public void setPlanVendedor(String planVendedor) { this.planVendedor = planVendedor; }
+        public Double getPorcentajeComision() { return porcentajeComision; }
+        public void setPorcentajeComision(Double porcentajeComision) { this.porcentajeComision = porcentajeComision; }
+        public Double getMontoComision() { return montoComision; }
+        public void setMontoComision(Double montoComision) { this.montoComision = montoComision; }
+        public Double getNetoVendedor() { return netoVendedor; }
+        public void setNetoVendedor(Double netoVendedor) { this.netoVendedor = netoVendedor; }
     }
 }
