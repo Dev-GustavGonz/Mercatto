@@ -23,8 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -193,35 +195,80 @@ public class ProductoService {
             throw new UnauthorizedException("No tienes permiso para editar este producto.");
         }
 
-        Categoria categoria = categoriaRepo.findById(request.getCategoriaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Categoría no válida"));
+        if (request.getCategoriaId() != null) {
+            Categoria categoria = categoriaRepo.findById(request.getCategoriaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoría no válida"));
+            producto.setCategoria(categoria);
+        }
 
-        producto.setCategoria(categoria);
-        producto.setTitulo(request.getTitulo());
-        producto.setDescripcion(request.getDescripcion());
-        producto.setPrecio(request.getPrecio());
+        if (request.getTitulo() != null && !request.getTitulo().isBlank()) {
+            if (!request.getTitulo().equals(producto.getTitulo())) {
+                producto.setTitulo(request.getTitulo());
+                producto.setSlug(generarSlugUnico(request.getTitulo()));
+            }
+        }
+        if (request.getDescripcion() != null) {
+            producto.setDescripcion(request.getDescripcion());
+        }
+        if (request.getPrecio() != null) {
+            producto.setPrecio(request.getPrecio());
+        }
         producto.setPrecioOferta(request.getPrecioOferta());
-        producto.setStock(request.getStock());
+        if (request.getStock() != null) {
+            producto.setStock(request.getStock());
+        }
         producto.setMarca(request.getMarca());
         producto.setActivo(request.isActivo());
         producto.setDestacado(request.isDestacado());
 
-        // Actualizar imágenes si se enviaron
+        // Actualizar imágenes limpiamente sin desreferenciar la colección gestionada por Hibernate
         if (request.getImagenes() != null) {
-            imagenRepo.deleteByProducto(producto);
-            List<ProductoImagen> nuevasImagenes = new ArrayList<>();
+            producto.getImagenes().clear();
             for (int i = 0; i < request.getImagenes().size(); i++) {
                 ProductoRequest.ImagenDTO imgDto = request.getImagenes().get(i);
-                ProductoImagen img = new ProductoImagen();
-                img.setProducto(producto);
-                img.setUrl(imgDto.getUrl());
-                img.setPublicId(imgDto.getPublicId());
-                img.setPrincipal(i == 0 || imgDto.isPrincipal());
-                img.setOrdenVisual(i);
-                nuevasImagenes.add(img);
+                if (imgDto.getUrl() != null && !imgDto.getUrl().trim().isEmpty()) {
+                    ProductoImagen img = new ProductoImagen();
+                    img.setProducto(producto);
+                    img.setUrl(imgDto.getUrl().trim());
+                    img.setPublicId(imgDto.getPublicId());
+                    img.setPrincipal(i == 0 || imgDto.isPrincipal());
+                    img.setOrdenVisual(imgDto.getOrdenVisual() != null ? imgDto.getOrdenVisual() : i);
+                    producto.getImagenes().add(img);
+                }
             }
-            imagenRepo.saveAll(nuevasImagenes);
-            producto.setImagenes(nuevasImagenes);
+        }
+
+        // Actualizar variantes si se enviaron
+        if (request.getVariantes() != null) {
+            Map<Long, ProductoVariante> existentesMap = new HashMap<>();
+            for (ProductoVariante pv : producto.getVariantes()) {
+                if (pv.getId() != null) {
+                    existentesMap.put(pv.getId(), pv);
+                }
+            }
+
+            List<ProductoVariante> procesadas = new ArrayList<>();
+            for (ProductoRequest.VarianteDTO varDto : request.getVariantes()) {
+                if (varDto.getNombre() == null || varDto.getNombre().trim().isEmpty()) continue;
+
+                ProductoVariante v;
+                if (varDto.getId() != null && existentesMap.containsKey(varDto.getId())) {
+                    v = existentesMap.get(varDto.getId());
+                } else {
+                    v = new ProductoVariante();
+                    v.setProducto(producto);
+                }
+                v.setNombre(varDto.getNombre().trim());
+                v.setSku(varDto.getSku());
+                v.setPrecio(varDto.getPrecio() != null ? varDto.getPrecio() : producto.getPrecio());
+                v.setPrecioOferta(varDto.getPrecioOferta());
+                v.setStock(varDto.getStock() != null ? varDto.getStock() : 0);
+                v.setImagenUrl(varDto.getImagenUrl());
+                procesadas.add(v);
+            }
+
+            producto.getVariantes().clear();
+            producto.getVariantes().addAll(procesadas);
         }
 
         return convertirAResponse(productoRepo.save(producto));

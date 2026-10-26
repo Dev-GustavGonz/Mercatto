@@ -364,7 +364,29 @@ public class PedidoService {
         if (guia != null) pedido.setGuiaSeguimiento(guia);
         if (empresa != null) pedido.setEmpresaEnvio(empresa);
 
-        if ((nuevoEstado == Pedido.EstadoPedido.PAGADO || nuevoEstado == Pedido.EstadoPedido.ENTREGADO) && pedido.getPago() != null) {
+        if (nuevoEstado == Pedido.EstadoPedido.ENTREGADO) {
+            if (pedido.getPago() != null) {
+                pedido.getPago().setEstado(Pago.EstadoPago.APROBADO);
+                if (pedido.getPago().getFechaPago() == null) {
+                    pedido.getPago().setFechaPago(LocalDateTime.now());
+                }
+                pagoRepo.save(pedido.getPago());
+            }
+            // Desembolso y liquidación automática de fondos a cada tienda asociada al entregarse el pedido
+            if (pedido.getItems() != null) {
+                for (PedidoItem item : pedido.getItems()) {
+                    if (item.getVendedor() != null) {
+                        double tasa = vendedorService.obtenerTasaComision(item.getVendedor().getTipoSuscripcion());
+                        double comisionRetenida = Math.round(item.getSubtotal() * tasa * 100.0) / 100.0;
+                        double montoNetoTienda = Math.round((item.getSubtotal() - comisionRetenida) * 100.0) / 100.0;
+                        org.slf4j.LoggerFactory.getLogger(PedidoService.class).info(
+                            "✅ [DESEMBOLSO AUTOMÁTICO A TIENDA] Pedido {} marcado como ENTREGADO. Transferido automáticamente a Tienda '{}' (ID: {}): ${} COP (Comisión Mercatto retenida: ${} COP)",
+                            pedido.getCodigo(), item.getVendedor().getNombreTienda(), item.getVendedor().getId(), montoNetoTienda, comisionRetenida
+                        );
+                    }
+                }
+            }
+        } else if (nuevoEstado == Pedido.EstadoPedido.PAGADO && pedido.getPago() != null) {
             pedido.getPago().setEstado(Pago.EstadoPago.APROBADO);
             if (pedido.getPago().getFechaPago() == null) {
                 pedido.getPago().setFechaPago(LocalDateTime.now());
