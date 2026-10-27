@@ -3,6 +3,7 @@ package com.mercatto.modules.producto.repository;
 import com.mercatto.modules.producto.model.Producto;
 import com.mercatto.modules.producto.model.Resena;
 import com.mercatto.modules.usuario.model.Usuario;
+import com.mercatto.modules.vendedor.model.Vendedor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +20,12 @@ public interface ResenaRepository extends JpaRepository<Resena, Long> {
 
     @Query("SELECT AVG(r.calificacion) FROM Resena r WHERE r.producto = :producto")
     Double calcularPromedioCalificacion(@Param("producto") Producto producto);
+
+    @Query("SELECT AVG(r.calificacion) FROM Resena r WHERE r.producto.vendedor = :vendedor")
+    Double calcularPromedioCalificacionVendedor(@Param("vendedor") Vendedor vendedor);
+
+    @Query("SELECT COUNT(r) FROM Resena r WHERE r.producto.vendedor = :vendedor")
+    Long countByVendedor(@Param("vendedor") Vendedor vendedor);
 
     long countByProducto(Producto producto);
     long countByUsuario(Usuario usuario);

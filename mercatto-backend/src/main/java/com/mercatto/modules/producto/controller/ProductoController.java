@@ -41,10 +41,11 @@ public class ProductoController {
             @RequestParam(required = false) Double precioMin,
             @RequestParam(required = false) Double precioMax,
             @RequestParam(required = false) String q,
+            @RequestParam(required = false) Boolean soloElite,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "12") int tamano,
             @RequestParam(defaultValue = "recientes") String orden) {
-        return ResponseEntity.ok(productoService.listar(categoriaId, marca, precioMin, precioMax, q, pagina, tamano, orden));
+        return ResponseEntity.ok(productoService.listar(categoriaId, marca, precioMin, precioMax, q, soloElite, pagina, tamano, orden));
     }
 
     // GET /api/productos/destacados

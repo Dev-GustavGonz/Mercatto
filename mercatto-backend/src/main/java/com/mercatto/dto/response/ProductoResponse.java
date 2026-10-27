@@ -112,6 +112,8 @@ public class ProductoResponse {
         private String logoUrl;
         private String ciudad;
         private Double calificacion;
+        private String tipoSuscripcion;
+        private Integer totalResenas;
 
         public VendedorDTO() {}
         public Long getId() { return id; }
@@ -126,6 +128,10 @@ public class ProductoResponse {
         public void setCiudad(String ciudad) { this.ciudad = ciudad; }
         public Double getCalificacion() { return calificacion; }
         public void setCalificacion(Double calificacion) { this.calificacion = calificacion; }
+        public String getTipoSuscripcion() { return tipoSuscripcion; }
+        public void setTipoSuscripcion(String tipoSuscripcion) { this.tipoSuscripcion = tipoSuscripcion; }
+        public Integer getTotalResenas() { return totalResenas; }
+        public void setTotalResenas(Integer totalResenas) { this.totalResenas = totalResenas; }
     }
 
     public static class ImagenDTO {

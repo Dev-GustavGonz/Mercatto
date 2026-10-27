@@ -6,6 +6,7 @@ import com.mercatto.modules.usuario.model.Usuario;
 import com.mercatto.modules.vendedor.model.Vendedor;
 import com.mercatto.modules.pedido.repository.PedidoRepository;
 import com.mercatto.modules.producto.repository.ProductoRepository;
+import com.mercatto.modules.producto.repository.ResenaRepository;
 import com.mercatto.modules.vendedor.repository.VendedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class VendedorService {
     @Autowired private VendedorRepository vendedorRepo;
     @Autowired private ProductoRepository productoRepo;
     @Autowired private PedidoRepository pedidoRepo;
+    @Autowired private ResenaRepository resenaRepo;
 
     @Transactional
     public Vendedor obtenerPorUsuario(Usuario usuario) {
@@ -274,7 +276,17 @@ public class VendedorService {
         res.setRazonSocial(v.getRazonSocial());
         res.setCiudad(v.getCiudad());
         res.setDireccion(v.getDireccion());
-        res.setCalificacion(v.getCalificacion());
+
+        // La calificación de la tienda es el promedio de las reseñas de todos sus artículos
+        Double promResenas = resenaRepo.calcularPromedioCalificacionVendedor(v);
+        if (promResenas == null || promResenas == 0.0) {
+            promResenas = productoRepo.calcularPromedioCalificacionArticulos(v);
+        }
+        double califTienda = (promResenas != null && promResenas > 0.0)
+                ? Math.round(promResenas * 10.0) / 10.0
+                : (v.getCalificacion() != null && v.getCalificacion() > 0 ? v.getCalificacion() : 5.0);
+        res.setCalificacion(califTienda);
+
         res.setTotalVentas(v.getTotalVentas());
         res.setFechaRegistro(v.getFechaRegistro());
         res.setTipoSuscripcion(v.getTipoSuscripcion() != null ? v.getTipoSuscripcion().name() : "STARTER");

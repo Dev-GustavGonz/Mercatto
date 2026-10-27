@@ -42,6 +42,11 @@ public class ProductoService {
 
     public Page<ProductoResponse> listar(Long categoriaId, String marca, Double precioMin, Double precioMax,
                                         String termino, int pagina, int tamano, String orden) {
+        return listar(categoriaId, marca, precioMin, precioMax, termino, null, pagina, tamano, orden);
+    }
+
+    public Page<ProductoResponse> listar(Long categoriaId, String marca, Double precioMin, Double precioMax,
+                                        String termino, Boolean soloElite, int pagina, int tamano, String orden) {
         Sort sort = Sort.by(Sort.Direction.DESC, "fechaCreacion");
         if ("precio_asc".equalsIgnoreCase(orden)) {
             sort = Sort.by(Sort.Direction.ASC, "precio");
@@ -54,7 +59,7 @@ public class ProductoService {
         }
 
         Pageable pageable = PageRequest.of(pagina, tamano, sort);
-        Page<Producto> productos = productoRepo.filtrarCatalogo(categoriaId, marca, precioMin, precioMax, termino, pageable);
+        Page<Producto> productos = productoRepo.filtrarCatalogo(categoriaId, marca, precioMin, precioMax, termino, soloElite, pageable);
         return productos.map(this::convertirAResponse);
     }
 
@@ -358,6 +363,7 @@ public class ProductoService {
             vDto.setLogoUrl(p.getVendedor().getLogoUrl());
             vDto.setCiudad(p.getVendedor().getCiudad());
             vDto.setCalificacion(p.getVendedor().getCalificacion());
+            vDto.setTipoSuscripcion(p.getVendedor().getTipoSuscripcion() != null ? p.getVendedor().getTipoSuscripcion().name() : "STARTER");
             res.setVendedor(vDto);
         }
 

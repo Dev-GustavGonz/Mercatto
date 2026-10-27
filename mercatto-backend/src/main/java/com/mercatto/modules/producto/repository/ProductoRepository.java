@@ -37,6 +37,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
            "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
            "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
            "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
+           "(CAST(:soloElite AS boolean) IS NULL OR CAST(:soloElite AS boolean) = false OR p.vendedor.tipoSuscripcion = com.mercatto.modules.vendedor.model.Vendedor.TipoSuscripcion.ELITE) AND " +
            "(CAST(:termino AS string) IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')))")
     Page<Producto> filtrarCatalogo(
         @Param("categoriaId") Long categoriaId,
@@ -44,6 +45,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
         @Param("precioMin") Double precioMin,
         @Param("precioMax") Double precioMax,
         @Param("termino") String termino,
+        @Param("soloElite") Boolean soloElite,
         Pageable pageable
     );
 
@@ -61,6 +63,13 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
     // Obtener todas las marcas únicas del marketplace
     @Query("SELECT DISTINCT TRIM(p.marca) FROM Producto p WHERE p.activo = true AND p.marca IS NOT NULL AND TRIM(p.marca) != '' ORDER BY TRIM(p.marca) ASC")
     List<String> obtenerTodasLasMarcas();
+
+    // Promedio de calificaciones y conteo total de reseñas de artículos de un vendedor
+    @Query("SELECT AVG(p.calificacion) FROM Producto p WHERE p.vendedor = :vendedor AND p.activo = true AND p.calificacion > 0")
+    Double calcularPromedioCalificacionArticulos(@Param("vendedor") Vendedor vendedor);
+
+    @Query("SELECT SUM(p.totalResenas) FROM Producto p WHERE p.vendedor = :vendedor AND p.activo = true")
+    Long sumTotalResenasArticulos(@Param("vendedor") Vendedor vendedor);
 
     // Filtrar productos exclusivos de una tienda
     @Query("SELECT p FROM Producto p WHERE p.vendedor.id = :vendedorId AND p.activo = true AND " +

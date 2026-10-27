@@ -5,6 +5,7 @@ import com.mercatto.dto.response.TiendaPublicaResponse;
 import com.mercatto.exception.ResourceNotFoundException;
 import com.mercatto.modules.vendedor.model.Vendedor;
 import com.mercatto.modules.producto.repository.ProductoRepository;
+import com.mercatto.modules.producto.repository.ResenaRepository;
 import com.mercatto.modules.vendedor.repository.VendedorRepository;
 import com.mercatto.modules.producto.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class TiendaPublicaController {
 
     @Autowired
     private ProductoRepository productoRepo;
+
+    @Autowired
+    private ResenaRepository resenaRepo;
 
     @Autowired
     private ProductoService productoService;
@@ -89,7 +93,23 @@ public class TiendaPublicaController {
         res.setLogoUrl(v.getLogoUrl());
         res.setPortadaUrl(v.getPortadaUrl());
         res.setCiudad(v.getCiudad());
-        res.setCalificacion(v.getCalificacion() != null ? v.getCalificacion() : 0.0);
+
+        // La calificación de la tienda es el promedio de las reseñas de todos sus artículos
+        Double promResenas = resenaRepo.calcularPromedioCalificacionVendedor(v);
+        if (promResenas == null || promResenas == 0.0) {
+            promResenas = productoRepo.calcularPromedioCalificacionArticulos(v);
+        }
+        double califTienda = (promResenas != null && promResenas > 0.0)
+                ? Math.round(promResenas * 10.0) / 10.0
+                : (v.getCalificacion() != null && v.getCalificacion() > 0 ? v.getCalificacion() : 5.0);
+        res.setCalificacion(califTienda);
+
+        Long totalRes = resenaRepo.countByVendedor(v);
+        if (totalRes == null || totalRes == 0) {
+            totalRes = productoRepo.sumTotalResenasArticulos(v);
+        }
+        res.setTotalResenas(totalRes != null ? totalRes.intValue() : 0);
+
         res.setTotalVentas(v.getTotalVentas() != null ? v.getTotalVentas() : 0);
         res.setTipoSuscripcion(v.getTipoSuscripcion() != null ? v.getTipoSuscripcion().name() : "STARTER");
 

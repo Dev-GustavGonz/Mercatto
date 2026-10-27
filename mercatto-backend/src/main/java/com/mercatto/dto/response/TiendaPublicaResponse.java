@@ -15,6 +15,7 @@ public class TiendaPublicaResponse {
     private Long totalProductos;
     private List<String> marcas;
     private String tipoSuscripcion;
+    private Integer totalResenas;
 
     public TiendaPublicaResponse() {}
 
@@ -53,4 +54,7 @@ public class TiendaPublicaResponse {
 
     public String getTipoSuscripcion() { return tipoSuscripcion; }
     public void setTipoSuscripcion(String tipoSuscripcion) { this.tipoSuscripcion = tipoSuscripcion; }
+
+    public Integer getTotalResenas() { return totalResenas; }
+    public void setTotalResenas(Integer totalResenas) { this.totalResenas = totalResenas; }
 }

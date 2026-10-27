@@ -6,9 +6,11 @@ import com.mercatto.exception.ResourceNotFoundException;
 import com.mercatto.modules.producto.model.Producto;
 import com.mercatto.modules.producto.model.Resena;
 import com.mercatto.modules.usuario.model.Usuario;
+import com.mercatto.modules.vendedor.model.Vendedor;
 import com.mercatto.modules.producto.repository.ProductoRepository;
 import com.mercatto.modules.producto.repository.ResenaRepository;
 import com.mercatto.modules.usuario.repository.UsuarioRepository;
+import com.mercatto.modules.vendedor.repository.VendedorRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +27,7 @@ public class ResenaController {
     @Autowired private ResenaRepository resenaRepo;
     @Autowired private ProductoRepository productoRepo;
     @Autowired private UsuarioRepository usuarioRepo;
+    @Autowired private VendedorRepository vendedorRepo;
 
     @GetMapping("/producto/{productoId}")
     public ResponseEntity<Page<Resena>> porProducto(
@@ -62,6 +65,21 @@ public class ResenaController {
         producto.setCalificacion(promedio != null ? Math.round(promedio * 10.0) / 10.0 : 0.0);
         producto.setTotalResenas((int) resenaRepo.countByProducto(producto));
         productoRepo.save(producto);
+
+        // Actualizar calificación de la tienda: promedio de reseñas de todos sus artículos
+        if (producto.getVendedor() != null) {
+            Vendedor vendedor = producto.getVendedor();
+            Double promTienda = resenaRepo.calcularPromedioCalificacionVendedor(vendedor);
+            if (promTienda == null || promTienda == 0.0) {
+                promTienda = productoRepo.calcularPromedioCalificacionArticulos(vendedor);
+            }
+            if (promTienda != null && promTienda > 0) {
+                vendedor.setCalificacion(Math.round(promTienda * 10.0) / 10.0);
+            } else {
+                vendedor.setCalificacion(5.0);
+            }
+            vendedorRepo.save(vendedor);
+        }
 
         return ResponseEntity.status(201).body(guardada);
     }
