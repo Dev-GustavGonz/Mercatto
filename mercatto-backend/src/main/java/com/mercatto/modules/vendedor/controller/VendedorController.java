@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vendedor")
-@PreAuthorize("hasRole('VENDEDOR')")
+@PreAuthorize("hasAnyRole('VENDEDOR', 'ADMIN')")
 public class VendedorController {
 
     @Autowired private VendedorService vendedorService;

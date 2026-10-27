@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                 // Solo vendedor
-                .requestMatchers("/api/vendedor/**").hasRole("VENDEDOR")
+                .requestMatchers("/api/vendedor/**").hasAnyRole("VENDEDOR", "ADMIN")
 
                 // Cualquier otra solicitud requiere autenticación (comprador, vendedor o admin)
                 .anyRequest().authenticated()

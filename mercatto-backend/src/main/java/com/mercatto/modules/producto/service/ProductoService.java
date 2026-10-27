@@ -6,6 +6,7 @@ import com.mercatto.modules.producto.model.ProductoImagen;
 import com.mercatto.modules.producto.model.ProductoVariante;
 import com.mercatto.modules.producto.model.VarianteAtributo;
 import com.mercatto.modules.vendedor.model.Vendedor;
+import com.mercatto.modules.usuario.model.Usuario;
 
 import com.mercatto.dto.request.ProductoRequest;
 import com.mercatto.dto.response.ProductoResponse;
@@ -191,7 +192,9 @@ public class ProductoService {
         Producto producto = productoRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
 
-        if (!producto.getVendedor().getId().equals(vendedor.getId())) {
+        boolean esMismoVendedor = producto.getVendedor() != null && producto.getVendedor().getId().equals(vendedor.getId());
+        boolean esAdmin = vendedor.getUsuario() != null && vendedor.getUsuario().getRol() == Usuario.Rol.ADMIN;
+        if (!esMismoVendedor && !esAdmin) {
             throw new UnauthorizedException("No tienes permiso para editar este producto.");
         }
 
@@ -279,7 +282,9 @@ public class ProductoService {
         Producto producto = productoRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
 
-        if (!producto.getVendedor().getId().equals(vendedor.getId())) {
+        boolean esMismoVendedor = producto.getVendedor() != null && producto.getVendedor().getId().equals(vendedor.getId());
+        boolean esAdmin = vendedor.getUsuario() != null && vendedor.getUsuario().getRol() == Usuario.Rol.ADMIN;
+        if (!esMismoVendedor && !esAdmin) {
             throw new UnauthorizedException("No tienes permiso para eliminar este producto.");
         }
 
@@ -292,7 +297,9 @@ public class ProductoService {
         Producto producto = productoRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
 
-        if (!producto.getVendedor().getId().equals(vendedor.getId())) {
+        boolean esMismoVendedor = producto.getVendedor() != null && producto.getVendedor().getId().equals(vendedor.getId());
+        boolean esAdmin = vendedor.getUsuario() != null && vendedor.getUsuario().getRol() == Usuario.Rol.ADMIN;
+        if (!esMismoVendedor && !esAdmin) {
             throw new UnauthorizedException("No tienes permiso para modificar este producto.");
         }
 

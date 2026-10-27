@@ -79,7 +79,7 @@ public class ProductoController {
 
     // POST /api/productos (Solo Vendedor)
     @PostMapping
-    @PreAuthorize("hasRole('VENDEDOR')")
+    @PreAuthorize("hasAnyRole('VENDEDOR', 'ADMIN')")
     public ResponseEntity<ProductoResponse> crear(
             @Valid @RequestBody ProductoRequest req,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -90,7 +90,7 @@ public class ProductoController {
 
     // PUT /api/productos/{id} (Solo Vendedor)
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('VENDEDOR')")
+    @PreAuthorize("hasAnyRole('VENDEDOR', 'ADMIN')")
     public ResponseEntity<ProductoResponse> actualizar(
             @PathVariable Long id,
             @Valid @RequestBody ProductoRequest req,
@@ -114,7 +114,7 @@ public class ProductoController {
 
     // PATCH /api/productos/{id}/toggle-activo (Pausar o Activar producto)
     @PatchMapping("/{id}/toggle-activo")
-    @PreAuthorize("hasRole('VENDEDOR')")
+    @PreAuthorize("hasAnyRole('VENDEDOR', 'ADMIN')")
     public ResponseEntity<ProductoResponse> toggleActivo(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -125,7 +125,7 @@ public class ProductoController {
 
     // POST /api/productos/subir-imagen (Subida a Cloudinary / Local)
     @PostMapping("/subir-imagen")
-    @PreAuthorize("hasRole('VENDEDOR')")
+    @PreAuthorize("hasAnyRole('VENDEDOR', 'ADMIN')")
     public ResponseEntity<?> subirImagen(@RequestParam("archivo") MultipartFile archivo) {
         try {
             Map<String, Object> res = cloudinaryService.subirImagen(archivo);

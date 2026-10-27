@@ -22,9 +22,26 @@ public class VendedorService {
     @Autowired private ProductoRepository productoRepo;
     @Autowired private PedidoRepository pedidoRepo;
 
+    @Transactional
     public Vendedor obtenerPorUsuario(Usuario usuario) {
         return vendedorRepo.findByUsuario(usuario)
-                .orElseThrow(() -> new ResourceNotFoundException("No tienes un perfil de vendedor activo"));
+                .orElseGet(() -> {
+                    Vendedor nuevo = new Vendedor();
+                    nuevo.setUsuario(usuario);
+                    String nombre = usuario.getNombre();
+                    if (nombre == null || nombre.isBlank()) {
+                        nombre = "Tienda de " + (usuario.getEmail() != null ? usuario.getEmail().split("@")[0] : "Vendedor");
+                    }
+                    nuevo.setNombreTienda(nombre);
+                    nuevo.setTipo(Vendedor.Tipo.PERSONA_NATURAL);
+                    nuevo.setEstado(Vendedor.Estado.APROBADO);
+                    nuevo.setTipoSuscripcion(Vendedor.TipoSuscripcion.STARTER);
+                    nuevo.setCalificacion(5.0);
+                    nuevo.setTotalVentas(0);
+                    nuevo.setCiudad("Cartagena");
+                    nuevo.setFechaExpiracionSuscripcion(LocalDateTime.now().plusYears(100));
+                    return vendedorRepo.save(nuevo);
+                });
     }
 
     public VendedorResponse obtenerPerfilResponse(Usuario usuario) {

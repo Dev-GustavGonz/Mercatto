@@ -71,7 +71,7 @@ public class PedidoController {
 
     // GET /api/pedidos/vendedor (Pedidos recibidos por la tienda)
     @GetMapping("/vendedor")
-    @PreAuthorize("hasRole('VENDEDOR')")
+    @PreAuthorize("hasAnyRole('VENDEDOR', 'ADMIN')")
     public ResponseEntity<Page<PedidoResponse>> pedidosVendedor(
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "10") int tamano,
