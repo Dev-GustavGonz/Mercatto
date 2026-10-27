@@ -59,7 +59,16 @@ public class ProductoService {
         }
 
         Pageable pageable = PageRequest.of(pagina, tamano, sort);
-        Page<Producto> productos = productoRepo.filtrarCatalogo(categoriaId, marca, precioMin, precioMax, termino, soloElite, pageable);
+        Page<Producto> productos = productoRepo.filtrarCatalogo(
+            categoriaId,
+            marca,
+            precioMin,
+            precioMax,
+            termino,
+            soloElite,
+            Vendedor.TipoSuscripcion.ELITE,
+            pageable
+        );
         return productos.map(this::convertirAResponse);
     }
 

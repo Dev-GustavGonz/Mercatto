@@ -37,7 +37,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
            "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
            "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
            "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
-           "(CAST(:soloElite AS boolean) IS NULL OR CAST(:soloElite AS boolean) = false OR p.vendedor.tipoSuscripcion = com.mercatto.modules.vendedor.model.Vendedor.TipoSuscripcion.ELITE) AND " +
+           "(CAST(:soloElite AS boolean) IS NULL OR CAST(:soloElite AS boolean) = false OR p.vendedor.tipoSuscripcion = :suscripcionElite) AND " +
            "(CAST(:termino AS string) IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')))")
     Page<Producto> filtrarCatalogo(
         @Param("categoriaId") Long categoriaId,
@@ -46,6 +46,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
         @Param("precioMax") Double precioMax,
         @Param("termino") String termino,
         @Param("soloElite") Boolean soloElite,
+        @Param("suscripcionElite") Vendedor.TipoSuscripcion suscripcionElite,
         Pageable pageable
     );
 
