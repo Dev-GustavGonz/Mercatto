@@ -59,16 +59,28 @@ public class ProductoService {
         }
 
         Pageable pageable = PageRequest.of(pagina, tamano, sort);
-        Page<Producto> productos = productoRepo.filtrarCatalogo(
-            categoriaId,
-            marca,
-            precioMin,
-            precioMax,
-            termino,
-            soloElite,
-            Vendedor.TipoSuscripcion.ELITE,
-            pageable
-        );
+        Page<Producto> productos;
+        if (Boolean.TRUE.equals(soloElite)) {
+            productos = productoRepo.filtrarCatalogoElite(
+                categoriaId,
+                marca,
+                precioMin,
+                precioMax,
+                termino,
+                Vendedor.TipoSuscripcion.ELITE,
+                pageable
+            );
+        } else {
+            // Por defecto muestra TODOS los productos de TODAS las tiendas sin restricción de plan
+            productos = productoRepo.filtrarCatalogo(
+                categoriaId,
+                marca,
+                precioMin,
+                precioMax,
+                termino,
+                pageable
+            );
+        }
         return productos.map(this::convertirAResponse);
     }
 

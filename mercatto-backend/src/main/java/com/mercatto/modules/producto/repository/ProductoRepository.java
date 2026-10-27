@@ -37,7 +37,6 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
            "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
            "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
            "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
-           "(CAST(:soloElite AS boolean) IS NULL OR CAST(:soloElite AS boolean) = false OR p.vendedor.tipoSuscripcion = :suscripcionElite) AND " +
            "(CAST(:termino AS string) IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')))")
     Page<Producto> filtrarCatalogo(
         @Param("categoriaId") Long categoriaId,
@@ -45,7 +44,22 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
         @Param("precioMin") Double precioMin,
         @Param("precioMax") Double precioMax,
         @Param("termino") String termino,
-        @Param("soloElite") Boolean soloElite,
+        Pageable pageable
+    );
+
+    @Query("SELECT p FROM Producto p WHERE p.activo = true AND " +
+           "(CAST(:categoriaId AS long) IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
+           "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
+           "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
+           "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
+           "p.vendedor.tipoSuscripcion = :suscripcionElite AND " +
+           "(CAST(:termino AS string) IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')))")
+    Page<Producto> filtrarCatalogoElite(
+        @Param("categoriaId") Long categoriaId,
+        @Param("marca") String marca,
+        @Param("precioMin") Double precioMin,
+        @Param("precioMax") Double precioMax,
+        @Param("termino") String termino,
         @Param("suscripcionElite") Vendedor.TipoSuscripcion suscripcionElite,
         Pageable pageable
     );
