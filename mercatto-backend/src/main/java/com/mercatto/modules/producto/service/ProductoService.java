@@ -92,8 +92,17 @@ public class ProductoService {
     }
 
     public List<ProductoResponse> obtenerDestacados() {
-        return productoRepo.findTop8ByDestacadoTrueAndActivoTrueOrderByTotalVentasDesc()
+        List<ProductoResponse> list = productoRepo.findTop8ByDestacadoTrueAndActivoTrueOrderByTotalVentasDesc()
                 .stream().map(this::convertirAResponse).collect(Collectors.toList());
+        if (list.isEmpty()) {
+            list = productoRepo.findTop8ByActivoTrueOrderByTotalVentasDesc()
+                    .stream().map(this::convertirAResponse).collect(Collectors.toList());
+        }
+        if (list.isEmpty()) {
+            list = productoRepo.findTop8ByActivoTrueOrderByFechaCreacionDesc()
+                    .stream().map(this::convertirAResponse).collect(Collectors.toList());
+        }
+        return list;
     }
 
     public List<ProductoResponse> obtenerMasVendidos() {
