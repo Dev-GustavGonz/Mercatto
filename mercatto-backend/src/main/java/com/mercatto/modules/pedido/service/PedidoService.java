@@ -259,7 +259,10 @@ public class PedidoService {
         pagoRepo.save(pago);
         guardado.setPago(pago);
 
-        notificarPedidoPorCorreo(guardado, comprador, items, subtotal, descuento, costoEnvio, total);
+        // Si es pago Contra Entrega, notificar de inmediato. Para pagos en línea (Wompi, Stripe, etc.), el recibo se envía tras confirmar el pago en PagoService
+        if (pago.getMetodo() == Pago.MetodoPago.CONTRA_ENTREGA) {
+            notificarPedidoPorCorreo(guardado, comprador, items, subtotal, descuento, costoEnvio, total);
+        }
 
         return convertirAResponse(guardado);
     }

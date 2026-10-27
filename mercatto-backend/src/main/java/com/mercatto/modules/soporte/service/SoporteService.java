@@ -88,44 +88,12 @@ public class SoporteService {
             ticket.setRespuestaAdmin(respuestaAdmin);
             ticket.setFechaRespuesta(LocalDateTime.now());
 
-            // Enviar respuesta por email directamente a la dirección de correo del usuario
+            // Enviar respuesta por email directamente a la dirección de correo del usuario con formato elegante
             if (ticket.getEmail() != null && !ticket.getEmail().isBlank()) {
                 try {
-                    String nombreDestinatario = ticket.getNombre() != null && !ticket.getNombre().isBlank() ? ticket.getNombre() : "Usuario";
-                    String asuntoCorreo = "Respuesta de Soporte Mercatto - Ticket #" + ticket.getId();
-
-                    String cuerpoRespuestaHtml = String.format(
-                            "<div style='font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:auto;color:#1e293b;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;'>" +
-                            "  <div style='background:#7c3aed;padding:24px;text-align:center;color:#ffffff;'>" +
-                            "    <h2 style='margin:0;font-size:22px;'>MERCATTO SOPORTE</h2>" +
-                            "  </div>" +
-                            "  <div style='padding:24px;background:#ffffff;'>" +
-                            "    <p>Hola <strong>%s</strong>,</p>" +
-                            "    <p>El equipo de soporte de Mercatto ha respondido a tu solicitud:</p>" +
-                            "    <div style='background:#f8fafc;padding:16px;border-left:4px solid #7c3aed;border-radius:6px;margin:16px 0;font-size:14px;color:#0f172a;line-height:1.6;'>%s</div>" +
-                            "    <p style='margin-top:20px;font-size:13px;color:#64748b;'><strong>Tu consulta original:</strong></p>" +
-                            "    <blockquote style='color:#64748b;font-size:12px;margin:8px 0;padding-left:12px;border-left:2px solid #cbd5e1;'>%s</blockquote>" +
-                            "    <hr style='border:none;border-top:1px solid #e2e8f0;margin:24px 0;' />" +
-                            "    <p style='font-size:11px;color:#94a3b8;margin:0;'>Mercatto Colombia — Comercio Electrónico y Marketplace Multitienda</p>" +
-                            "  </div>" +
-                            "</div>",
-                            nombreDestinatario,
-                            respuestaAdmin.replace("\n", "<br/>"),
-                            ticket.getMensaje() != null ? ticket.getMensaje().replace("\n", "<br/>") : ""
-                    );
-
-                    emailService.enviarHtml(ticket.getEmail(), asuntoCorreo, cuerpoRespuestaHtml);
-                    emailService.enviarNotificacion(
-                            ticket.getEmail(),
-                            asuntoCorreo,
-                            "Hola " + nombreDestinatario + ",\n\n" +
-                            "El equipo de soporte de Mercatto ha respondido a tu consulta:\n\n" +
-                            respuestaAdmin + "\n\n" +
-                            "Consulta original:\n" + (ticket.getMensaje() != null ? ticket.getMensaje() : "") + "\n\n" +
-                            "Atentamente,\nEquipo de Soporte Mercatto"
-                    );
-
-                    log.info("Correo de respuesta enviado exitosamente al usuario {}", ticket.getEmail());
+                    TicketSoporte.EstadoTicket estadoParaCorreo = (nuevoEstado != null) ? nuevoEstado : TicketSoporte.EstadoTicket.RESUELTO;
+                    emailService.enviarRespuestaTicketSoporte(ticket, respuestaAdmin, estadoParaCorreo);
+                    log.info("Correo elegante de respuesta enviado exitosamente al usuario {}", ticket.getEmail());
                 } catch (Exception e) {
                     log.error("Error al enviar email de respuesta al ticket #{}: {}", ticket.getId(), e.getMessage());
                 }

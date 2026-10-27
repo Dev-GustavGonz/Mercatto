@@ -4,15 +4,22 @@ import com.mercatto.exception.BadRequestException;
 import com.mercatto.exception.ResourceNotFoundException;
 import com.mercatto.modules.pedido.model.Pago;
 import com.mercatto.modules.pedido.model.Pedido;
+import com.mercatto.modules.pedido.model.PedidoItem;
 import com.mercatto.modules.usuario.model.Usuario;
+import com.mercatto.modules.vendedor.model.Vendedor;
 import com.mercatto.modules.pedido.repository.PagoRepository;
+import com.mercatto.modules.pedido.repository.PedidoItemRepository;
 import com.mercatto.modules.pedido.repository.PedidoRepository;
+import com.mercatto.modules.soporte.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -20,8 +27,10 @@ public class PagoService {
 
     @Autowired private PagoRepository pagoRepo;
     @Autowired private PedidoRepository pedidoRepo;
+    @Autowired private PedidoItemRepository itemRepo;
     @Autowired private StripeService stripeService;
     @Autowired private WompiService wompiService;
+    @Autowired private EmailService emailService;
 
     @Transactional
     public Map<String, Object> iniciarPagoInvitado(Long pedidoId, String metodoStr) {
@@ -113,6 +122,8 @@ public class PagoService {
         Pago pago = pagoRepo.findByPedido(pedido)
                 .orElseThrow(() -> new ResourceNotFoundException("Registro de pago no encontrado"));
 
+        boolean yaEstabaAprobado = (pago.getEstado() == Pago.EstadoPago.APROBADO);
+
         pago.setEstado(Pago.EstadoPago.APROBADO);
         pago.setTransaccionId(transaccionId != null ? transaccionId : pago.getTransaccionId());
         pago.setFechaPago(LocalDateTime.now());
@@ -120,6 +131,11 @@ public class PagoService {
 
         pedido.setEstado(Pedido.EstadoPedido.PAGADO);
         pedidoRepo.save(pedido);
+
+        // Envío de correo elegante de confirmación y factura solo si no había sido notificado antes
+        if (!yaEstabaAprobado) {
+            notificarPagoExitoso(pedido, pago);
+        }
 
         return Map.of(
                 "exito", true,
@@ -158,20 +174,61 @@ public class PagoService {
             if (pago != null) {
                 pago.setTransaccionId(transaccionId);
                 if ("APPROVED".equalsIgnoreCase(status)) {
+                    boolean yaEstabaAprobado = (pago.getEstado() == Pago.EstadoPago.APROBADO);
                     pago.setEstado(Pago.EstadoPago.APROBADO);
                     pago.setFechaPago(LocalDateTime.now());
                     Pedido pedido = pago.getPedido();
                     pedido.setEstado(Pedido.EstadoPedido.PAGADO);
                     pedidoRepo.save(pedido);
+                    pagoRepo.save(pago);
+
+                    if (!yaEstabaAprobado) {
+                        notificarPagoExitoso(pedido, pago);
+                    }
                 } else if ("DECLINED".equalsIgnoreCase(status) || "VOIDED".equalsIgnoreCase(status) || "ERROR".equalsIgnoreCase(status)) {
                     pago.setEstado(Pago.EstadoPago.RECHAZADO);
+                    pagoRepo.save(pago);
                 }
-                pagoRepo.save(pago);
                 return true;
             }
         } catch (Exception e) {
             org.slf4j.LoggerFactory.getLogger(PagoService.class).error("Error procesando webhook Wompi: {}", e.getMessage());
         }
         return false;
+    }
+
+    // ── Envío de correos tras la confirmación del pago ─────────────
+    private void notificarPagoExitoso(Pedido pedido, Pago pago) {
+        try {
+            // Asegurar que los ítems estén disponibles
+            List<PedidoItem> items = pedido.getItems();
+            if (items == null || items.isEmpty()) {
+                items = itemRepo.findByPedido(pedido);
+                pedido.setItems(items);
+            }
+
+            // 1. Enviar recibo de pago y factura elegante al comprador
+            emailService.enviarReciboPagoComprador(pedido, pago);
+
+            // 2. Notificar a cada tienda/vendedor involucrado con sus artículos vendidos
+            Map<Long, List<PedidoItem>> itemsPorVendedor = new LinkedHashMap<>();
+            for (PedidoItem item : items) {
+                if (item.getVendedor() != null && item.getVendedor().getId() != null) {
+                    itemsPorVendedor
+                        .computeIfAbsent(item.getVendedor().getId(), k -> new ArrayList<>())
+                        .add(item);
+                }
+            }
+
+            for (List<PedidoItem> itemsVendedor : itemsPorVendedor.values()) {
+                if (!itemsVendedor.isEmpty() && itemsVendedor.get(0).getVendedor() != null) {
+                    Vendedor vendedor = itemsVendedor.get(0).getVendedor();
+                    emailService.enviarNotificacionVentaPagada(vendedor, pedido, itemsVendedor);
+                }
+            }
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(PagoService.class)
+                    .error("Error al enviar notificaciones de correo tras el pago del pedido #{}: {}", pedido.getCodigo(), e.getMessage());
+        }
     }
 }
