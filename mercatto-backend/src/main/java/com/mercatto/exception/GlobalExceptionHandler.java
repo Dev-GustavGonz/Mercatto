@@ -102,13 +102,24 @@ public class GlobalExceptionHandler {
     }
 
     // ──────────────────────────────────────────
+    // 400 — Violación de integridad referencial o datos
+    // ──────────────────────────────────────────
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrity(org.springframework.dao.DataIntegrityViolationException ex) {
+        log.error("Error de integridad de datos: {}", ex.getMessage(), ex);
+        return buildResponse(HttpStatus.BAD_REQUEST, "No se puede completar la operación debido a restricciones de integridad o elementos vinculados.");
+    }
+
+    // ──────────────────────────────────────────
     // 500 — Error interno genérico
     // ──────────────────────────────────────────
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
         log.error("Error no controlado: {}", ex.getMessage(), ex);
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                "Ocurrió un error interno. Por favor intenta de nuevo más tarde.");
+        String mensaje = (ex.getMessage() != null && !ex.getMessage().isBlank())
+                ? ex.getMessage()
+                : "Ocurrió un error interno en el servidor.";
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, mensaje);
     }
 
     // ──────────────────────────────────────────

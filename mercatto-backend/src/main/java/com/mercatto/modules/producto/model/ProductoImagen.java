@@ -18,7 +18,7 @@ public class ProductoImagen {
     @JsonBackReference
     private Producto producto;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, length = 2048)
     private String url;
 
     @Column(name = "public_id", length = 250)

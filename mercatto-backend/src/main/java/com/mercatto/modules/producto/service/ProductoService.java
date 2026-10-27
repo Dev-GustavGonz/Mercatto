@@ -241,37 +241,48 @@ public class ProductoService {
             }
         }
 
-        // Actualizar variantes si se enviaron
+        // Actualizar variantes de forma segura sin romper el ciclo de vida de Hibernate
         if (request.getVariantes() != null) {
-            Map<Long, ProductoVariante> existentesMap = new HashMap<>();
-            for (ProductoVariante pv : producto.getVariantes()) {
-                if (pv.getId() != null) {
-                    existentesMap.put(pv.getId(), pv);
-                }
-            }
+            Map<Long, ProductoRequest.VarianteDTO> dtosPorId = new HashMap<>();
+            List<ProductoRequest.VarianteDTO> nuevasVariantes = new ArrayList<>();
 
-            List<ProductoVariante> procesadas = new ArrayList<>();
-            for (ProductoRequest.VarianteDTO varDto : request.getVariantes()) {
-                if (varDto.getNombre() == null || varDto.getNombre().trim().isEmpty()) continue;
-
-                ProductoVariante v;
-                if (varDto.getId() != null && existentesMap.containsKey(varDto.getId())) {
-                    v = existentesMap.get(varDto.getId());
+            for (ProductoRequest.VarianteDTO dto : request.getVariantes()) {
+                if (dto.getNombre() == null || dto.getNombre().trim().isEmpty()) continue;
+                if (dto.getId() != null) {
+                    dtosPorId.put(dto.getId(), dto);
                 } else {
-                    v = new ProductoVariante();
-                    v.setProducto(producto);
+                    nuevasVariantes.add(dto);
                 }
-                v.setNombre(varDto.getNombre().trim());
-                v.setSku(varDto.getSku());
-                v.setPrecio(varDto.getPrecio() != null ? varDto.getPrecio() : producto.getPrecio());
-                v.setPrecioOferta(varDto.getPrecioOferta());
-                v.setStock(varDto.getStock() != null ? varDto.getStock() : 0);
-                v.setImagenUrl(varDto.getImagenUrl());
-                procesadas.add(v);
             }
 
-            producto.getVariantes().clear();
-            producto.getVariantes().addAll(procesadas);
+            // 1. Eliminar variantes que ya no están en la lista
+            producto.getVariantes().removeIf(v -> v.getId() != null && !dtosPorId.containsKey(v.getId()));
+
+            // 2. Actualizar variantes existentes in-situ (sin clear())
+            for (ProductoVariante v : producto.getVariantes()) {
+                if (v.getId() != null && dtosPorId.containsKey(v.getId())) {
+                    ProductoRequest.VarianteDTO dto = dtosPorId.get(v.getId());
+                    v.setNombre(dto.getNombre().trim());
+                    v.setSku(dto.getSku());
+                    v.setPrecio(dto.getPrecio() != null ? dto.getPrecio() : producto.getPrecio());
+                    v.setPrecioOferta(dto.getPrecioOferta());
+                    v.setStock(dto.getStock() != null ? dto.getStock() : 0);
+                    v.setImagenUrl(dto.getImagenUrl());
+                }
+            }
+
+            // 3. Agregar variantes nuevas
+            for (ProductoRequest.VarianteDTO dto : nuevasVariantes) {
+                ProductoVariante nueva = new ProductoVariante();
+                nueva.setProducto(producto);
+                nueva.setNombre(dto.getNombre().trim());
+                nueva.setSku(dto.getSku());
+                nueva.setPrecio(dto.getPrecio() != null ? dto.getPrecio() : producto.getPrecio());
+                nueva.setPrecioOferta(dto.getPrecioOferta());
+                nueva.setStock(dto.getStock() != null ? dto.getStock() : 0);
+                nueva.setImagenUrl(dto.getImagenUrl());
+                producto.getVariantes().add(nueva);
+            }
         }
 
         return convertirAResponse(productoRepo.save(producto));
