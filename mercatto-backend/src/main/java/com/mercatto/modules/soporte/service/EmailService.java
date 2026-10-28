@@ -18,10 +18,18 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class EmailService {
@@ -33,50 +41,294 @@ public class EmailService {
     @Autowired(required = false)
     private JavaMailSender mailSender;
 
+    @Value("${spring.mail.host:smtp.gmail.com}")
+    private String mailHost;
+
+    @Value("${spring.mail.port:587}")
+    private int mailPort;
+
     @Value("${spring.mail.username:realmercatto@gmail.com}")
     private String remitente;
 
-    // ── Texto plano ──────────────────────────────────────────────
-    @Async
-    public void enviarNotificacion(String destinatario, String asunto, String cuerpo) {
-        if (mailSender == null) return;
-        try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(destinatario);
-            msg.setSubject(asunto);
-            msg.setText(cuerpo);
-            if (remitente != null && !remitente.isBlank()) {
-                msg.setFrom(remitente);
-            }
-            mailSender.send(msg);
-        } catch (Exception e) {
-            log.warn("No se pudo enviar el correo a {}: {}", destinatario, e.getMessage());
+    @Value("${email.resend.api-key:}")
+    private String resendApiKey;
+
+    @Value("${email.resend.from:Mercatto <onboarding@resend.dev>}")
+    private String resendFrom;
+
+    @Value("${email.brevo.api-key:}")
+    private String brevoApiKey;
+
+    @Value("${email.brevo.from:realmercatto@gmail.com}")
+    private String brevoFrom;
+
+    private String getRemitenteSeguro() {
+        if (remitente != null && !remitente.isBlank() && !remitente.contains("TU_CORREO")) {
+            return remitente.trim();
         }
+        return "realmercatto@gmail.com";
     }
 
-    // ── Envío genérico HTML ──────────────────────────────────────
+    // ── Texto plano / Notificaciones generales ─────────────────────
+    @Async
+    public void enviarNotificacion(String destinatario, String asunto, String cuerpo) {
+        String cuerpoEscapado = escaparHtml(cuerpo != null ? cuerpo : "").replace("\n", "<br/>");
+        String html = """
+            <div style="font-family:sans-serif;padding:16px;color:#1e293b;line-height:1.6;">
+              <h3 style="color:#7c3aed;margin-top:0;">%s</h3>
+              <p>%s</p>
+            </div>
+            """.formatted(escaparHtml(asunto != null ? asunto : "Notificación"), cuerpoEscapado);
+        enviarHtml(destinatario, asunto, html);
+    }
+
+    // ── Envío genérico HTML (con soporte para HTTPS API y SMTP) ───
     @Async
     public void enviarHtml(String destinatario, String asunto, String html) {
-        if (mailSender == null) {
-            log.info("Correo no configurado (mailSender=null). Se omite envío a {} — asunto: {}", destinatario, asunto);
+        if (destinatario == null || destinatario.isBlank()) {
+            log.warn("Se omitió envío de correo porque el destinatario está vacío.");
             return;
         }
+
+        // 1. Prioridad: Resend API si está configurado (HTTPS puerto 443 - infalible en Render)
+        if (resendApiKey != null && !resendApiKey.isBlank()) {
+            if (enviarPorResend(destinatario.trim(), asunto, html)) {
+                return;
+            }
+        }
+
+        // 2. Prioridad: Brevo API si está configurado (HTTPS puerto 443)
+        if (brevoApiKey != null && !brevoApiKey.isBlank()) {
+            if (enviarPorBrevo(destinatario.trim(), asunto, html)) {
+                return;
+            }
+        }
+
+        // 3. Envío SMTP estándar (JavaMail)
+        if (mailSender == null) {
+            log.warn("Correo no configurado (mailSender=null). Se omite envío a {} — asunto: {}", destinatario, asunto);
+            return;
+        }
+
         try {
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, false, "UTF-8");
-            helper.setTo(destinatario);
+            helper.setTo(destinatario.trim());
             helper.setSubject(asunto);
             helper.setText(html, true);
-            if (remitente != null && !remitente.isBlank() && !remitente.contains("TU_CORREO")) {
-                helper.setFrom(remitente, "Mercatto");
-            }
+            helper.setFrom(getRemitenteSeguro(), "Mercatto");
+
             mailSender.send(mensaje);
-            log.info("Correo HTML enviado exitosamente a: {} | Asunto: {}", destinatario, asunto);
+            log.info("Correo HTML enviado exitosamente por SMTP a: {} | Asunto: {}", destinatario, asunto);
         } catch (Exception e) {
-            log.warn("No se pudo enviar el correo HTML a {}: {}", destinatario, e.getMessage());
+            log.error("Fallo al enviar correo HTML a {} por SMTP ({}:{}): {}", destinatario, mailHost, mailPort, e.getMessage(), e);
+            String msg = (e.getMessage() != null) ? e.getMessage().toLowerCase() : "";
+            if (msg.contains("timed out") || msg.contains("connection refused") || msg.contains("could not connect")) {
+                log.error("DIAGNÓSTICO CRÍTICO: La conexión al servidor SMTP ({}:{}) expiró. Proveedores como Render (en su plan gratuito) bloquean puertos SMTP salientes (25, 465, 587). Para habilitar envíos sin costo, define la variable de entorno RESEND_API_KEY o BREVO_API_KEY en tu hosting para usar la API HTTPS (puerto 443).", mailHost, mailPort);
+            }
         }
     }
 
+    // ── Método de Diagnóstico Sincrónico para Pruebas ──────────────
+    public Map<String, Object> probarEnvio(String destinatario) {
+        Map<String, Object> r = new LinkedHashMap<>();
+        String dest = (destinatario != null && !destinatario.isBlank()) ? destinatario.trim() : "realmercatto@gmail.com";
+        r.put("destinatario", dest);
+        r.put("smtpHost", mailHost);
+        r.put("smtpPort", mailPort);
+        r.put("smtpUsername", remitente);
+        r.put("resendConfigurado", resendApiKey != null && !resendApiKey.isBlank());
+        r.put("brevoConfigurado", brevoApiKey != null && !brevoApiKey.isBlank());
+
+        String asuntoPrueba = "Prueba de Diagnóstico — Mercatto";
+        String htmlPrueba = """
+            <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px;background:#ffffff;">
+              <div style="background:#7c3aed;padding:16px;border-radius:8px;text-align:center;color:#ffffff;">
+                <h2 style="margin:0;font-size:20px;">¡Mercatto Correo Operativo! 🚀</h2>
+              </div>
+              <div style="padding:16px 0;color:#334155;line-height:1.5;">
+                <p>Este es un correo de prueba emitido para validar las credenciales y la conectividad del servidor.</p>
+                <p><strong>Estado:</strong> Conexión y autenticación exitosas.</p>
+              </div>
+              <hr style="border:none;border-top:1px solid #f1f5f9;margin:12px 0;" />
+              <p style="font-size:11px;color:#94a3b8;margin:0;">Mercatto Marketplace — Diagnóstico de Envíos</p>
+            </div>
+            """;
+
+        // Probar Resend si está activo
+        if (resendApiKey != null && !resendApiKey.isBlank()) {
+            boolean ok = enviarPorResend(dest, asuntoPrueba, htmlPrueba);
+            r.put("exito", ok);
+            r.put("metodo", "RESEND_API (HTTPS / 443)");
+            r.put("mensaje", ok ? "Correo de prueba enviado exitosamente vía Resend API." : "Fallo al enviar vía Resend API. Revisa RESEND_API_KEY.");
+            return r;
+        }
+
+        // Probar Brevo si está activo
+        if (brevoApiKey != null && !brevoApiKey.isBlank()) {
+            boolean ok = enviarPorBrevo(dest, asuntoPrueba, htmlPrueba);
+            r.put("exito", ok);
+            r.put("metodo", "BREVO_API (HTTPS / 443)");
+            r.put("mensaje", ok ? "Correo de prueba enviado exitosamente vía Brevo API." : "Fallo al enviar vía Brevo API. Revisa BREVO_API_KEY.");
+            return r;
+        }
+
+        // Probar SMTP directamente de forma sincrónica
+        if (mailSender == null) {
+            r.put("exito", false);
+            r.put("metodo", "SMTP (" + mailHost + ":" + mailPort + ")");
+            r.put("error", "mailSender es nulo. Revisa la configuración de Spring Mail.");
+            return r;
+        }
+
+        try {
+            MimeMessage mensaje = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensaje, false, "UTF-8");
+            helper.setTo(dest);
+            helper.setSubject(asuntoPrueba);
+            helper.setText(htmlPrueba, true);
+            helper.setFrom(getRemitenteSeguro(), "Mercatto");
+
+            mailSender.send(mensaje);
+            r.put("exito", true);
+            r.put("metodo", "SMTP (" + mailHost + ":" + mailPort + ")");
+            r.put("mensaje", "Correo de prueba enviado exitosamente por SMTP a " + dest);
+        } catch (Exception e) {
+            r.put("exito", false);
+            r.put("metodo", "SMTP (" + mailHost + ":" + mailPort + ")");
+            r.put("error", e.getMessage());
+            r.put("claseError", e.getClass().getName());
+
+            String msg = (e.getMessage() != null) ? e.getMessage().toLowerCase() : "";
+            if (msg.contains("timed out") || msg.contains("connection refused") || msg.contains("could not connect")) {
+                r.put("diagnostico", "El servidor no pudo establecer conexión TCP con el servidor SMTP (" + mailHost + ":" + mailPort + "). " +
+                        "En plataformas como Render (plan gratuito), los puertos SMTP salientes (25, 465, 587) están bloqueados por seguridad.");
+                r.put("solucionRecomendada", "Configura la variable de entorno RESEND_API_KEY o BREVO_API_KEY en Render para enviar correos vía HTTPS (puerto 443).");
+            } else if (msg.contains("authentication") || msg.contains("535") || msg.contains("badcredentials") || msg.contains("username and password not accepted")) {
+                r.put("diagnostico", "Error de autenticación con Google Gmail. La contraseña de aplicación puede haber caducado o ser incorrecta.");
+                r.put("solucionRecomendada", "Genera una nueva contraseña de aplicación de 16 caracteres en myaccount.google.com/apppasswords y actualiza SPRING_MAIL_PASSWORD.");
+            } else if (msg.contains("pkix") || msg.contains("handshake") || msg.contains("certificate")) {
+                r.put("diagnostico", "Falla de validación de certificado SSL.");
+                r.put("solucionRecomendada", "Verifica la propiedad spring.mail.properties.mail.smtp.ssl.trust=*");
+            }
+        }
+        return r;
+    }
+
+    private boolean enviarPorResend(String destinatario, String asunto, String html) {
+        if (resendApiKey == null || resendApiKey.isBlank()) return false;
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String fromHeader = (resendFrom != null && !resendFrom.isBlank()) ? resendFrom.trim() : "Mercatto <onboarding@resend.dev>";
+            String payload = String.format("""
+                {
+                  "from": "%s",
+                  "to": ["%s"],
+                  "subject": %s,
+                  "html": %s
+                }
+                """,
+                fromHeader,
+                destinatario,
+                escaparJson(asunto),
+                escaparJson(html)
+            );
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.resend.com/emails"))
+                    .header("Authorization", "Bearer " + resendApiKey.trim())
+                    .header("Content-Type", "application/json")
+                    .timeout(Duration.ofSeconds(15))
+                    .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("Correo enviado exitosamente vía Resend API a: {} | Asunto: {}", destinatario, asunto);
+                return true;
+            } else {
+                log.warn("Resend API respondió con status {}: {}", response.statusCode(), response.body());
+                return false;
+            }
+        } catch (Exception e) {
+            log.warn("Error enviando por Resend API a {}: {}", destinatario, e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean enviarPorBrevo(String destinatario, String asunto, String html) {
+        if (brevoApiKey == null || brevoApiKey.isBlank()) return false;
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String fromEmail = (brevoFrom != null && !brevoFrom.isBlank()) ? brevoFrom.trim() : getRemitenteSeguro();
+            String payload = String.format("""
+                {
+                  "sender": {"name": "Mercatto", "email": "%s"},
+                  "to": [{"email": "%s"}],
+                  "subject": %s,
+                  "htmlContent": %s
+                }
+                """,
+                fromEmail,
+                destinatario,
+                escaparJson(asunto),
+                escaparJson(html)
+            );
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .header("api-key", brevoApiKey.trim())
+                    .header("Content-Type", "application/json")
+                    .timeout(Duration.ofSeconds(15))
+                    .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("Correo enviado exitosamente vía Brevo API a: {} | Asunto: {}", destinatario, asunto);
+                return true;
+            } else {
+                log.warn("Brevo API respondió con status {}: {}", response.statusCode(), response.body());
+                return false;
+            }
+        } catch (Exception e) {
+            log.warn("Error enviando por Brevo API a {}: {}", destinatario, e.getMessage());
+            return false;
+        }
+    }
+
+    private String escaparJson(String s) {
+        if (s == null) return "\"\"";
+        StringBuilder sb = new StringBuilder("\"");
+        for (char c : s.toCharArray()) {
+            switch (c) {
+                case '"' -> sb.append("\\\"");
+                case '\\' -> sb.append("\\\\");
+                case '\b' -> sb.append("\\b");
+                case '\f' -> sb.append("\\f");
+                case '\n' -> sb.append("\\n");
+                case '\r' -> sb.append("\\r");
+                case '\t' -> sb.append("\\t");
+                default -> {
+                    if (c < ' ') {
+                        sb.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        sb.append(c);
+                    }
+                }
+            }
+        }
+        sb.append("\"");
+        return sb.toString();
+    }
+
+    
     // ── 1. RECIBO DE PAGO CONFIRMADO / FACTURA PARA EL COMPRADOR ────────
     @Async
     public void enviarReciboPagoComprador(Pedido pedido, Pago pago) {
