@@ -69,11 +69,24 @@ public class EmailService {
         return "";
     }
 
-    @Value("${email.brevo.api-key:}")
+    @Value("${email.brevo.api-key:${BREVO_API_KEY:${EMAIL_BREVO_API_KEY:}}}")
     private String brevoApiKey;
 
-    @Value("${email.brevo.from:realmercatto@gmail.com}")
+    @Value("${email.brevo.from:${BREVO_FROM:realmercatto@gmail.com}}")
     private String brevoFrom;
+
+    public String getBrevoApiKey() {
+        if (brevoApiKey != null && !brevoApiKey.isBlank()) {
+            return brevoApiKey.trim().replaceAll("^[\"']|[\"']$", "");
+        }
+        String env = System.getenv("BREVO_API_KEY");
+        if (env != null && !env.isBlank()) return env.trim().replaceAll("^[\"']|[\"']$", "");
+        env = System.getenv("EMAIL_BREVO_API_KEY");
+        if (env != null && !env.isBlank()) return env.trim().replaceAll("^[\"']|[\"']$", "");
+        String prop = System.getProperty("BREVO_API_KEY");
+        if (prop != null && !prop.isBlank()) return prop.trim().replaceAll("^[\"']|[\"']$", "");
+        return "";
+    }
 
     private String getRemitenteSeguro() {
         if (remitente != null && !remitente.isBlank() && !remitente.contains("TU_CORREO")) {
@@ -112,7 +125,8 @@ public class EmailService {
         }
 
         // 2. Prioridad: Brevo API si está configurado (HTTPS puerto 443)
-        if (brevoApiKey != null && !brevoApiKey.isBlank()) {
+        String apiKeyBrevoEnvio = getBrevoApiKey();
+        if (!apiKeyBrevoEnvio.isBlank()) {
             if (enviarPorBrevo(destinatario.trim(), asunto, html)) {
                 return;
             }
@@ -220,12 +234,53 @@ public class EmailService {
         }
 
         // Probar Brevo si está activo
-        if (brevoApiKey != null && !brevoApiKey.isBlank()) {
-            boolean ok = enviarPorBrevo(dest, asuntoPrueba, htmlPrueba);
-            r.put("exito", ok);
-            r.put("metodo", "BREVO_API (HTTPS / 443)");
-            r.put("mensaje", ok ? "Correo de prueba enviado exitosamente vía Brevo API." : "Fallo al enviar vía Brevo API. Revisa BREVO_API_KEY.");
-            return r;
+        String apiKeyBrevo = getBrevoApiKey();
+        if (!apiKeyBrevo.isBlank()) {
+            try {
+                HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+                String fromEmail = (brevoFrom != null && !brevoFrom.isBlank()) ? brevoFrom.trim() : getRemitenteSeguro();
+                String payload = String.format("""
+                    {
+                      \"sender\": {\"name\": \"Mercatto\", \"email\": \"%s\"},
+                      \"to\": [{\"email\": \"%s\"}],
+                      \"subject\": %s,
+                      \"htmlContent\": %s
+                    }
+                    """,
+                    fromEmail,
+                    dest,
+                    escaparJson(asuntoPrueba),
+                    escaparJson(htmlPrueba)
+                );
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                        .header("api-key", apiKeyBrevo)
+                        .header("Content-Type", "application/json")
+                        .timeout(Duration.ofSeconds(15))
+                        .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
+                        .build();
+                HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+                if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                    r.put("exito", true);
+                    r.put("metodo", "BREVO_API (HTTPS / 443)");
+                    r.put("mensaje", "Correo de prueba enviado exitosamente vía Brevo API a " + dest);
+                    return r;
+                } else {
+                    r.put("exito", false);
+                    r.put("metodo", "BREVO_API (HTTPS / 443)");
+                    r.put("statusHttp", resp.statusCode());
+                    r.put("errorBrevo", resp.body());
+                    if (resp.statusCode() == 401 && resp.body().contains("unrecognised IP address")) {
+                        r.put("diagnostico", "Brevo bloqueó el envío por restricción de IP. Desactiva la protección de IP en https://app.brevo.com/security/authorised_ips para que servidores en la nube como Render puedan enviar.");
+                    }
+                    return r;
+                }
+            } catch (Exception e) {
+                r.put("exito", false);
+                r.put("metodo", "BREVO_API (HTTPS / 443)");
+                r.put("error", e.getMessage());
+                return r;
+            }
         }
 
         // Probar SMTP directamente de forma sincrónica
@@ -354,7 +409,8 @@ public class EmailService {
     }
 
     private boolean enviarPorBrevo(String destinatario, String asunto, String html) {
-        if (brevoApiKey == null || brevoApiKey.isBlank()) return false;
+        String apiKey = getBrevoApiKey();
+        if (apiKey.isBlank()) return false;
         try {
             HttpClient client = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofSeconds(10))
@@ -377,7 +433,7 @@ public class EmailService {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
-                    .header("api-key", brevoApiKey.trim())
+                    .header("api-key", apiKey)
                     .header("Content-Type", "application/json")
                     .timeout(Duration.ofSeconds(15))
                     .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
@@ -389,6 +445,9 @@ public class EmailService {
                 return true;
             } else {
                 log.warn("Brevo API respondió con status {}: {}", response.statusCode(), response.body());
+                if (response.statusCode() == 401 && response.body() != null && response.body().contains("unrecognised IP address")) {
+                    log.error("DIAGNÓSTICO BREVO: Brevo bloqueó el envío por IP no autorizada. Ingresa a https://app.brevo.com/security/authorised_ips y desactiva la protección de IP para que Render pueda enviar.");
+                }
                 return false;
             }
         } catch (Exception e) {
