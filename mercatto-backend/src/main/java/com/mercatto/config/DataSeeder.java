@@ -3,8 +3,14 @@ package com.mercatto.config;
 import com.mercatto.modules.pedido.model.Cupon;
 import com.mercatto.modules.usuario.model.Usuario;
 import com.mercatto.modules.pedido.repository.CuponRepository;
+import com.mercatto.modules.pedido.repository.PedidoItemRepository;
+import com.mercatto.modules.producto.model.Producto;
+import com.mercatto.modules.producto.repository.ProductoRepository;
 import com.mercatto.modules.usuario.repository.UsuarioRepository;
+import com.mercatto.modules.vendedor.model.Vendedor;
 import com.mercatto.modules.vendedor.repository.VendedorRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,10 +19,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class DataSeeder {
 
+    private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
+
     @Bean
     public CommandLineRunner initData(UsuarioRepository usuarioRepository, 
                                       VendedorRepository vendedorRepository,
                                       CuponRepository cuponRepository,
+                                      ProductoRepository productoRepository,
+                                      PedidoItemRepository pedidoItemRepository,
                                       PasswordEncoder passwordEncoder) {
         return args -> {
             // Asegurar Admin inicial
@@ -61,6 +71,31 @@ public class DataSeeder {
                 c2.setMontoMinimo(100000.0);
                 c2.setActivo(true);
                 cuponRepository.save(c2);
+            }
+
+            // Sincronizar y corregir totalVentas de cada producto basándose ÚNICAMENTE en pedidos PAGADOS
+            // (elimina las ventas fantasma causadas por pedidos duplicados o en estado PENDIENTE)
+            try {
+                for (Producto p : productoRepository.findAll()) {
+                    Integer ventasReales = pedidoItemRepository.sumarVentasPagadasPorProducto(p.getId());
+                    int real = ventasReales != null ? ventasReales : 0;
+                    if (!p.getTotalVentas().equals(real)) {
+                        log.info("Corrigiendo totalVentas de '{}' (ID: {}): infladas={}, realesPagadas={}",
+                                p.getTitulo(), p.getId(), p.getTotalVentas(), real);
+                        p.setTotalVentas(real);
+                        productoRepository.save(p);
+                    }
+                }
+                for (Vendedor v : vendedorRepository.findAll()) {
+                    Integer ventasReales = pedidoItemRepository.sumarVentasPagadasPorVendedor(v.getId());
+                    int real = ventasReales != null ? ventasReales : 0;
+                    if (v.getTotalVentas() == null || !v.getTotalVentas().equals(real)) {
+                        v.setTotalVentas(real);
+                        vendedorRepository.save(v);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Advertencia al sincronizar ventas reales de productos: {}", e.getMessage());
             }
         };
     }

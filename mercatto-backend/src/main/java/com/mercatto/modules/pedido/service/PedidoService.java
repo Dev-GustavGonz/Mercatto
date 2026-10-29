@@ -53,17 +53,18 @@ public class PedidoService {
     @Autowired private com.mercatto.modules.usuario.repository.UsuarioRepository usuarioRepo;
     @Autowired private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     @Autowired private com.mercatto.modules.vendedor.service.VendedorService vendedorService;
+    @Autowired private com.mercatto.modules.vendedor.repository.VendedorRepository vendedorRepo;
 
     @Transactional
     public PedidoResponse crearPedidoInvitado(PedidoRequest req) {
         if (req.getEmailInvitado() == null || req.getEmailInvitado().trim().isEmpty()) {
-            throw new BadRequestException("El correo electrónico es obligatorio para compras como invitado.");
+            throw new BadRequestException("El correo electrÃ³nico es obligatorio para compras como invitado.");
         }
 
         String email = req.getEmailInvitado().trim().toLowerCase();
-        // Validación estricta de formato email
+        // ValidaciÃ³n estricta de formato email
         if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            throw new BadRequestException("El formato del correo electrónico es inválido.");
+            throw new BadRequestException("El formato del correo electrÃ³nico es invÃ¡lido.");
         }
 
         String nombre = req.getNombreInvitado() != null && !req.getNombreInvitado().trim().isEmpty()
@@ -91,7 +92,7 @@ public class PedidoService {
             return usuarioRepo.save(nuevo);
         });
 
-        // Asegurar que la dirección tenga el nombre y teléfono si vinieron vacíos
+        // Asegurar que la direcciÃ³n tenga el nombre y telÃ©fono si vinieron vacÃ­os
         if (req.getNuevaDireccion() != null) {
             if (req.getNuevaDireccion().getNombreCompleto() == null || req.getNuevaDireccion().getNombreCompleto().isEmpty()) {
                 req.getNuevaDireccion().setNombreCompleto(nombre);
@@ -110,11 +111,11 @@ public class PedidoService {
             throw new BadRequestException("El pedido debe tener al menos un producto");
         }
 
-        // 1. Obtener o crear dirección
+        // 1. Obtener o crear direcciÃ³n
         Direccion direccion = null;
         if (req.getDireccionId() != null) {
             direccion = direccionRepo.findById(req.getDireccionId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Dirección de envío no encontrada"));
+                    .orElseThrow(() -> new ResourceNotFoundException("DirecciÃ³n de envÃ­o no encontrada"));
         } else if (req.getNuevaDireccion() != null) {
             PedidoRequest.DireccionDTO d = req.getNuevaDireccion();
             direccion = new Direccion();
@@ -130,7 +131,7 @@ public class PedidoService {
             direccion = direccionRepo.save(direccion);
         }
 
-        // 2. Procesar ítems y calcular totales
+        // 2. Procesar Ã­tems y calcular totales
         double subtotal = 0.0;
         List<PedidoItem> items = new ArrayList<>();
 
@@ -139,7 +140,7 @@ public class PedidoService {
                     .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado: ID " + itemDto.getProductoId()));
 
             if (!producto.isActivo()) {
-                throw new BadRequestException("El producto '" + producto.getTitulo() + "' ya no está disponible.");
+                throw new BadRequestException("El producto '" + producto.getTitulo() + "' ya no estÃ¡ disponible.");
             }
 
             double precioUnitario = producto.getPrecioOferta() != null ? producto.getPrecioOferta() : producto.getPrecio();
@@ -172,9 +173,7 @@ public class PedidoService {
                 producto.setStock(Math.max(0, stockActual - itemDto.getCantidad()));
             }
 
-            // Incrementar ventas del producto (con protección contra null)
-            int ventasActuales = producto.getTotalVentas() != null ? producto.getTotalVentas() : 0;
-            producto.setTotalVentas(ventasActuales + itemDto.getCantidad());
+            // Ventas solo se contabilizan cuando el pedido pase a PAGADO
             productoRepo.save(producto);
 
             PedidoItem item = new PedidoItem();
@@ -190,7 +189,7 @@ public class PedidoService {
             double itemSubtotal = precioUnitario * itemDto.getCantidad();
             item.setSubtotal(itemSubtotal);
 
-            // Congelar plan y comisión al momento de la compra
+            // Congelar plan y comisiÃ³n al momento de la compra
             Vendedor.TipoSuscripcion planAlMomento = (vendedorItem != null && vendedorItem.getTipoSuscripcion() != null)
                     ? vendedorItem.getTipoSuscripcion()
                     : Vendedor.TipoSuscripcion.STARTER;
@@ -208,7 +207,7 @@ public class PedidoService {
             subtotal += itemSubtotal;
         }
 
-        // 3. Cupón de descuento
+        // 3. CupÃ³n de descuento
         double descuento = 0.0;
         Cupon cupon = null;
         if (req.getCuponCodigo() != null && !req.getCuponCodigo().isBlank()) {
@@ -220,7 +219,7 @@ public class PedidoService {
             }
         }
 
-        // 4. Costo de envío (ej: Gratis a partir de 150.000 COP, o tarifa estándar 12.000 COP)
+        // 4. Costo de envÃ­o (ej: Gratis a partir de 150.000 COP, o tarifa estÃ¡ndar 12.000 COP)
         double costoEnvio = (subtotal >= 150000) ? 0.0 : 12000.0;
         double total = Math.max(0.0, (subtotal - descuento) + costoEnvio);
 
@@ -239,7 +238,7 @@ public class PedidoService {
 
         Pedido guardado = pedidoRepo.save(pedido);
 
-        // Asociar y guardar ítems
+        // Asociar y guardar Ã­tems
         for (PedidoItem item : items) {
             item.setPedido(guardado);
         }
@@ -259,7 +258,7 @@ public class PedidoService {
         pagoRepo.save(pago);
         guardado.setPago(pago);
 
-        // Si es pago Contra Entrega, notificar de inmediato. Para pagos en línea (Wompi, Stripe, etc.), el recibo se envía tras confirmar el pago en PagoService
+        // Si es pago Contra Entrega, notificar de inmediato. Para pagos en lÃ­nea (Wompi, Stripe, etc.), el recibo se envÃ­a tras confirmar el pago en PagoService
         if (pago.getMetodo() == Pago.MetodoPago.CONTRA_ENTREGA) {
             notificarPedidoPorCorreo(guardado, comprador, items, subtotal, descuento, costoEnvio, total);
         }
@@ -267,7 +266,7 @@ public class PedidoService {
         return convertirAResponse(guardado);
     }
 
-    // ── Notificaciones por correo (comprador + cada vendedor) ─────────
+    // â”€â”€ Notificaciones por correo (comprador + cada vendedor) â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private void notificarPedidoPorCorreo(Pedido pedido, Usuario comprador, List<PedidoItem> items,
                                            double subtotal, double descuento, double costoEnvio, double total) {
         // Correo al comprador con el detalle completo
@@ -278,7 +277,7 @@ public class PedidoService {
                     filasComprador, subtotal, descuento, costoEnvio, total);
         }
 
-        // Un correo por cada vendedor involucrado, solo con sus propios ítems
+        // Un correo por cada vendedor involucrado, solo con sus propios Ã­tems
         Map<Long, List<PedidoItem>> itemsPorVendedor = new LinkedHashMap<>();
         for (PedidoItem item : items) {
             itemsPorVendedor
@@ -343,14 +342,14 @@ public class PedidoService {
 
     public PedidoResponse rastrearPedido(String codigo, String email) {
         if (codigo == null || codigo.trim().isEmpty() || email == null || email.trim().isEmpty()) {
-            throw new BadRequestException("Debes proporcionar el código de pedido y el correo electrónico.");
+            throw new BadRequestException("Debes proporcionar el cÃ³digo de pedido y el correo electrÃ³nico.");
         }
         Pedido pedido = pedidoRepo.findByCodigo(codigo.trim().toUpperCase())
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró ningún pedido con el código: " + codigo));
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontrÃ³ ningÃºn pedido con el cÃ³digo: " + codigo));
 
         if (pedido.getComprador() == null || pedido.getComprador().getEmail() == null ||
             !pedido.getComprador().getEmail().equalsIgnoreCase(email.trim())) {
-            throw new BadRequestException("El correo electrónico proporcionado no coincide con el registrado en este pedido.");
+            throw new BadRequestException("El correo electrÃ³nico proporcionado no coincide con el registrado en este pedido.");
         }
 
         return convertirAResponse(pedido);
@@ -375,7 +374,7 @@ public class PedidoService {
                 }
                 pagoRepo.save(pedido.getPago());
             }
-            // Desembolso y liquidación automática de fondos a cada tienda asociada al entregarse el pedido
+            // Desembolso y liquidaciÃ³n automÃ¡tica de fondos a cada tienda asociada al entregarse el pedido
             if (pedido.getItems() != null) {
                 for (PedidoItem item : pedido.getItems()) {
                     if (item.getVendedor() != null) {
@@ -383,7 +382,7 @@ public class PedidoService {
                         double comisionRetenida = Math.round(item.getSubtotal() * tasa * 100.0) / 100.0;
                         double montoNetoTienda = Math.round((item.getSubtotal() - comisionRetenida) * 100.0) / 100.0;
                         org.slf4j.LoggerFactory.getLogger(PedidoService.class).info(
-                            "✅ [DESEMBOLSO AUTOMÁTICO A TIENDA] Pedido {} marcado como ENTREGADO. Transferido automáticamente a Tienda '{}' (ID: {}): ${} COP (Comisión Mercatto retenida: ${} COP)",
+                            "âœ… [DESEMBOLSO AUTOMÃTICO A TIENDA] Pedido {} marcado como ENTREGADO. Transferido automÃ¡ticamente a Tienda '{}' (ID: {}): ${} COP (ComisiÃ³n Mercatto retenida: ${} COP)",
                             pedido.getCodigo(), item.getVendedor().getNombreTienda(), item.getVendedor().getId(), montoNetoTienda, comisionRetenida
                         );
                     }
@@ -409,7 +408,11 @@ public class PedidoService {
             }
         }
 
-        return convertirAResponse(pedidoRepo.save(pedido));
+                Pedido guardado = pedidoRepo.save(pedido);
+        if (nuevoEstado == Pedido.EstadoPedido.PAGADO || nuevoEstado == Pedido.EstadoPedido.CANCELADO) {
+            recalcularVentasPedido(guardado);
+        }
+        return convertirAResponse(guardado);
     }
 
     @Transactional
@@ -435,7 +438,7 @@ public class PedidoService {
         }
 
         if (esComprador && pedido.getEstado() == Pedido.EstadoPedido.ENVIADO) {
-            throw new BadRequestException("El pedido ya está en camino. Por favor comunícate con la tienda o soporte para coordinar la novedad.");
+            throw new BadRequestException("El pedido ya estÃ¡ en camino. Por favor comunÃ­cate con la tienda o soporte para coordinar la novedad.");
         }
 
         revertirStock(pedido);
@@ -450,7 +453,9 @@ public class PedidoService {
             pagoRepo.save(pedido.getPago());
         }
 
-        return convertirAResponse(pedidoRepo.save(pedido));
+                Pedido cancelado = pedidoRepo.save(pedido);
+        recalcularVentasPedido(cancelado);
+        return convertirAResponse(cancelado);
     }
 
     private void revertirStock(Pedido pedido) {
@@ -528,7 +533,7 @@ public class PedidoService {
                 return itemDto;
             }).collect(Collectors.toList()));
 
-            // Asignar tienda principal al pedido para la auditoría de marketplace
+            // Asignar tienda principal al pedido para la auditorÃ­a de marketplace
             p.getItems().stream()
                 .filter(i -> i.getVendedor() != null && i.getVendedor().getNombreTienda() != null)
                 .findFirst()
@@ -568,5 +573,27 @@ public class PedidoService {
         String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         int rand = 1000 + new Random().nextInt(9000);
         return "PED-" + fecha + "-" + rand;
+    }
+
+    public void recalcularVentasPedido(Pedido pedido) {
+        if (pedido == null || pedido.getItems() == null) return;
+        for (PedidoItem item : pedido.getItems()) {
+            if (item.getProducto() != null) {
+                Long pId = item.getProducto().getId();
+                Integer ventasPagadas = itemRepo.sumarVentasPagadasPorProducto(pId);
+                productoRepo.findById(pId).ifPresent(prod -> {
+                    prod.setTotalVentas(ventasPagadas != null ? ventasPagadas : 0);
+                    productoRepo.save(prod);
+                });
+            }
+            if (item.getVendedor() != null) {
+                Long vId = item.getVendedor().getId();
+                Integer vVentas = itemRepo.sumarVentasPagadasPorVendedor(vId);
+                vendedorRepo.findById(vId).ifPresent(vend -> {
+                    vend.setTotalVentas(vVentas != null ? vVentas : 0);
+                    vendedorRepo.save(vend);
+                });
+            }
+        }
     }
 }

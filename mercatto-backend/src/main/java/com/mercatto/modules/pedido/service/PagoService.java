@@ -31,6 +31,8 @@ public class PagoService {
     @Autowired private StripeService stripeService;
     @Autowired private WompiService wompiService;
     @Autowired private EmailService emailService;
+    @Autowired private com.mercatto.modules.producto.repository.ProductoRepository productoRepo;
+    @Autowired private com.mercatto.modules.vendedor.repository.VendedorRepository vendedorRepo;
 
     @Transactional
     public Map<String, Object> iniciarPagoInvitado(Long pedidoId, String metodoStr) {
@@ -131,6 +133,7 @@ public class PagoService {
 
         pedido.setEstado(Pedido.EstadoPedido.PAGADO);
         pedidoRepo.save(pedido);
+        actualizarVentasDePedido(pedido);
 
         // Envío de correo elegante de confirmación y factura solo si no había sido notificado antes
         if (!yaEstabaAprobado) {
@@ -180,6 +183,7 @@ public class PagoService {
                     Pedido pedido = pago.getPedido();
                     pedido.setEstado(Pedido.EstadoPedido.PAGADO);
                     pedidoRepo.save(pedido);
+                    actualizarVentasDePedido(pedido);
                     pagoRepo.save(pago);
 
                     if (!yaEstabaAprobado) {
@@ -229,6 +233,28 @@ public class PagoService {
         } catch (Exception e) {
             org.slf4j.LoggerFactory.getLogger(PagoService.class)
                     .error("Error al enviar notificaciones de correo tras el pago del pedido #{}: {}", pedido.getCodigo(), e.getMessage());
+        }
+    }
+
+    public void actualizarVentasDePedido(Pedido pedido) {
+        if (pedido == null || pedido.getItems() == null) return;
+        for (PedidoItem item : pedido.getItems()) {
+            if (item.getProducto() != null) {
+                Long pId = item.getProducto().getId();
+                Integer ventasPagadas = itemRepo.sumarVentasPagadasPorProducto(pId);
+                productoRepo.findById(pId).ifPresent(prod -> {
+                    prod.setTotalVentas(ventasPagadas != null ? ventasPagadas : 0);
+                    productoRepo.save(prod);
+                });
+            }
+            if (item.getVendedor() != null) {
+                Long vId = item.getVendedor().getId();
+                Integer vVentas = itemRepo.sumarVentasPagadasPorVendedor(vId);
+                vendedorRepo.findById(vId).ifPresent(vend -> {
+                    vend.setTotalVentas(vVentas != null ? vVentas : 0);
+                    vendedorRepo.save(vend);
+                });
+            }
         }
     }
 }
