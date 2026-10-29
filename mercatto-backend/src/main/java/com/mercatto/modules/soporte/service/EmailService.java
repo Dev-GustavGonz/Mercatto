@@ -44,7 +44,7 @@ public class EmailService {
     @Value("${spring.mail.host:smtp.gmail.com}")
     private String mailHost;
 
-    @Value("${spring.mail.port:587}")
+    @Value("${spring.mail.port:2525}")
     private int mailPort;
 
     @Value("${spring.mail.username:realmercatto@gmail.com}")

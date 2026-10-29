@@ -19,7 +19,7 @@ public class MailConfig {
     @Value("${spring.mail.host:smtp.gmail.com}")
     private String host;
 
-    @Value("${spring.mail.port:587}")
+    @Value("${spring.mail.port:2525}")
     private int port;
 
     @Value("${spring.mail.username:realmercatto@gmail.com}")
@@ -33,7 +33,7 @@ public class MailConfig {
     public JavaMailSender javaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost(host != null && !host.isBlank() ? host.trim() : "smtp.gmail.com");
-        mailSender.setPort(port > 0 ? port : 587);
+        mailSender.setPort(port > 0 ? port : 2525);
         mailSender.setUsername(username != null ? username.trim() : "realmercatto@gmail.com");
         mailSender.setPassword(password != null ? password.trim() : "dkbqehynobdnxuag");
         mailSender.setDefaultEncoding("UTF-8");

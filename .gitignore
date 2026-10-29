@@ -35,3 +35,10 @@ mercatto-frontend/
 
 package-lock.json
 
+
+# Archivos locales / entregables
+/mercatto/
+docu/
+Entregable Mercatto/
+*.zip
+Ganancia

@@ -1,0 +1,25 @@
+name: Render Backend Keep-Alive
+
+on:
+  schedule:
+    # Se ejecuta cada 13 minutos (los servicios de Render duermen tras 15 minutos sin tráfico)
+    - cron: '*/13 * * * *'
+  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub si se desea
+
+jobs:
+  ping-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping al Endpoint Health de Render
+        env:
+          RENDER_URL: ${{ secrets.RENDER_BACKEND_URL }}
+        run: |
+          TARGET_URL="${RENDER_URL:-https://mercatto-backend.onrender.com}/api/health"
+          echo "Realizando ping Keep-Alive a: $TARGET_URL"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 25 "$TARGET_URL")
+          echo "Respuesta HTTP Status: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "Servidor activo y despierto en Render."
+          else
+            echo "Aviso: El servidor respondió con código $STATUS"
+          fi

@@ -1,16 +1,15 @@
 # ================================================================
-# MERCATTO BACKEND — application.properties.example
-# Copia este archivo a application.properties y ajusta tus credenciales
+# MERCATTO — application.properties (PLANTILLA DE CONFIGURACIÓN)
 # ================================================================
 
 # ── Servidor ─────────────────────────────────────────────────────
 server.port=${PORT:8085}
 spring.main.allow-bean-definition-overriding=true
 
-# ── Base de Datos PostgreSQL / Supabase ──────────────────────────
-spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres?sslmode=require}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME:postgres}
-spring.datasource.password=${SUPABASE_DB_PASSWORD:tu_password_aqui}
+# ── Base de Datos Supabase (PostgreSQL Transaction Pooler - Puerto 5432 o 6543) ─
+spring.datasource.url=jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+spring.datasource.username=postgres.cirxekyibynidhbnffll
+spring.datasource.password=${SUPABASE_DB_PASSWORD:tu_password_de_supabase_aqui}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # ── JPA / Hibernate ───────────────────────────────────────────────
@@ -20,34 +19,34 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.properties.hibernate.format_sql=true
 spring.jackson.serialization.fail-on-empty-beans=false
 
-# ── Seguridad y JWT ───────────────────────────────────────────────
-jwt.secret=${JWT_SECRET:genera_una_clave_segura_de_al_menos_256_bits_aqui}
+# ── JWT (Autenticación) ────────────────────────────────────────────
+jwt.secret=${JWT_SECRET:mercatto_super_secret_key_2024_xK9mN3pQwLvR8tYuHjKzOeAbcDefGhIj}
 jwt.expiration=86400000
 jwt.refresh-expiration=604800000
 app.cookie.secure=${APP_COOKIE_SECURE:false}
 
-# ── Google OAuth ──────────────────────────────────────────────────
+# ── Google OAuth 2.0 (Google Identity Services) ────────────────────
 google.client-id=${GOOGLE_CLIENT_ID:tu_google_client_id.apps.googleusercontent.com}
 
-# ── Stripe (Opcional Internacional) ───────────────────────────────
-stripe.secret-key=${STRIPE_SECRET_KEY:sk_test_placeholder}
-stripe.webhook-secret=${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+# ── Stripe ────────────────────────────────────────────────────────
+stripe.secret-key=${STRIPE_SECRET_KEY:sk_test_TU_CLAVE_AQUI}
+stripe.webhook-secret=${STRIPE_WEBHOOK_SECRET:whsec_TU_WEBHOOK_AQUI}
 stripe.currency=cop
 
-# ── Wompi Pasarela Bancolombia (Colombia) ──────────────────────────
+# ── Wompi (Bancolombia) ──────────────────────────────────────────
 wompi.public-key=${WOMPI_PUBLIC_KEY:pub_test_Q5yDA9xoKdePzhSGeVe9KvxXQKIO5Ade}
 wompi.private-key=${WOMPI_PRIVATE_KEY:prv_test_V0P7fI9L8YnO6R4W2M1K3J5H7G9F1D3S}
 wompi.integrity-secret=${WOMPI_INTEGRITY_SECRET:test_integrity_456789abcdefghijklmnopqrstuv}
 wompi.currency=COP
 
-# ── Supabase Storage ───────────────────────────────────────────────
+# ── Supabase Storage (Subida de Imágenes a la Nube) ───────────────
 supabase.url=${SUPABASE_URL:https://cirxekyibynidhbnffll.supabase.co}
 supabase.key=${SUPABASE_SERVICE_ROLE_KEY:}
 supabase.bucket=${SUPABASE_BUCKET:Mercatto}
 
 # ── Servidor de Correo SMTP ───────────────────────────────────────
 spring.mail.host=${SPRING_MAIL_HOST:${MAIL_HOST:smtp.gmail.com}}
-spring.mail.port=${SPRING_MAIL_PORT:${MAIL_PORT:587}}
+spring.mail.port=${SPRING_MAIL_PORT:${MAIL_PORT:2525}}
 spring.mail.username=${SPRING_MAIL_USERNAME:${MAIL_USERNAME:tu_correo@gmail.com}}
 spring.mail.password=${SPRING_MAIL_PASSWORD:${MAIL_PASSWORD:tu_app_password_de_google}}
 spring.mail.properties.mail.smtp.auth=true
@@ -65,6 +64,12 @@ email.resend.api-key=${RESEND_API_KEY:}
 email.resend.from=${RESEND_FROM:Mercatto <onboarding@resend.dev>}
 email.brevo.api-key=${BREVO_API_KEY:}
 email.brevo.from=${BREVO_FROM:tu_correo@gmail.com}
+
+# ── Render Keep-Alive ─────────────────────────────────────────────
+# Previene que el backend en el plan gratuito de Render se duerma tras 15 min de inactividad
+render.keep-alive.enabled=${RENDER_KEEP_ALIVE_ENABLED:true}
+render.keep-alive.url=${RENDER_EXTERNAL_URL:${APP_KEEP_ALIVE_URL:}}
+render.keep-alive.rate-ms=${RENDER_KEEP_ALIVE_RATE_MS:810000}
 
 # ── Subida de Archivos ────────────────────────────────────────────
 spring.servlet.multipart.max-file-size=2MB

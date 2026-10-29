@@ -39,6 +39,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Rutas públicas de lectura y autenticación
                 .requestMatchers(
+                "/api/health",
+                "/api/ping",
                 "/api/auth/**",
                 "/api/categorias/**",
                 "/api/tiendas/**",
