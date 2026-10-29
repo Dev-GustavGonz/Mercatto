@@ -50,11 +50,24 @@ public class EmailService {
     @Value("${spring.mail.username:realmercatto@gmail.com}")
     private String remitente;
 
-    @Value("${email.resend.api-key:}")
+    @Value("${email.resend.api-key:${RESEND_API_KEY:${EMAIL_RESEND_API_KEY:}}}")
     private String resendApiKey;
 
-    @Value("${email.resend.from:Mercatto <onboarding@resend.dev>}")
+    @Value("${email.resend.from:${RESEND_FROM:Mercatto <onboarding@resend.dev>}}")
     private String resendFrom;
+
+    public String getResendApiKey() {
+        if (resendApiKey != null && !resendApiKey.isBlank()) {
+            return resendApiKey.trim().replaceAll("^[\"']|[\"']$", "");
+        }
+        String env = System.getenv("RESEND_API_KEY");
+        if (env != null && !env.isBlank()) return env.trim().replaceAll("^[\"']|[\"']$", "");
+        env = System.getenv("EMAIL_RESEND_API_KEY");
+        if (env != null && !env.isBlank()) return env.trim().replaceAll("^[\"']|[\"']$", "");
+        String prop = System.getProperty("RESEND_API_KEY");
+        if (prop != null && !prop.isBlank()) return prop.trim().replaceAll("^[\"']|[\"']$", "");
+        return "";
+    }
 
     @Value("${email.brevo.api-key:}")
     private String brevoApiKey;
@@ -91,7 +104,8 @@ public class EmailService {
         }
 
         // 1. Prioridad: Resend API si está configurado (HTTPS puerto 443 - infalible en Render)
-        if (resendApiKey != null && !resendApiKey.isBlank()) {
+        String apiKeyResend = getResendApiKey();
+        if (!apiKeyResend.isBlank()) {
             if (enviarPorResend(destinatario.trim(), asunto, html)) {
                 return;
             }
@@ -137,7 +151,8 @@ public class EmailService {
         r.put("smtpHost", mailHost);
         r.put("smtpPort", mailPort);
         r.put("smtpUsername", remitente);
-        r.put("resendConfigurado", resendApiKey != null && !resendApiKey.isBlank());
+        String apiKey = getResendApiKey();
+        r.put("resendConfigurado", !apiKey.isBlank());
         r.put("brevoConfigurado", brevoApiKey != null && !brevoApiKey.isBlank());
 
         String asuntoPrueba = "Prueba de Diagnóstico — Mercatto";
@@ -156,12 +171,52 @@ public class EmailService {
             """;
 
         // Probar Resend si está activo
-        if (resendApiKey != null && !resendApiKey.isBlank()) {
-            boolean ok = enviarPorResend(dest, asuntoPrueba, htmlPrueba);
-            r.put("exito", ok);
-            r.put("metodo", "RESEND_API (HTTPS / 443)");
-            r.put("mensaje", ok ? "Correo de prueba enviado exitosamente vía Resend API." : "Fallo al enviar vía Resend API. Revisa RESEND_API_KEY.");
-            return r;
+        if (!apiKey.isBlank()) {
+            try {
+                HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+                String fromHeader = (resendFrom != null && !resendFrom.isBlank()) ? resendFrom.trim() : "Mercatto <onboarding@resend.dev>";
+                String payload = String.format("""
+                    {
+                      \"from\": \"%s\",
+                      \"to\": [\"%s\"],
+                      \"subject\": %s,
+                      \"html\": %s
+                    }
+                    """,
+                    fromHeader,
+                    dest,
+                    escaparJson(asuntoPrueba),
+                    escaparJson(htmlPrueba)
+                );
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.resend.com/emails"))
+                        .header("Authorization", "Bearer " + apiKey)
+                        .header("Content-Type", "application/json")
+                        .timeout(Duration.ofSeconds(15))
+                        .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
+                        .build();
+                HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+                if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                    r.put("exito", true);
+                    r.put("metodo", "RESEND_API (HTTPS / 443)");
+                    r.put("mensaje", "Correo de prueba enviado exitosamente vía Resend API a " + dest);
+                    return r;
+                } else {
+                    r.put("exito", false);
+                    r.put("metodo", "RESEND_API (HTTPS / 443)");
+                    r.put("statusHttp", resp.statusCode());
+                    r.put("errorResend", resp.body());
+                    if (resp.statusCode() == 403 && resp.body().contains("only send testing emails")) {
+                        r.put("diagnostico", "En modo de prueba de Resend (sin dominio verificado) sólo puedes enviar correos a realmercatto@gmail.com. Para enviar a clientes reales añade tu dominio en resend.com/domains.");
+                    }
+                    return r;
+                }
+            } catch (Exception e) {
+                r.put("exito", false);
+                r.put("metodo", "RESEND_API (HTTPS / 443)");
+                r.put("error", e.getMessage());
+                return r;
+            }
         }
 
         // Probar Brevo si está activo
@@ -216,7 +271,8 @@ public class EmailService {
     }
 
     private boolean enviarPorResend(String destinatario, String asunto, String html) {
-        if (resendApiKey == null || resendApiKey.isBlank()) return false;
+        String apiKey = getResendApiKey();
+        if (apiKey.isBlank()) return false;
         try {
             HttpClient client = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofSeconds(10))
@@ -239,7 +295,7 @@ public class EmailService {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.resend.com/emails"))
-                    .header("Authorization", "Bearer " + resendApiKey.trim())
+                    .header("Authorization", "Bearer " + apiKey)
                     .header("Content-Type", "application/json")
                     .timeout(Duration.ofSeconds(15))
                     .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
@@ -251,10 +307,48 @@ public class EmailService {
                 return true;
             } else {
                 log.warn("Resend API respondió con status {}: {}", response.statusCode(), response.body());
+                // Si la cuenta está en modo prueba sin dominio, sólo permite entregar a realmercatto@gmail.com
+                if (response.statusCode() == 403 && response.body() != null && response.body().contains("only send testing emails")) {
+                    log.warn("AVISO RESEND: Modo prueba activo (sin dominio propio). Reenviando copia para [{}] a realmercatto@gmail.com.", destinatario);
+                    if (!"realmercatto@gmail.com".equalsIgnoreCase(destinatario)) {
+                        enviarPorResendDirecto(apiKey, fromHeader, "realmercatto@gmail.com", "[Copia Pruebas para: " + destinatario + "] " + asunto, html);
+                        return true;
+                    }
+                }
                 return false;
             }
         } catch (Exception e) {
             log.warn("Error enviando por Resend API a {}: {}", destinatario, e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean enviarPorResendDirecto(String apiKey, String fromHeader, String destinatario, String asunto, String html) {
+        try {
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            String payload = String.format("""
+                {
+                  "from": "%s",
+                  "to": ["%s"],
+                  "subject": %s,
+                  "html": %s
+                }
+                """,
+                fromHeader,
+                destinatario,
+                escaparJson(asunto),
+                escaparJson(html)
+            );
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.resend.com/emails"))
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Content-Type", "application/json")
+                    .timeout(Duration.ofSeconds(15))
+                    .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
+                    .build();
+            HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+            return resp.statusCode() >= 200 && resp.statusCode() < 300;
+        } catch (Exception e) {
             return false;
         }
     }

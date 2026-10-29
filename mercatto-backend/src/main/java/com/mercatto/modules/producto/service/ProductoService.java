@@ -103,18 +103,34 @@ public class ProductoService {
         return productos.map(this::convertirAResponse);
     }
 
+    private int pesoSuscripcion(Vendedor v) {
+        if (v == null || v.getTipoSuscripcion() == null) return 1;
+        return switch (v.getTipoSuscripcion()) {
+            case ELITE -> 3;
+            case PRO -> 2;
+            default -> 1;
+        };
+    }
+
     public List<ProductoResponse> obtenerDestacados() {
-        List<ProductoResponse> list = productoRepo.findTop8ByDestacadoTrueAndActivoTrueOrderByTotalVentasDesc()
-                .stream().map(this::convertirAResponse).collect(Collectors.toList());
+        List<Producto> list = productoRepo.findTop12ByActivoTrueOrderByTotalVentasDesc();
         if (list.isEmpty()) {
-            list = productoRepo.findTop8ByActivoTrueOrderByTotalVentasDesc()
-                    .stream().map(this::convertirAResponse).collect(Collectors.toList());
+            list = productoRepo.findTop8ByActivoTrueOrderByFechaCreacionDesc();
         }
-        if (list.isEmpty()) {
-            list = productoRepo.findTop8ByActivoTrueOrderByFechaCreacionDesc()
-                    .stream().map(this::convertirAResponse).collect(Collectors.toList());
-        }
-        return list;
+        return list.stream()
+                .sorted((a, b) -> {
+                    int pA = pesoSuscripcion(a.getVendedor());
+                    int pB = pesoSuscripcion(b.getVendedor());
+                    if (pA != pB) return Integer.compare(pB, pA);
+                    int destA = Boolean.TRUE.equals(a.isDestacado()) ? 1 : 0;
+                    int destB = Boolean.TRUE.equals(b.isDestacado()) ? 1 : 0;
+                    if (destA != destB) return Integer.compare(destB, destA);
+                    int vA = a.getTotalVentas() != null ? a.getTotalVentas() : 0;
+                    int vB = b.getTotalVentas() != null ? b.getTotalVentas() : 0;
+                    return Integer.compare(vB, vA);
+                })
+                .map(this::convertirAResponse)
+                .collect(Collectors.toList());
     }
 
     public List<ProductoResponse> obtenerMasVendidos() {
