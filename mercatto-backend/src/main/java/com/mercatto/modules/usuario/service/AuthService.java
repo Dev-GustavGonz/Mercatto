@@ -289,6 +289,14 @@ public class AuthService {
         m.put("activo",    u.isActivo());
         m.put("fotoPerfil",u.getFotoPerfil());
         m.put("tokensChat",u.getTokensChat() != null ? u.getTokensChat() : 0);
+        if (u.getRol() == Usuario.Rol.VENDEDOR) {
+            vendedorRepo.findByUsuario(u).ifPresent(v -> {
+                m.put("vendedorId", v.getId());
+                m.put("nombreTienda", v.getNombreTienda());
+                m.put("logoTienda", v.getLogoUrl());
+                m.put("tipoSuscripcion", v.getTipoSuscripcion() != null ? v.getTipoSuscripcion().name() : "STARTER");
+            });
+        }
         return m;
     }
 }
