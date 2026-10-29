@@ -46,7 +46,7 @@ supabase.bucket=${SUPABASE_BUCKET:Mercatto}
 
 # ── Servidor de Correo SMTP ───────────────────────────────────────
 spring.mail.host=${SPRING_MAIL_HOST:${MAIL_HOST:smtp.gmail.com}}
-spring.mail.port=${SPRING_MAIL_PORT:${MAIL_PORT:2525}}
+spring.mail.port=${SPRING_MAIL_PORT:${MAIL_PORT:587}}
 spring.mail.username=${SPRING_MAIL_USERNAME:${MAIL_USERNAME:tu_correo@gmail.com}}
 spring.mail.password=${SPRING_MAIL_PASSWORD:${MAIL_PASSWORD:tu_app_password_de_google}}
 spring.mail.properties.mail.smtp.auth=true

@@ -19,7 +19,7 @@ public class MailConfig {
     @Value("${spring.mail.host:smtp.gmail.com}")
     private String host;
 
-    @Value("${spring.mail.port:2525}")
+    @Value("${spring.mail.port:587}")
     private int port;
 
     @Value("${spring.mail.username:realmercatto@gmail.com}")
@@ -32,8 +32,17 @@ public class MailConfig {
     @Primary
     public JavaMailSender javaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost(host != null && !host.isBlank() ? host.trim() : "smtp.gmail.com");
-        mailSender.setPort(port > 0 ? port : 2525);
+        String safeHost = host != null && !host.isBlank() ? host.trim() : "smtp.gmail.com";
+        mailSender.setHost(safeHost);
+
+        int effectivePort = port > 0 ? port : 587;
+        // Gmail SMTP solo escucha en 587 (STARTTLS) y 465 (SSL). El puerto 2525 lo rechaza.
+        if ("smtp.gmail.com".equalsIgnoreCase(safeHost) && effectivePort == 2525) {
+            log.warn("Gmail (smtp.gmail.com) NO soporta el puerto 2525. Ajustando automáticamente a puerto 587 (STARTTLS).");
+            effectivePort = 587;
+        }
+
+        mailSender.setPort(effectivePort);
         mailSender.setUsername(username != null ? username.trim() : "realmercatto@gmail.com");
         mailSender.setPassword(password != null ? password.trim() : "dkbqehynobdnxuag");
         mailSender.setDefaultEncoding("UTF-8");
@@ -41,13 +50,13 @@ public class MailConfig {
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.connectiontimeout", "7000");
-        props.put("mail.smtp.timeout", "7000");
-        props.put("mail.smtp.writetimeout", "7000");
+        props.put("mail.smtp.connectiontimeout", "8000");
+        props.put("mail.smtp.timeout", "8000");
+        props.put("mail.smtp.writetimeout", "8000");
         props.put("mail.smtp.ssl.trust", "*");
         props.put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
 
-        if (port == 465) {
+        if (effectivePort == 465) {
             props.put("mail.smtp.ssl.enable", "true");
             props.put("mail.smtp.socketFactory.port", "465");
             props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
