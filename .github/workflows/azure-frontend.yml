@@ -1,0 +1,33 @@
+name: Deploy Mercatto Frontend to Azure Static Web Apps
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - 'mercatto/mercatto-frontend/**'
+      - 'mercatto-frontend/**'
+      - '.github/workflows/azure-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  build_and_deploy_job:
+    runs-on: ubuntu-latest
+    name: Build and Deploy Frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Deploy to Azure Static Web Apps
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "mercatto-frontend"
+          output_location: "dist"
+          app_build_command: "npm run build"

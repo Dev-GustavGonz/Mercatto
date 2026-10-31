@@ -1,0 +1,92 @@
+[
+  {
+    "name": "SPRING_DATASOURCE_URL",
+    "value": "jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require",
+    "slotSetting": false
+  },
+  {
+    "name": "SPRING_DATASOURCE_USERNAME",
+    "value": "postgres.cirxekyibynidhbnffll",
+    "slotSetting": false
+  },
+  {
+    "name": "SUPABASE_DB_PASSWORD",
+    "value": "SUPABASE_DB_PASSWORD_AQUI",
+    "slotSetting": false
+  },
+  {
+    "name": "SPRING_JPA_HIBERNATE_DDL_AUTO",
+    "value": "update",
+    "slotSetting": false
+  },
+  {
+    "name": "JWT_SECRET",
+    "value": "mercatto_super_secret_key_2024_xK9mN3pQwLvR8tYuHjKzOeAbcDefGhIj",
+    "slotSetting": false
+  },
+  {
+    "name": "GOOGLE_CLIENT_ID",
+    "value": "218791054481-ccko5v5molkfh1hsav9rbrbtjjvq8sn0.apps.googleusercontent.com",
+    "slotSetting": false
+  },
+  {
+    "name": "WOMPI_PUBLIC_KEY",
+    "value": "pub_test_Q5yDA9xoKdePzhSGeVe9KvxXQKIO5Ade",
+    "slotSetting": false
+  },
+  {
+    "name": "WOMPI_PRIVATE_KEY",
+    "value": "prv_test_V0P7fI9L8YnO6R4W2M1K3J5H7G9F1D3S",
+    "slotSetting": false
+  },
+  {
+    "name": "WOMPI_INTEGRITY_SECRET",
+    "value": "test_integrity_456789abcdefghijklmnopqrstuv",
+    "slotSetting": false
+  },
+  {
+    "name": "SPRING_MAIL_HOST",
+    "value": "smtp.gmail.com",
+    "slotSetting": false
+  },
+  {
+    "name": "SPRING_MAIL_PORT",
+    "value": "587",
+    "slotSetting": false
+  },
+  {
+    "name": "SPRING_MAIL_USERNAME",
+    "value": "realmercatto@gmail.com",
+    "slotSetting": false
+  },
+  {
+    "name": "SPRING_MAIL_PASSWORD",
+    "value": "dkbqehynobdnxuag",
+    "slotSetting": false
+  },
+  {
+    "name": "RESEND_API_KEY",
+    "value": "re_test_placeholder_key",
+    "slotSetting": false
+  },
+  {
+    "name": "BREVO_API_KEY",
+    "value": "xkeysib-brevo-key-aqui",
+    "slotSetting": false
+  },
+  {
+    "name": "WEBSITES_PORT",
+    "value": "8085",
+    "slotSetting": false
+  },
+  {
+    "name": "PORT",
+    "value": "8085",
+    "slotSetting": false
+  },
+  {
+    "name": "TZ",
+    "value": "America/Bogota",
+    "slotSetting": false
+  }
+]

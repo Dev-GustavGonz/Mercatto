@@ -15,6 +15,8 @@ public class PedidoResponse {
     private String estadoPago;
     private String guiaSeguimiento;
     private String empresaEnvio;
+    private String evidenciaEntregaUrl;
+    private String notas;
     private String nombreTienda;
     private Long vendedorId;
     private LocalDateTime fechaCreacion;
@@ -62,6 +64,12 @@ public class PedidoResponse {
     public String getEmpresaEnvio() { return empresaEnvio; }
     public void setEmpresaEnvio(String empresaEnvio) { this.empresaEnvio = empresaEnvio; }
 
+    public String getEvidenciaEntregaUrl() { return evidenciaEntregaUrl; }
+    public void setEvidenciaEntregaUrl(String evidenciaEntregaUrl) { this.evidenciaEntregaUrl = evidenciaEntregaUrl; }
+
+    public String getNotas() { return notas; }
+    public void setNotas(String notas) { this.notas = notas; }
+
     public String getNombreTienda() { return nombreTienda; }
     public void setNombreTienda(String nombreTienda) { this.nombreTienda = nombreTienda; }
 
@@ -107,8 +115,10 @@ public class PedidoResponse {
         private String nombreCompleto;
         private String telefono;
         private String direccion;
+        private String barrio;
         private String ciudad;
         private String departamento;
+        private String notasEntrega;
 
         public DireccionDTO() {}
         public String getNombreCompleto() { return nombreCompleto; }
@@ -117,10 +127,14 @@ public class PedidoResponse {
         public void setTelefono(String telefono) { this.telefono = telefono; }
         public String getDireccion() { return direccion; }
         public void setDireccion(String direccion) { this.direccion = direccion; }
+        public String getBarrio() { return barrio; }
+        public void setBarrio(String barrio) { this.barrio = barrio; }
         public String getCiudad() { return ciudad; }
         public void setCiudad(String ciudad) { this.ciudad = ciudad; }
         public String getDepartamento() { return departamento; }
         public void setDepartamento(String departamento) { this.departamento = departamento; }
+        public String getNotasEntrega() { return notasEntrega; }
+        public void setNotasEntrega(String notasEntrega) { this.notasEntrega = notasEntrega; }
     }
 
     public static class ItemDTO {

@@ -52,6 +52,7 @@ public class SecurityConfig {
                 "/api/pagos/webhook/**",
                 "/api/soporte/ticket",
                 "/api/test/**",
+                "/api/ia/**",
                 "/uploads/**",
                 "/ws-chat/**"
                 ).permitAll()

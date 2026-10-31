@@ -87,8 +87,12 @@ public class PedidoController {
     public ResponseEntity<PedidoResponse> actualizarEstado(
             @PathVariable Long id,
             @RequestBody Map<String, String> datos) {
+        String evidencia = datos.get("evidencia");
+        if (evidencia == null || evidencia.isBlank()) {
+            evidencia = datos.get("evidenciaEntregaUrl");
+        }
         return ResponseEntity.ok(pedidoService.actualizarEstado(
-                id, datos.get("estado"), datos.get("guia"), datos.get("empresa")
+                id, datos.get("estado"), datos.get("guia"), datos.get("empresa"), evidencia
         ));
     }
 

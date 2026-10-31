@@ -92,6 +92,11 @@ public class PedidoService {
             return usuarioRepo.save(nuevo);
         });
 
+        if (telefono != null && !telefono.isBlank() && (comprador.getTelefono() == null || comprador.getTelefono().isBlank())) {
+            comprador.setTelefono(telefono);
+            comprador = usuarioRepo.save(comprador);
+        }
+
         // Asegurar que la direcciÃ³n tenga el nombre y telÃ©fono si vinieron vacÃ­os
         if (req.getNuevaDireccion() != null) {
             if (req.getNuevaDireccion().getNombreCompleto() == null || req.getNuevaDireccion().getNombreCompleto().isEmpty()) {
@@ -120,15 +125,29 @@ public class PedidoService {
             PedidoRequest.DireccionDTO d = req.getNuevaDireccion();
             direccion = new Direccion();
             direccion.setUsuario(comprador);
-            direccion.setNombreCompleto(d.getNombreCompleto());
-            direccion.setTelefono(d.getTelefono());
-            direccion.setDireccion(d.getDireccion());
-            direccion.setBarrio(d.getBarrio());
-            direccion.setCiudad(d.getCiudad());
-            direccion.setDepartamento(d.getDepartamento());
+            String nomDir = (d.getNombreCompleto() != null && !d.getNombreCompleto().isBlank())
+                    ? d.getNombreCompleto().trim()
+                    : (comprador.getNombre() != null ? comprador.getNombre() : "Destinatario");
+            String telDir = (d.getTelefono() != null && !d.getTelefono().isBlank())
+                    ? d.getTelefono().trim()
+                    : (comprador.getTelefono() != null ? comprador.getTelefono() : "");
+            direccion.setNombreCompleto(nomDir);
+            direccion.setTelefono(telDir);
+            direccion.setDireccion(d.getDireccion() != null && !d.getDireccion().isBlank() ? d.getDireccion().trim() : "Cartagena de Indias");
+            direccion.setBarrio(d.getBarrio() != null ? d.getBarrio().trim() : "");
+            direccion.setCiudad(d.getCiudad() != null && !d.getCiudad().isBlank() ? d.getCiudad().trim() : "Cartagena de Indias");
+            direccion.setDepartamento(d.getDepartamento() != null && !d.getDepartamento().isBlank() ? d.getDepartamento().trim() : "Bolívar");
             direccion.setCodigoPostal(d.getCodigoPostal());
-            direccion.setNotasEntrega(d.getNotasEntrega());
+            String notasDir = (d.getNotasEntrega() != null && !d.getNotasEntrega().isBlank())
+                    ? d.getNotasEntrega().trim()
+                    : (req.getNotas() != null && !req.getNotas().isBlank() ? req.getNotas().trim() : null);
+            direccion.setNotasEntrega(notasDir);
             direccion = direccionRepo.save(direccion);
+
+            if (!telDir.isBlank() && (comprador.getTelefono() == null || comprador.getTelefono().isBlank())) {
+                comprador.setTelefono(telDir);
+                usuarioRepo.save(comprador);
+            }
         }
 
         // 2. Procesar Ã­tems y calcular totales
@@ -234,7 +253,11 @@ public class PedidoService {
         pedido.setCostoEnvio(costoEnvio);
         pedido.setTotal(total);
         pedido.setCupon(cupon);
-        pedido.setNotas(req.getNotas());
+        String notasFinales = req.getNotas();
+        if ((notasFinales == null || notasFinales.isBlank()) && direccion != null && direccion.getNotasEntrega() != null) {
+            notasFinales = direccion.getNotasEntrega();
+        }
+        pedido.setNotas(notasFinales);
 
         Pedido guardado = pedidoRepo.save(pedido);
 
@@ -251,19 +274,35 @@ public class PedidoService {
         try {
             pago.setMetodo(Pago.MetodoPago.valueOf(req.getMetodoPago().toUpperCase()));
         } catch (Exception e) {
-            pago.setMetodo(Pago.MetodoPago.STRIPE);
+            pago.setMetodo(Pago.MetodoPago.WOMPI);
         }
         pago.setEstado(Pago.EstadoPago.PENDIENTE);
         pago.setMonto(total);
         pagoRepo.save(pago);
         guardado.setPago(pago);
 
-        // Si es pago Contra Entrega, notificar de inmediato. Para pagos en lÃ­nea (Wompi, Stripe, etc.), el recibo se envÃ­a tras confirmar el pago en PagoService
+        // Si es pago Contra Entrega, notificar de inmediato con recibo completo. Para pagos en lÃ­nea (Wompi, Stripe, etc.), el recibo se envÃ­a tras confirmar el pago en PagoService
         if (pago.getMetodo() == Pago.MetodoPago.CONTRA_ENTREGA) {
-            notificarPedidoPorCorreo(guardado, comprador, items, subtotal, descuento, costoEnvio, total);
+            emailService.enviarReciboPagoComprador(guardado, pago);
+            notificarVendedoresPedido(guardado, items);
         }
 
         return convertirAResponse(guardado);
+    }
+
+    private void notificarVendedoresPedido(Pedido pedido, List<PedidoItem> items) {
+        Map<Long, List<PedidoItem>> itemsPorVendedor = new LinkedHashMap<>();
+        for (PedidoItem item : items) {
+            if (item.getVendedor() != null && item.getVendedor().getId() != null) {
+                itemsPorVendedor
+                    .computeIfAbsent(item.getVendedor().getId(), k -> new ArrayList<>())
+                    .add(item);
+            }
+        }
+        for (List<PedidoItem> itemsVendedor : itemsPorVendedor.values()) {
+            Vendedor vendedor = itemsVendedor.get(0).getVendedor();
+            emailService.enviarNotificacionVentaPagada(vendedor, pedido, itemsVendedor);
+        }
     }
 
     // â”€â”€ Notificaciones por correo (comprador + cada vendedor) â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -357,10 +396,26 @@ public class PedidoService {
 
     @Transactional
     public PedidoResponse actualizarEstado(Long id, String nuevoEstadoStr, String guia, String empresa) {
+        return actualizarEstado(id, nuevoEstadoStr, guia, empresa, null);
+    }
+
+    @Transactional
+    public PedidoResponse actualizarEstado(Long id, String nuevoEstadoStr, String guia, String empresa, String evidencia) {
         Pedido pedido = pedidoRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
 
         Pedido.EstadoPedido nuevoEstado = Pedido.EstadoPedido.valueOf(nuevoEstadoStr.toUpperCase());
+
+        if (nuevoEstado == Pedido.EstadoPedido.ENTREGADO) {
+            String evidenciaFinal = (evidencia != null && !evidencia.trim().isEmpty())
+                    ? evidencia.trim()
+                    : pedido.getEvidenciaEntregaUrl();
+            if (evidenciaFinal == null || evidenciaFinal.isEmpty()) {
+                throw new BadRequestException("Debes subir una imagen como evidencia de entrega para poder marcar el pedido como ENTREGADO.");
+            }
+            pedido.setEvidenciaEntregaUrl(evidenciaFinal);
+        }
+
         pedido.setEstado(nuevoEstado);
 
         if (guia != null) pedido.setGuiaSeguimiento(guia);
@@ -486,6 +541,8 @@ public class PedidoService {
         res.setTotal(p.getTotal());
         res.setGuiaSeguimiento(p.getGuiaSeguimiento());
         res.setEmpresaEnvio(p.getEmpresaEnvio());
+        res.setEvidenciaEntregaUrl(p.getEvidenciaEntregaUrl());
+        res.setNotas(p.getNotas());
         res.setFechaCreacion(p.getFechaCreacion());
 
         if (p.getPago() != null) {
@@ -506,8 +563,10 @@ public class PedidoService {
             dDto.setNombreCompleto(p.getDireccion().getNombreCompleto());
             dDto.setTelefono(p.getDireccion().getTelefono());
             dDto.setDireccion(p.getDireccion().getDireccion());
+            dDto.setBarrio(p.getDireccion().getBarrio());
             dDto.setCiudad(p.getDireccion().getCiudad());
             dDto.setDepartamento(p.getDireccion().getDepartamento());
+            dDto.setNotasEntrega(p.getDireccion().getNotasEntrega() != null ? p.getDireccion().getNotasEntrega() : p.getNotas());
             res.setDireccion(dDto);
         }
 

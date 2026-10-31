@@ -1,5 +1,6 @@
 package com.mercatto.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -7,18 +8,27 @@ import java.util.List;
 public class PedidoRequest {
 
     private Long direccionId;
+
+    @JsonAlias({"direccionEntrega", "direccion"})
     private DireccionDTO nuevaDireccion;
 
     // Campos opcionales para compradores invitados (Guest Checkout)
+    @JsonAlias({"email"})
     private String emailInvitado;
+
+    @JsonAlias({"nombre"})
     private String nombreInvitado;
+
+    @JsonAlias({"telefono"})
     private String telefonoInvitado;
 
     @NotEmpty(message = "El pedido debe contener al menos un producto")
     private List<ItemDTO> items;
 
+    @JsonAlias({"codigoCupon"})
     private String cuponCodigo;
-    private String metodoPago = "STRIPE";
+
+    private String metodoPago = "WOMPI";
     private String notas;
 
     public PedidoRequest() {}
@@ -67,13 +77,17 @@ public class PedidoRequest {
     }
 
     public static class DireccionDTO {
+        @JsonAlias({"nombre", "destinatario"})
         private String nombreCompleto;
+
         private String telefono;
         private String direccion;
         private String barrio;
         private String ciudad;
         private String departamento;
         private String codigoPostal;
+
+        @JsonAlias({"notas", "detalles", "indicaciones"})
         private String notasEntrega;
 
         public DireccionDTO() {}

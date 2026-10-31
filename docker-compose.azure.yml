@@ -1,0 +1,84 @@
+# ================================================================
+# MERCATTO MARKETPLACE — Docker Compose para Producción en Azure
+# Levanta Backend Spring Boot (Java 21), Frontend (Nginx) y n8n
+# Base de datos: Supabase PostgreSQL (nube administrada)
+# ================================================================
+
+version: '3.8'
+
+services:
+  # 1. Backend Spring Boot API
+  backend:
+    build:
+      context: ./mercatto-backend
+      dockerfile: Dockerfile
+    image: mercattoregistry.azurecr.io/mercatto-backend:latest
+    container_name: mercatto-backend
+    restart: always
+    environment:
+      PORT: 8085
+      SERVER_PORT: 8085
+      TZ: America/Bogota
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-postgres.cirxekyibynidhbnffll}
+      SPRING_DATASOURCE_PASSWORD: ${SUPABASE_DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: ${JWT_SECRET:-mercatto_super_secret_key_2024_xK9mN3pQwLvR8tYuHjKzOeAbcDefGhIj}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-smtp.gmail.com}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-realmercatto@gmail.com}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-dkbqehynobdnxuag}
+      WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-pub_test_Q5yDA9xoKdePzhSGeVe9KvxXQKIO5Ade}
+      WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY:-prv_test_V0P7fI9L8YnO6R4W2M1K3J5H7G9F1D3S}
+      WOMPI_INTEGRITY_SECRET: ${WOMPI_INTEGRITY_SECRET:-test_integrity_456789abcdefghijklmnopqrstuv}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+    ports:
+      - "8085:8085"
+    networks:
+      - mercatto-net
+
+  # 2. Frontend React + Vite + Nginx
+  frontend:
+    build:
+      context: ./mercatto-frontend
+      dockerfile: Dockerfile
+    image: mercattoregistry.azurecr.io/mercatto-frontend:latest
+    container_name: mercatto-frontend
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://backend:8085/api
+      - VITE_N8N_WEBHOOK_URL=http://n8n:5678/webhook/mercatto-chat
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - mercatto-net
+
+  # 3. Motor de Inteligencia Artificial y Automatización n8n
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: mercatto-n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - GENERIC_TIMEZONE=America/Bogota
+      - WEBHOOK_URL=http://localhost:5678/
+      - N8N_DEFAULT_BINARY_DATA_MODE=default
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - mercatto-net
+
+volumes:
+  n8n_data:
+
+networks:
+  mercatto-net:
+    driver: bridge

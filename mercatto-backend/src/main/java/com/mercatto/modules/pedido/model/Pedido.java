@@ -59,6 +59,9 @@ public class Pedido {
     @Column(name = "empresa_envio", length = 100)
     private String empresaEnvio;
 
+    @Column(name = "evidencia_entrega_url", length = 500)
+    private String evidenciaEntregaUrl;
+
     @Column(columnDefinition = "TEXT")
     private String notas;
 
@@ -135,6 +138,9 @@ public class Pedido {
 
     public String getEmpresaEnvio() { return empresaEnvio; }
     public void setEmpresaEnvio(String empresaEnvio) { this.empresaEnvio = empresaEnvio; }
+
+    public String getEvidenciaEntregaUrl() { return evidenciaEntregaUrl; }
+    public void setEvidenciaEntregaUrl(String evidenciaEntregaUrl) { this.evidenciaEntregaUrl = evidenciaEntregaUrl; }
 
     public String getNotas() { return notas; }
     public void setNotas(String notas) { this.notas = notas; }

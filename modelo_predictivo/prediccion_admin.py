@@ -1,9 +1,5 @@
 """
 =============================================================================
-PROYECTO DE AULA: MERCATTO MARKETPLACE
-MÓDULO: MOTOR DE INFERENCIA PREDICTIVA PARA EL ADMINISTRADOR (PLATAFORMA)
-Integrantes: Gustavo Gonzalez, Frank Barboza, Samuel Bowden, Carlos Arellano
-=============================================================================
 Estima para la plataforma Mercatto y el Administrador:
  1. Volumen total de ventas brutas del Marketplace (GMV)
  2. Número total de compras proyectadas

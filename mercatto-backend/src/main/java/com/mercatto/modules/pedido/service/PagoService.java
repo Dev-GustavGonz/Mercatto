@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -46,12 +47,19 @@ public class PagoService {
         return iniciarPago(pedidoId, metodoStr, pedido.getComprador());
     }
 
+    private static final ZoneId ZONA_COLOMBIA = ZoneId.of("America/Bogota");
+
     @Transactional
     public Map<String, Object> confirmarPagoInvitado(Long pedidoId, String transaccionId) {
+        return confirmarPagoInvitado(pedidoId, transaccionId, null);
+    }
+
+    @Transactional
+    public Map<String, Object> confirmarPagoInvitado(Long pedidoId, String transaccionId, String metodoStr) {
         Pedido pedido = pedidoRepo.findById(pedidoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
 
-        return confirmarPago(pedidoId, transaccionId, pedido.getComprador());
+        return confirmarPago(pedidoId, transaccionId, metodoStr, pedido.getComprador());
     }
 
     @Transactional
@@ -118,6 +126,11 @@ public class PagoService {
 
     @Transactional
     public Map<String, Object> confirmarPago(Long pedidoId, String transaccionId, Usuario usuario) {
+        return confirmarPago(pedidoId, transaccionId, null, usuario);
+    }
+
+    @Transactional
+    public Map<String, Object> confirmarPago(Long pedidoId, String transaccionId, String metodoStr, Usuario usuario) {
         Pedido pedido = pedidoRepo.findById(pedidoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado"));
 
@@ -127,8 +140,16 @@ public class PagoService {
         boolean yaEstabaAprobado = (pago.getEstado() == Pago.EstadoPago.APROBADO);
 
         pago.setEstado(Pago.EstadoPago.APROBADO);
-        pago.setTransaccionId(transaccionId != null ? transaccionId : pago.getTransaccionId());
-        pago.setFechaPago(LocalDateTime.now());
+        if (transaccionId != null && !transaccionId.isBlank()) {
+            pago.setTransaccionId(transaccionId);
+        }
+
+        Pago.MetodoPago metodoResuelto = resolverMetodoSeleccionado(metodoStr, pago.getTransaccionId(), pago.getMetodo());
+        if (metodoResuelto != null) {
+            pago.setMetodo(metodoResuelto);
+        }
+
+        pago.setFechaPago(LocalDateTime.now(ZONA_COLOMBIA));
         pagoRepo.save(pago);
 
         pedido.setEstado(Pedido.EstadoPedido.PAGADO);
@@ -146,6 +167,24 @@ public class PagoService {
                 "codigoPedido", pedido.getCodigo(),
                 "estado", pedido.getEstado().name()
         );
+    }
+
+    private Pago.MetodoPago resolverMetodoSeleccionado(String metodoStr, String transaccionId, Pago.MetodoPago metodoActual) {
+        String hint = ((metodoStr != null ? metodoStr : "") + " " + (transaccionId != null ? transaccionId : "")).toUpperCase();
+        if (hint.contains("TARJETA") || hint.contains("CARD") || hint.contains("CREDIT")) {
+            return Pago.MetodoPago.TARJETA_CREDITO;
+        } else if (hint.contains("NEQUI")) {
+            return Pago.MetodoPago.NEQUI;
+        } else if (hint.contains("PSE")) {
+            return Pago.MetodoPago.PSE;
+        } else if (hint.contains("DAVIPLATA")) {
+            return Pago.MetodoPago.DAVIPLATA;
+        } else if (hint.contains("BANCOLOMBIA") || hint.contains("TRANSFER")) {
+            return Pago.MetodoPago.TRANSFERENCIA_BANCARIA;
+        } else if (hint.contains("CONTRA_ENTREGA")) {
+            return Pago.MetodoPago.CONTRA_ENTREGA;
+        }
+        return metodoActual;
     }
 
     @Transactional
@@ -167,6 +206,9 @@ public class PagoService {
             String status = (String) transaccion.get("status");
             String reference = (String) transaccion.get("reference");
             String transaccionId = (String) transaccion.get("id");
+            String paymentMethodType = transaccion.get("payment_method_type") != null
+                    ? transaccion.get("payment_method_type").toString()
+                    : null;
 
             Pago pago = pagoRepo.findByPasarelaReferencia(reference).orElse(null);
             if (pago == null) {
@@ -176,10 +218,14 @@ public class PagoService {
 
             if (pago != null) {
                 pago.setTransaccionId(transaccionId);
+                Pago.MetodoPago metodoDetectado = resolverMetodoSeleccionado(paymentMethodType, transaccionId, pago.getMetodo());
+                if (metodoDetectado != null) {
+                    pago.setMetodo(metodoDetectado);
+                }
                 if ("APPROVED".equalsIgnoreCase(status)) {
                     boolean yaEstabaAprobado = (pago.getEstado() == Pago.EstadoPago.APROBADO);
                     pago.setEstado(Pago.EstadoPago.APROBADO);
-                    pago.setFechaPago(LocalDateTime.now());
+                    pago.setFechaPago(LocalDateTime.now(ZONA_COLOMBIA));
                     Pedido pedido = pago.getPedido();
                     pedido.setEstado(Pedido.EstadoPedido.PAGADO);
                     pedidoRepo.save(pedido);

@@ -49,8 +49,9 @@ public class PagoController {
         Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
         Long pedidoId = Long.valueOf(req.get("pedidoId").toString());
         String transaccionId = (String) req.get("transaccionId");
+        String metodo = req.get("metodo") != null ? req.get("metodo").toString() : null;
 
-        Map<String, Object> res = pagoService.confirmarPago(pedidoId, transaccionId, usuario);
+        Map<String, Object> res = pagoService.confirmarPago(pedidoId, transaccionId, metodo, usuario);
         return ResponseEntity.ok(res);
     }
 
@@ -59,8 +60,9 @@ public class PagoController {
     public ResponseEntity<?> confirmarPagoInvitado(@RequestBody Map<String, Object> req) {
         Long pedidoId = Long.valueOf(req.get("pedidoId").toString());
         String transaccionId = (String) req.get("transaccionId");
+        String metodo = req.get("metodo") != null ? req.get("metodo").toString() : null;
 
-        Map<String, Object> res = pagoService.confirmarPagoInvitado(pedidoId, transaccionId);
+        Map<String, Object> res = pagoService.confirmarPagoInvitado(pedidoId, transaccionId, metodo);
         return ResponseEntity.ok(res);
     }
 

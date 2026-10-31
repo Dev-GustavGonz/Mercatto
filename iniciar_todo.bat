@@ -22,7 +22,7 @@ echo.
 
 :: 2. Iniciar Backend (Spring Boot)
 echo [2/4] Iniciando Backend Spring Boot (Puerto 8085)...
-start "[1/3] Mercatto Backend (Spring Boot)" cmd /k "cd /d C:\Users\gjgh2\Downloads\mercatto\mercatto\mercatto-backend && mvn spring-boot:run"
+start "[1/3] Mercatto Backend (Spring Boot)" cmd /k "cd /d C:\Users\gjgh2\Downloads\mercatto\mercatto-backend && mvn spring-boot:run"
 echo.
 
 :: 3. Iniciar Frontend (Vite)
