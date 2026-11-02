@@ -23,6 +23,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class MultiAgenteIaService {
+    private boolean contieneEspanolProminente(String texto) {
+        if (texto == null || texto.isBlank()) return false;
+        String t = texto.toLowerCase();
+        return t.contains("¡hola") || t.contains("artículos más") || t.contains("articulos mas") ||
+               t.contains("¿deseas") || t.contains("con gusto te ayudo") || t.contains("métodos de pago") ||
+               t.contains("metodos de pago") || t.contains("cómo comprar") || t.contains("como comprar") ||
+               t.contains("en la tienda hoy") || t.contains("soy mercattobot");
+    }
+
+
 
     private static final Logger log = LoggerFactory.getLogger(MultiAgenteIaService.class);
 
@@ -79,6 +89,56 @@ public class MultiAgenteIaService {
         - Mantén el diseño y texto sobrio, limpio y moderno usando viñetas simples ('•') y encabezados en negrita.
         - IDIOMA: Si el usuario escribe en inglés, o si la consulta proviene en inglés, responde completamente en inglés pulido y natural. Si es en español, responde en español.
         """;
+
+    private static final String SYSTEM_PROMPT_EN = """
+        You are MercattoBot, the official, friendly and expert virtual assistant of 'Mercatto', Colombia's leading multi-vendor marketplace.
+        Your goal is to provide top-notch customer support in fluent, natural, polished English.
+
+        === MERCATTO CORE KNOWLEDGE ===
+
+        1. HOW TO BUY ON MERCATTO:
+           • Explore the catalog across official categories (Fashion, Footwear, Technology, Home, Beauty, Sports).
+           • Buy registered or as a GUEST (Guest Checkout) by entering email, phone, and delivery address.
+           • Shopping cart with automatic shipping calculation and discount coupons.
+           • Real-time order tracking with delivery photo evidence.
+
+        2. PAYMENT METHODS & ESCROW SECURITY:
+           • All payments are 100% secure via Wompi Bancolombia certified gateway.
+           • Accepted methods:
+             - Credit and Debit Cards (Visa, MasterCard, American Express).
+             - Bank Transfers (PSE - any Colombian bank).
+             - Digital Wallets (Nequi and Daviplata with instant processing).
+             - Cash on Delivery (Pay cash when receiving the package at your door).
+           • Mercatto Escrow Guarantee: Funds are kept in safe custody and released only after delivery is verified.
+
+        3. SHIPPING POLICY & TRACKING:
+           • FREE SHIPPING nationwide on purchases of $150,000 COP or more.
+           • Standard flat rate of $12,000 COP for smaller orders.
+           • Fast dispatch via Servientrega, Coordinadora, and Interrapidísimo (24-48 hours in Cartagena and main cities).
+           • Real-time parcel tracking 24/7 at '/rastreo' using Order Code and buyer email.
+
+        4. SELLER PLANS & COMMISSIONS:
+           • Free store registration in under 2 minutes.
+           • Plans:
+             - Starter Plan: $0/month (Free), 10% commission per completed sale.
+             - Professional Plan: $49,000 COP/month, reduced 5% commission.
+             - Elite Premium Plan: $99,000 COP/month, minimal 2% commission, verified Elite badge and top search ranking.
+
+        5. ACTIVE DISCOUNT COUPONS:
+           • 'BIENVENIDA': $20,000 COP discount on orders of $100,000 COP or more.
+           • 'MERCATTO10': 10% discount on orders from $30,000 COP (save up to $50,000 COP).
+
+        6. CUSTOMER SUPPORT:
+           • Official WhatsApp Support: +57 323 388 2717 (Monday to Saturday).
+           • Support Email: realmercatto@gmail.com.
+           • Online contact tickets on the platform.
+
+        === STYLE & LANGUAGE RULES ===
+        - Answer directly, helpfully, professionally, and in a clean minimalist format.
+        - DO NOT use excessive, tacky, or distracting emojis. Use clean bullet points ('•') and bold headers.
+        - MANDATORY LANGUAGE: You MUST respond 100% in fluent English. NEVER reply in Spanish under any circumstance.
+        """;
+
 
     @Autowired
     private ProductoRepository productoRepo;
@@ -166,6 +226,10 @@ public class MultiAgenteIaService {
                 String respuesta = ejecutarAgente(agente, msg, sessionId, idiomaEfectivo);
 
                 if (respuesta != null && !respuesta.isBlank()) {
+                    if (isEn && contieneEspanolProminente(respuesta)) {
+                        log.warn("El agente [{}] respondió en español a pesar de solicitar inglés. Aplicando respuesta experta en inglés.", agente.nombre());
+                        respuesta = responderConAgenteLocal(msg, "en");
+                    }
                     consultasPorAgente.merge(agente.nombre(), 1, Integer::sum);
                     if (huboTokensAgotados) {
                         failoversRealizados.incrementAndGet();
@@ -224,9 +288,7 @@ public class MultiAgenteIaService {
     private String llamarGemini(String apiKey, String modelo, String mensaje, String idioma) throws Exception {
         String url = String.format("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", modelo, apiKey);
         boolean isEn = esIngles(mensaje, idioma);
-        String promptEfectivo = isEn
-                ? SYSTEM_PROMPT + "\n\n[CRITICAL REQUIREMENT]: The user asked in English or English mode is active. You MUST respond 100% in fluent, polished English. Do NOT use Spanish."
-                : SYSTEM_PROMPT;
+        String promptEfectivo = isEn ? SYSTEM_PROMPT_EN : SYSTEM_PROMPT;
 
         Map<String, Object> body = Map.of(
                 "systemInstruction", Map.of(
@@ -281,9 +343,7 @@ public class MultiAgenteIaService {
 
     private String llamarApiOpenAiCompatible(String url, String apiKey, String modelo, String mensaje, String idioma) throws Exception {
         boolean isEn = esIngles(mensaje, idioma);
-        String promptEfectivo = isEn
-                ? SYSTEM_PROMPT + "\n\n[CRITICAL REQUIREMENT]: The user asked in English or English mode is active. You MUST respond 100% in fluent, polished English. Do NOT use Spanish."
-                : SYSTEM_PROMPT;
+        String promptEfectivo = isEn ? SYSTEM_PROMPT_EN : SYSTEM_PROMPT;
 
         Map<String, Object> body = Map.of(
                 "model", modelo,
@@ -368,7 +428,7 @@ public class MultiAgenteIaService {
         // 1. Métodos de pago y seguridad
         if (t.contains("pago") || t.contains("tarjeta") || t.contains("nequi") || t.contains("pse") || 
             t.contains("bancolombia") || t.contains("efectivo") || t.contains("daviplata") || t.contains("wompi") || t.contains("segur") ||
-            t.contains("pay") || t.contains("card") || t.contains("cash")) {
+            t.contains("pay") || t.contains("card") || t.contains("cash") || t.contains("method") || t.contains("accept") || t.contains("wallet")) {
             if (isEn) {
                 return """
                     **Payment Methods and Security in Mercatto:**
