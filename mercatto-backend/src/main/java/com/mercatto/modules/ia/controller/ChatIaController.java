@@ -3,6 +3,7 @@ package com.mercatto.modules.ia.controller;
 import com.mercatto.modules.ia.dto.ChatIaRequest;
 import com.mercatto.modules.ia.dto.ChatIaResponse;
 import com.mercatto.modules.ia.service.MultiAgenteIaService;
+import com.mercatto.util.LocalizationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +19,20 @@ public class ChatIaController {
 
     // POST /api/ia/chat (Público: Asistente virtual con failover automático de agentes por agotamiento de tokens)
     @PostMapping("/chat")
-    public ResponseEntity<ChatIaResponse> chatearConAgentes(@RequestBody ChatIaRequest request) {
+    public ResponseEntity<ChatIaResponse> chatearConAgentes(
+            @RequestBody ChatIaRequest request,
+            @RequestHeader(value = "Accept-Language", required = false) String acceptLang) {
+        String idioma = request.getIdioma();
+        if ((idioma == null || idioma.isBlank()) && acceptLang != null) {
+            idioma = acceptLang;
+        }
+        if ((idioma == null || idioma.isBlank()) && LocalizationUtil.isEnglishRequest()) {
+            idioma = "en";
+        }
         ChatIaResponse respuesta = multiAgenteService.procesarMensaje(
                 request.getMessage(),
-                request.getSessionId()
+                request.getSessionId(),
+                idioma
         );
         return ResponseEntity.ok(respuesta);
     }
@@ -34,8 +45,13 @@ public class ChatIaController {
 
     // POST /api/ia/simular-failover (Para probar en la feria cómo conmuta de un agente a otro)
     @PostMapping("/test-fallback")
-    public ResponseEntity<Map<String, Object>> probarFallback(@RequestParam(defaultValue = "Hola, ¿cómo compro en Mercatto?") String mensaje) {
-        String respuestaLocal = multiAgenteService.responderConAgenteLocal(mensaje);
+    public ResponseEntity<Map<String, Object>> probarFallback(
+            @RequestParam(defaultValue = "Hola, ¿cómo compro en Mercatto?") String mensaje,
+            @RequestParam(required = false) String idioma) {
+        if ((idioma == null || idioma.isBlank()) && LocalizationUtil.isEnglishRequest()) {
+            idioma = "en";
+        }
+        String respuestaLocal = multiAgenteService.responderConAgenteLocal(mensaje, idioma);
         return ResponseEntity.ok(Map.of(
                 "prueba", "Agente de Respaldo Local Infalible",
                 "respuesta", respuestaLocal,

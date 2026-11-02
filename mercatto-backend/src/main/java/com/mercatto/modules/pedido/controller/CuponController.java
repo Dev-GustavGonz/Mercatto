@@ -3,6 +3,7 @@ package com.mercatto.modules.pedido.controller;
 import com.mercatto.dto.request.CuponRequest;
 import com.mercatto.modules.pedido.model.Cupon;
 import com.mercatto.modules.pedido.service.CuponService;
+import com.mercatto.util.LocalizationUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +55,6 @@ public class CuponController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> eliminar(@PathVariable Long id) {
         cuponService.eliminar(id);
-        return ResponseEntity.ok(Map.of("exito", true, "mensaje", "Cupón eliminado"));
+        return ResponseEntity.ok(Map.of("exito", true, "mensaje", LocalizationUtil.msg("Cupón eliminado", "Coupon removed")));
     }
 }

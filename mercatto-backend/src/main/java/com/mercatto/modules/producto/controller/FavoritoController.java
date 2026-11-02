@@ -7,6 +7,7 @@ import com.mercatto.modules.usuario.model.Usuario;
 import com.mercatto.modules.producto.repository.FavoritoRepository;
 import com.mercatto.modules.producto.repository.ProductoRepository;
 import com.mercatto.modules.usuario.repository.UsuarioRepository;
+import com.mercatto.util.LocalizationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -46,13 +47,19 @@ public class FavoritoController {
 
         if (favoritoRepo.existsByUsuarioAndProducto(u, p)) {
             favoritoRepo.deleteByUsuarioAndProducto(u, p);
-            return ResponseEntity.ok(Map.of("favorito", false, "mensaje", "Eliminado de favoritos"));
+            return ResponseEntity.ok(Map.of(
+                    "favorito", false,
+                    "mensaje", LocalizationUtil.msg("Eliminado de favoritos", "Removed from favorites")
+            ));
         } else {
             Favorito f = new Favorito();
             f.setUsuario(u);
             f.setProducto(p);
             favoritoRepo.save(f);
-            return ResponseEntity.ok(Map.of("favorito", true, "mensaje", "Agregado a favoritos"));
+            return ResponseEntity.ok(Map.of(
+                    "favorito", true,
+                    "mensaje", LocalizationUtil.msg("Agregado a favoritos", "Added to favorites")
+            ));
         }
     }
 }

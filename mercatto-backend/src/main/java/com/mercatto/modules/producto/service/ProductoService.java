@@ -13,6 +13,7 @@ import com.mercatto.dto.response.ProductoResponse;
 import com.mercatto.exception.BadRequestException;
 import com.mercatto.exception.ResourceNotFoundException;
 import com.mercatto.exception.UnauthorizedException;
+import com.mercatto.util.LocalizationUtil;
 import com.mercatto.modules.producto.repository.CategoriaRepository;
 import com.mercatto.modules.producto.repository.ProductoImagenRepository;
 import com.mercatto.modules.producto.repository.ProductoRepository;
@@ -391,7 +392,11 @@ public class ProductoService {
         if (p.getCategoria() != null) {
             ProductoResponse.CategoriaDTO catDto = new ProductoResponse.CategoriaDTO();
             catDto.setId(p.getCategoria().getId());
-            catDto.setNombre(p.getCategoria().getNombre());
+            String catNom = p.getCategoria().getNombre();
+            if (LocalizationUtil.isEnglishRequest()) {
+                catNom = LocalizationUtil.traducirCategoria(catNom);
+            }
+            catDto.setNombre(catNom);
             catDto.setSlug(p.getCategoria().getSlug());
             catDto.setIcono(p.getCategoria().getIcono());
             res.setCategoria(catDto);
@@ -457,3 +462,4 @@ public class ProductoService {
         return slug;
     }
 }
+

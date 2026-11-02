@@ -2,6 +2,7 @@ package com.mercatto.modules.producto.controller;
 
 import com.mercatto.modules.producto.model.Categoria;
 import com.mercatto.modules.producto.service.CategoriaService;
+import com.mercatto.util.LocalizationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,19 +21,22 @@ public class CategoriaController {
     // GET /api/categorias (Listar jerarquía pública)
     @GetMapping
     public ResponseEntity<List<Categoria>> listarPrincipales() {
-        return ResponseEntity.ok(categoriaService.listarPrincipales());
+        List<Categoria> categorias = categoriaService.listarPrincipales();
+        return ResponseEntity.ok(LocalizationUtil.clonarYTraducirListaCategorias(categorias, LocalizationUtil.isEnglishRequest()));
     }
 
     // GET /api/categorias/todas
     @GetMapping("/todas")
     public ResponseEntity<List<Categoria>> listarTodas() {
-        return ResponseEntity.ok(categoriaService.listarTodas());
+        List<Categoria> categorias = categoriaService.listarTodas();
+        return ResponseEntity.ok(LocalizationUtil.clonarYTraducirListaCategorias(categorias, LocalizationUtil.isEnglishRequest()));
     }
 
     // GET /api/categorias/{slug}
     @GetMapping("/{slug}")
     public ResponseEntity<Categoria> obtenerPorSlug(@PathVariable String slug) {
-        return ResponseEntity.ok(categoriaService.obtenerPorSlug(slug));
+        Categoria cat = categoriaService.obtenerPorSlug(slug);
+        return ResponseEntity.ok(LocalizationUtil.clonarYTraducirCategoria(cat, LocalizationUtil.isEnglishRequest()));
     }
 
     // POST /api/categorias (Solo Admin)
@@ -59,6 +63,6 @@ public class CategoriaController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> eliminar(@PathVariable Long id) {
         categoriaService.eliminar(id);
-        return ResponseEntity.ok(Map.of("exito", true, "mensaje", "Categoría eliminada"));
+        return ResponseEntity.ok(Map.of("exito", true, "mensaje", LocalizationUtil.msg("Categoría eliminada", "Category deleted")));
     }
 }

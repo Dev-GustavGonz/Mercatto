@@ -175,7 +175,11 @@ public class PedidoService {
                 if (variante.getStock() < itemDto.getCantidad()) {
                     throw new BadRequestException("Stock insuficiente para '" + producto.getTitulo() + " (" + variante.getNombre() + ")'");
                 }
-                precioUnitario = variante.getPrecioOferta() != null ? variante.getPrecioOferta() : variante.getPrecio();
+                if (variante.getPrecioOferta() != null && variante.getPrecioOferta() > 0) {
+                    precioUnitario = variante.getPrecioOferta();
+                } else if (variante.getPrecio() != null && variante.getPrecio() > 0) {
+                    precioUnitario = variante.getPrecio();
+                }
                 nombreVariante = variante.getNombre();
                 if (variante.getImagenUrl() != null) {
                     imagenUrl = variante.getImagenUrl();
