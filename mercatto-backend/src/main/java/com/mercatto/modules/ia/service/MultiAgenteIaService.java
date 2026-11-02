@@ -117,12 +117,24 @@ public class MultiAgenteIaService {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
+    public static boolean esIngles(String mensaje, String idioma) {
+        if (idioma != null && idioma.toLowerCase().startsWith("en")) {
+            return true;
+        }
+        if (mensaje == null || mensaje.isBlank()) {
+            return false;
+        }
+        String m = mensaje.toLowerCase().trim();
+        return m.matches("(?i).*\\b(how|what|where|when|why|who|which|can|could|would|should|do|does|did|is|are|was|were|will|shall|hello|hi|hey|good\\s+(morning|afternoon|evening)|please|help|buy|buying|purchase|order|orders|shipping|ship|delivery|store|shop|seller|sell|payment|pay|paid|price|cost|discount|coupon|coupons|track|tracking|product|products|item|items|refund|thanks|thank\\s+you|support|recommend|shoes|clothes|laptop|phone|tech|kitchen|furniture)\\b.*");
+    }
+
     public ChatIaResponse procesarMensaje(String mensajeUsuario, String sessionId) {
         return procesarMensaje(mensajeUsuario, sessionId, "es");
     }
 
     public ChatIaResponse procesarMensaje(String mensajeUsuario, String sessionId, String idioma) {
-        boolean isEn = idioma != null && idioma.toLowerCase().startsWith("en");
+        boolean isEn = esIngles(mensajeUsuario, idioma);
+        String idiomaEfectivo = isEn ? "en" : (idioma != null ? idioma : "es");
         if (mensajeUsuario == null || mensajeUsuario.isBlank()) {
             return new ChatIaResponse(
                     isEn ? "Hello! How can I assist you with Mercatto today?" : "¡Hola! ¿En qué puedo ayudarte hoy en Mercatto?",
@@ -151,7 +163,7 @@ public class MultiAgenteIaService {
 
             try {
                 log.info("Intento #{}: Consultando al agente [{}] (Proveedor: {})...", intento, agente.nombre(), agente.proveedor());
-                String respuesta = ejecutarAgente(agente, msg, sessionId, idioma);
+                String respuesta = ejecutarAgente(agente, msg, sessionId, idiomaEfectivo);
 
                 if (respuesta != null && !respuesta.isBlank()) {
                     consultasPorAgente.merge(agente.nombre(), 1, Integer::sum);
@@ -185,7 +197,7 @@ public class MultiAgenteIaService {
 
         // Si todos los agentes externos agotaron sus tokens o falló la red, entra el Agente Local Infalible
         log.warn("Todos los agentes externos agotados o sin red. Ejecutando Agente Experto Mercatto Local...");
-        String respuestaFallback = responderConAgenteLocal(msg, idioma);
+        String respuestaFallback = responderConAgenteLocal(msg, idiomaEfectivo);
         failoversRealizados.incrementAndGet();
         consultasPorAgente.merge("Agente Experto Mercatto Local", 1, Integer::sum);
 
@@ -211,8 +223,9 @@ public class MultiAgenteIaService {
     // ── 1. Integración Gemini API Oficial ───────────────────────────────
     private String llamarGemini(String apiKey, String modelo, String mensaje, String idioma) throws Exception {
         String url = String.format("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", modelo, apiKey);
-        String promptEfectivo = (idioma != null && idioma.toLowerCase().startsWith("en"))
-                ? SYSTEM_PROMPT + "\n\n[IMPORTANT: The user is in English mode. Respond entirely in English.]"
+        boolean isEn = esIngles(mensaje, idioma);
+        String promptEfectivo = isEn
+                ? SYSTEM_PROMPT + "\n\n[CRITICAL REQUIREMENT]: The user asked in English or English mode is active. You MUST respond 100% in fluent, polished English. Do NOT use Spanish."
                 : SYSTEM_PROMPT;
 
         Map<String, Object> body = Map.of(
@@ -267,8 +280,9 @@ public class MultiAgenteIaService {
     }
 
     private String llamarApiOpenAiCompatible(String url, String apiKey, String modelo, String mensaje, String idioma) throws Exception {
-        String promptEfectivo = (idioma != null && idioma.toLowerCase().startsWith("en"))
-                ? SYSTEM_PROMPT + "\n\n[IMPORTANT: The user is in English mode. Respond entirely in English.]"
+        boolean isEn = esIngles(mensaje, idioma);
+        String promptEfectivo = isEn
+                ? SYSTEM_PROMPT + "\n\n[CRITICAL REQUIREMENT]: The user asked in English or English mode is active. You MUST respond 100% in fluent, polished English. Do NOT use Spanish."
                 : SYSTEM_PROMPT;
 
         Map<String, Object> body = Map.of(
@@ -313,10 +327,11 @@ public class MultiAgenteIaService {
 
     // ── 3. Integración con Webhook n8n ─────────────────────────────────
     private String llamarN8nWebhook(String endpoint, String mensaje, String sessionId, String idioma) throws Exception {
+        boolean isEn = esIngles(mensaje, idioma);
         Map<String, Object> payload = Map.of(
                 "message", mensaje,
                 "sessionId", sessionId != null ? sessionId : "default-session",
-                "idioma", idioma != null ? idioma : "es"
+                "idioma", isEn ? "en" : (idioma != null ? idioma : "es")
         );
 
         String jsonPayload = objectMapper.writeValueAsString(payload);
@@ -347,10 +362,8 @@ public class MultiAgenteIaService {
     }
 
     public String responderConAgenteLocal(String mensaje, String idioma) {
-        String t = mensaje.toLowerCase();
-        boolean isEn = (idioma != null && idioma.toLowerCase().startsWith("en")) ||
-                t.contains("how to buy") || t.contains("payment") || t.contains("shipping") ||
-                t.contains("coupon") || t.contains("sell") || t.contains("store") || t.startsWith("hi") || t.startsWith("hello");
+        String t = mensaje != null ? mensaje.toLowerCase() : "";
+        boolean isEn = esIngles(mensaje, idioma);
 
         // 1. Métodos de pago y seguridad
         if (t.contains("pago") || t.contains("tarjeta") || t.contains("nequi") || t.contains("pse") || 
