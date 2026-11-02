@@ -37,6 +37,16 @@ public class TiendaPublicaController {
         List<Vendedor> vendedores = vendedorRepo.findByEstado(Vendedor.Estado.APROBADO);
         List<TiendaPublicaResponse> tiendas = vendedores.stream()
                 .map(this::convertirATiendaResponse)
+                .sorted((a, b) -> {
+                    int pesoA = pesoPlan(a.getTipoSuscripcion());
+                    int pesoB = pesoPlan(b.getTipoSuscripcion());
+                    if (pesoB != pesoA) return Integer.compare(pesoB, pesoA);
+                    int califComp = Double.compare(b.getCalificacion() != null ? b.getCalificacion() : 0.0,
+                                                   a.getCalificacion() != null ? a.getCalificacion() : 0.0);
+                    if (califComp != 0) return califComp;
+                    return Integer.compare(b.getTotalVentas() != null ? b.getTotalVentas() : 0,
+                                           a.getTotalVentas() != null ? a.getTotalVentas() : 0);
+                })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(tiendas);
     }
@@ -118,5 +128,14 @@ public class TiendaPublicaController {
         res.setMarcas(productoRepo.obtenerMarcasPorVendedor(v.getId()));
 
         return res;
+    }
+
+    private int pesoPlan(String plan) {
+        if (plan == null) return 1;
+        return switch (plan.toUpperCase()) {
+            case "ELITE" -> 3;
+            case "PRO" -> 2;
+            default -> 1;
+        };
     }
 }
