@@ -1041,7 +1041,7 @@ public class MultiAgenteIaService {
         }
 
         // 7. Proceso de compra paso a paso
-        if (t.contains("como comprar") || t.contains("pasos") || t.contains("comprar") || t.contains("funciona") ||
+        if (t.contains("como comprar") || t.contains("pasos") || t.contains("comprar") || t.contains("que hago") || t.contains("funciona") ||
             t.contains("how to buy") || t.contains("purchase") || t.contains("order")) {
             return obtenerRespuestaComoComprar(isEn);
         }
