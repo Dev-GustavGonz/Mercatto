@@ -1,10 +1,13 @@
 package com.mercatto.modules.producto.service;
 
+import com.mercatto.config.CacheConfig;
 import com.mercatto.exception.BadRequestException;
 import com.mercatto.exception.ResourceNotFoundException;
 import com.mercatto.modules.producto.model.Categoria;
 import com.mercatto.modules.producto.repository.CategoriaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,25 +22,30 @@ public class CategoriaService {
     @Autowired
     private CategoriaRepository categoriaRepo;
 
+    @Cacheable(value = CacheConfig.CACHE_CATEGORIAS, key = "'principales'")
     public List<Categoria> listarPrincipales() {
         return categoriaRepo.findByPadreIsNullAndActivoTrueOrderByOrdenVisualAsc();
     }
 
+    @Cacheable(value = CacheConfig.CACHE_CATEGORIAS, key = "'todas'")
     public List<Categoria> listarTodas() {
         return categoriaRepo.findByActivoTrueOrderByOrdenVisualAsc();
     }
 
+    @Cacheable(value = CacheConfig.CACHE_CATEGORIAS, key = "'id_' + #id")
     public Categoria obtenerPorId(Long id) {
         return categoriaRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
     }
 
+    @Cacheable(value = CacheConfig.CACHE_CATEGORIAS, key = "'slug_' + #slug")
     public Categoria obtenerPorSlug(String slug) {
         return categoriaRepo.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con slug: " + slug));
     }
 
     @Transactional
+    @CacheEvict(value = CacheConfig.CACHE_CATEGORIAS, allEntries = true)
     public Categoria crear(Categoria categoria, Long padreId) {
         if (categoriaRepo.existsByNombre(categoria.getNombre())) {
             throw new BadRequestException("Ya existe una categoría con el nombre: " + categoria.getNombre());
@@ -53,6 +61,7 @@ public class CategoriaService {
     }
 
     @Transactional
+    @CacheEvict(value = CacheConfig.CACHE_CATEGORIAS, allEntries = true)
     public Categoria actualizar(Long id, Categoria datos, Long padreId) {
         Categoria categoria = obtenerPorId(id);
         categoria.setNombre(datos.getNombre());
@@ -73,6 +82,7 @@ public class CategoriaService {
     }
 
     @Transactional
+    @CacheEvict(value = CacheConfig.CACHE_CATEGORIAS, allEntries = true)
     public void eliminar(Long id) {
         Categoria cat = obtenerPorId(id);
         categoriaRepo.delete(cat);

@@ -14,6 +14,9 @@ import com.mercatto.exception.BadRequestException;
 import com.mercatto.exception.ResourceNotFoundException;
 import com.mercatto.exception.UnauthorizedException;
 import com.mercatto.util.LocalizationUtil;
+import com.mercatto.config.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import com.mercatto.modules.producto.repository.CategoriaRepository;
 import com.mercatto.modules.producto.repository.ProductoImagenRepository;
 import com.mercatto.modules.producto.repository.ProductoRepository;
@@ -113,6 +116,7 @@ public class ProductoService {
         };
     }
 
+    @Cacheable(value = CacheConfig.CACHE_PRODUCTOS_DESTACADOS)
     public List<ProductoResponse> obtenerDestacados() {
         List<Producto> list = productoRepo.findTop12ByActivoTrueOrderByTotalVentasDesc();
         if (list.isEmpty()) {
@@ -134,22 +138,26 @@ public class ProductoService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS)
     public List<ProductoResponse> obtenerMasVendidos() {
         return productoRepo.findTop8ByActivoTrueOrderByTotalVentasDesc()
                 .stream().map(this::convertirAResponse).collect(Collectors.toList());
     }
 
+    @Cacheable(value = CacheConfig.CACHE_PRODUCTOS_NUEVOS)
     public List<ProductoResponse> obtenerNuevos() {
         return productoRepo.findTop8ByActivoTrueOrderByFechaCreacionDesc()
                 .stream().map(this::convertirAResponse).collect(Collectors.toList());
     }
 
+    @Cacheable(value = CacheConfig.CACHE_PRODUCTO_DETALLE, key = "'id_' + #id")
     public ProductoResponse obtenerPorId(Long id) {
         Producto producto = productoRepo.findByIdAndActivoTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no disponible o inactivo"));
         return convertirAResponse(producto);
     }
 
+    @Cacheable(value = CacheConfig.CACHE_PRODUCTO_DETALLE, key = "'slug_' + #slug")
     public ProductoResponse obtenerPorSlug(String slug) {
         Producto producto = productoRepo.findBySlugAndActivoTrue(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
@@ -162,6 +170,15 @@ public class ProductoService {
     }
 
     @Transactional
+    @CacheEvict(value = {
+        CacheConfig.CACHE_PRODUCTOS_DESTACADOS,
+        CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS,
+        CacheConfig.CACHE_PRODUCTOS_NUEVOS,
+        CacheConfig.CACHE_PRODUCTO_DETALLE,
+        CacheConfig.CACHE_TIENDAS_PUBLICAS,
+        CacheConfig.CACHE_TIENDA_DETALLE,
+        CacheConfig.CACHE_MARCAS_PUBLICAS
+    }, allEntries = true)
     public ProductoResponse crear(ProductoRequest request, Vendedor vendedor) {
         Categoria categoria = categoriaRepo.findById(request.getCategoriaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no válida"));
@@ -240,6 +257,15 @@ public class ProductoService {
     }
 
     @Transactional
+    @CacheEvict(value = {
+        CacheConfig.CACHE_PRODUCTOS_DESTACADOS,
+        CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS,
+        CacheConfig.CACHE_PRODUCTOS_NUEVOS,
+        CacheConfig.CACHE_PRODUCTO_DETALLE,
+        CacheConfig.CACHE_TIENDAS_PUBLICAS,
+        CacheConfig.CACHE_TIENDA_DETALLE,
+        CacheConfig.CACHE_MARCAS_PUBLICAS
+    }, allEntries = true)
     public ProductoResponse actualizar(Long id, ProductoRequest request, Vendedor vendedor) {
         Producto producto = productoRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
@@ -341,6 +367,15 @@ public class ProductoService {
     }
 
     @Transactional
+    @CacheEvict(value = {
+        CacheConfig.CACHE_PRODUCTOS_DESTACADOS,
+        CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS,
+        CacheConfig.CACHE_PRODUCTOS_NUEVOS,
+        CacheConfig.CACHE_PRODUCTO_DETALLE,
+        CacheConfig.CACHE_TIENDAS_PUBLICAS,
+        CacheConfig.CACHE_TIENDA_DETALLE,
+        CacheConfig.CACHE_MARCAS_PUBLICAS
+    }, allEntries = true)
     public void eliminar(Long id, Vendedor vendedor) {
         Producto producto = productoRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
@@ -356,6 +391,15 @@ public class ProductoService {
     }
 
     @Transactional
+    @CacheEvict(value = {
+        CacheConfig.CACHE_PRODUCTOS_DESTACADOS,
+        CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS,
+        CacheConfig.CACHE_PRODUCTOS_NUEVOS,
+        CacheConfig.CACHE_PRODUCTO_DETALLE,
+        CacheConfig.CACHE_TIENDAS_PUBLICAS,
+        CacheConfig.CACHE_TIENDA_DETALLE,
+        CacheConfig.CACHE_MARCAS_PUBLICAS
+    }, allEntries = true)
     public ProductoResponse toggleActivo(Long id, Vendedor vendedor) {
         Producto producto = productoRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));

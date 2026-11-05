@@ -10,6 +10,8 @@ import com.mercatto.modules.producto.repository.ResenaRepository;
 import com.mercatto.modules.vendedor.repository.VendedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.mercatto.config.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -52,6 +54,7 @@ public class VendedorService {
     }
 
     @Transactional
+    @CacheEvict(value = {CacheConfig.CACHE_TIENDAS_PUBLICAS, CacheConfig.CACHE_TIENDA_DETALLE}, allEntries = true)
     public VendedorResponse actualizarPerfil(Usuario usuario, Map<String, String> datos) {
         Vendedor v = obtenerPorUsuario(usuario);
         if (datos.containsKey("nombreTienda")) v.setNombreTienda(datos.get("nombreTienda"));
@@ -67,6 +70,7 @@ public class VendedorService {
     }
 
     @Transactional
+    @CacheEvict(value = {CacheConfig.CACHE_TIENDAS_PUBLICAS, CacheConfig.CACHE_TIENDA_DETALLE}, allEntries = true)
     public VendedorResponse actualizarSuscripcion(Usuario usuario, String planStr) {
         Vendedor v = obtenerPorUsuario(usuario);
         Vendedor.TipoSuscripcion nuevoPlan;

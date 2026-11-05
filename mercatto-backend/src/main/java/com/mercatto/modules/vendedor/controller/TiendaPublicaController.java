@@ -3,64 +3,41 @@ package com.mercatto.modules.vendedor.controller;
 import com.mercatto.dto.response.ProductoResponse;
 import com.mercatto.dto.response.TiendaPublicaResponse;
 import com.mercatto.exception.ResourceNotFoundException;
-import com.mercatto.modules.vendedor.model.Vendedor;
-import com.mercatto.modules.producto.repository.ProductoRepository;
-import com.mercatto.modules.producto.repository.ResenaRepository;
-import com.mercatto.modules.vendedor.repository.VendedorRepository;
 import com.mercatto.modules.producto.service.ProductoService;
+import com.mercatto.modules.vendedor.repository.VendedorRepository;
+import com.mercatto.modules.vendedor.service.TiendaPublicaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tiendas")
 public class TiendaPublicaController {
 
     @Autowired
+    private TiendaPublicaService tiendaPublicaService;
+
+    @Autowired
     private VendedorRepository vendedorRepo;
-
-    @Autowired
-    private ProductoRepository productoRepo;
-
-    @Autowired
-    private ResenaRepository resenaRepo;
 
     @Autowired
     private ProductoService productoService;
 
     @GetMapping
     public ResponseEntity<List<TiendaPublicaResponse>> listarTiendas() {
-        List<Vendedor> vendedores = vendedorRepo.findByEstado(Vendedor.Estado.APROBADO);
-        List<TiendaPublicaResponse> tiendas = vendedores.stream()
-                .map(this::convertirATiendaResponse)
-                .sorted((a, b) -> {
-                    int pesoA = pesoPlan(a.getTipoSuscripcion());
-                    int pesoB = pesoPlan(b.getTipoSuscripcion());
-                    if (pesoB != pesoA) return Integer.compare(pesoB, pesoA);
-                    int califComp = Double.compare(b.getCalificacion() != null ? b.getCalificacion() : 0.0,
-                                                   a.getCalificacion() != null ? a.getCalificacion() : 0.0);
-                    if (califComp != 0) return califComp;
-                    return Integer.compare(b.getTotalVentas() != null ? b.getTotalVentas() : 0,
-                                           a.getTotalVentas() != null ? a.getTotalVentas() : 0);
-                })
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(tiendas);
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=180, stale-while-revalidate=360")
+                .body(tiendaPublicaService.listarTiendas());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TiendaPublicaResponse> obtenerTienda(@PathVariable Long id) {
-        Vendedor vendedor = vendedorRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tienda no encontrada"));
-
-        if (vendedor.getEstado() != Vendedor.Estado.APROBADO) {
-            throw new ResourceNotFoundException("La tienda no se encuentra disponible");
-        }
-
-        return ResponseEntity.ok(convertirATiendaResponse(vendedor));
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=180, stale-while-revalidate=360")
+                .body(tiendaPublicaService.obtenerTienda(id));
     }
 
     @GetMapping("/{id}/productos")
@@ -83,59 +60,15 @@ public class TiendaPublicaController {
         Page<ProductoResponse> productos = productoService.filtrarPorTienda(
                 id, categoriaId, marca, precioMin, precioMax, q, pagina, tamano, orden);
 
-        return ResponseEntity.ok(productos);
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=120, stale-while-revalidate=240")
+                .body(productos);
     }
 
     @GetMapping("/marcas")
     public ResponseEntity<List<String>> listarMarcas() {
-        List<String> marcas = productoRepo.obtenerTodasLasMarcas();
-        return ResponseEntity.ok(marcas);
-    }
-
-    private TiendaPublicaResponse convertirATiendaResponse(Vendedor v) {
-        TiendaPublicaResponse res = new TiendaPublicaResponse();
-        res.setId(v.getId());
-        if (v.getUsuario() != null) {
-            res.setUsuarioId(v.getUsuario().getId());
-        }
-        res.setNombreTienda(v.getNombreTienda());
-        res.setDescripcion(v.getDescripcion());
-        res.setLogoUrl(v.getLogoUrl());
-        res.setPortadaUrl(v.getPortadaUrl());
-        res.setCiudad(v.getCiudad());
-
-        // La calificación de la tienda es el promedio de las reseñas de todos sus artículos
-        Double promResenas = resenaRepo.calcularPromedioCalificacionVendedor(v);
-        if (promResenas == null || promResenas == 0.0) {
-            promResenas = productoRepo.calcularPromedioCalificacionArticulos(v);
-        }
-        double califTienda = (promResenas != null && promResenas > 0.0)
-                ? Math.round(promResenas * 10.0) / 10.0
-                : (v.getCalificacion() != null && v.getCalificacion() > 0 ? v.getCalificacion() : 5.0);
-        res.setCalificacion(califTienda);
-
-        Long totalRes = resenaRepo.countByVendedor(v);
-        if (totalRes == null || totalRes == 0) {
-            totalRes = productoRepo.sumTotalResenasArticulos(v);
-        }
-        res.setTotalResenas(totalRes != null ? totalRes.intValue() : 0);
-
-        res.setTotalVentas(v.getTotalVentas() != null ? v.getTotalVentas() : 0);
-        res.setTipoSuscripcion(v.getTipoSuscripcion() != null ? v.getTipoSuscripcion().name() : "STARTER");
-
-        // Datos dinámicos de catálogo y marcas
-        res.setTotalProductos(productoRepo.countByVendedorAndActivoTrue(v));
-        res.setMarcas(productoRepo.obtenerMarcasPorVendedor(v.getId()));
-
-        return res;
-    }
-
-    private int pesoPlan(String plan) {
-        if (plan == null) return 1;
-        return switch (plan.toUpperCase()) {
-            case "ELITE" -> 3;
-            case "PRO" -> 2;
-            default -> 1;
-        };
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=300, stale-while-revalidate=600")
+                .body(tiendaPublicaService.listarMarcas());
     }
 }

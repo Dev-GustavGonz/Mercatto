@@ -22,21 +22,27 @@ public class CategoriaController {
     @GetMapping
     public ResponseEntity<List<Categoria>> listarPrincipales() {
         List<Categoria> categorias = categoriaService.listarPrincipales();
-        return ResponseEntity.ok(LocalizationUtil.clonarYTraducirListaCategorias(categorias, LocalizationUtil.isEnglishRequest()));
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=300, stale-while-revalidate=600")
+                .body(LocalizationUtil.clonarYTraducirListaCategorias(categorias, LocalizationUtil.isEnglishRequest()));
     }
 
     // GET /api/categorias/todas
     @GetMapping("/todas")
     public ResponseEntity<List<Categoria>> listarTodas() {
         List<Categoria> categorias = categoriaService.listarTodas();
-        return ResponseEntity.ok(LocalizationUtil.clonarYTraducirListaCategorias(categorias, LocalizationUtil.isEnglishRequest()));
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=300, stale-while-revalidate=600")
+                .body(LocalizationUtil.clonarYTraducirListaCategorias(categorias, LocalizationUtil.isEnglishRequest()));
     }
 
     // GET /api/categorias/{slug}
     @GetMapping("/{slug}")
     public ResponseEntity<Categoria> obtenerPorSlug(@PathVariable String slug) {
         Categoria cat = categoriaService.obtenerPorSlug(slug);
-        return ResponseEntity.ok(LocalizationUtil.clonarYTraducirCategoria(cat, LocalizationUtil.isEnglishRequest()));
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=300, stale-while-revalidate=600")
+                .body(LocalizationUtil.clonarYTraducirCategoria(cat, LocalizationUtil.isEnglishRequest()));
     }
 
     // POST /api/categorias (Solo Admin)

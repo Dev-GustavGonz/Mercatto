@@ -45,37 +45,49 @@ public class ProductoController {
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "12") int tamano,
             @RequestParam(defaultValue = "recientes") String orden) {
-        return ResponseEntity.ok(productoService.listar(categoriaId, marca, precioMin, precioMax, q, soloElite, pagina, tamano, orden));
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=60, stale-while-revalidate=120")
+                .body(productoService.listar(categoriaId, marca, precioMin, precioMax, q, soloElite, pagina, tamano, orden));
     }
 
     // GET /api/productos/destacados
     @GetMapping("/destacados")
     public ResponseEntity<List<ProductoResponse>> destacados() {
-        return ResponseEntity.ok(productoService.obtenerDestacados());
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=180, stale-while-revalidate=360")
+                .body(productoService.obtenerDestacados());
     }
 
     // GET /api/productos/mas-vendidos
     @GetMapping("/mas-vendidos")
     public ResponseEntity<List<ProductoResponse>> masVendidos() {
-        return ResponseEntity.ok(productoService.obtenerMasVendidos());
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=180, stale-while-revalidate=360")
+                .body(productoService.obtenerMasVendidos());
     }
 
     // GET /api/productos/nuevos
     @GetMapping("/nuevos")
     public ResponseEntity<List<ProductoResponse>> nuevos() {
-        return ResponseEntity.ok(productoService.obtenerNuevos());
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=180, stale-while-revalidate=360")
+                .body(productoService.obtenerNuevos());
     }
 
     // GET /api/productos/{id}
     @GetMapping("/{id}")
     public ResponseEntity<ProductoResponse> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(productoService.obtenerPorId(id));
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=120, stale-while-revalidate=240")
+                .body(productoService.obtenerPorId(id));
     }
 
     // GET /api/productos/slug/{slug}
     @GetMapping("/slug/{slug}")
     public ResponseEntity<ProductoResponse> obtenerPorSlug(@PathVariable String slug) {
-        return ResponseEntity.ok(productoService.obtenerPorSlug(slug));
+        return ResponseEntity.ok()
+                .header("Cache-Control", "public, max-age=120, stale-while-revalidate=240")
+                .body(productoService.obtenerPorSlug(slug));
     }
 
     // POST /api/productos (Solo Vendedor)
