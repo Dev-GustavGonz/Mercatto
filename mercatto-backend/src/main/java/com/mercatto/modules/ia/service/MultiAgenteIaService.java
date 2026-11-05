@@ -81,10 +81,20 @@ public class MultiAgenteIaService {
            • 'BIENVENIDA': $20.000 COP de descuento en compras desde $100.000 COP.
            • 'MERCATTO10': 10% de descuento en artículos seleccionados.
 
-        6. 📞 CANALES DE CONTACTO:
-           • WhatsApp Oficial: +57 323 388 2717 (lunes a sábado).
-           • Correo de soporte: realmercatto@gmail.com.
-           • Sistema de tickets en el Centro de Soporte de la plataforma.
+        6. 🎫 ¿CÓMO GENERAR Y RADICAR TICKETS DE SOPORTE?:
+           • Los usuarios pueden radicar un ticket formal directamente desde el botón 'Radicar Ticket' dentro de la ventana de chat del asistente o en el Centro de Soporte.
+           • Datos requeridos: Nombre completo, correo electrónico de respuesta, teléfono opcional y descripción detallada del caso o código de orden (ej: PED-20261031-XXXX).
+           • Al enviarlo, el ticket queda registrado y un asesor del equipo de atención al cliente revisará y responderá directamente al correo del usuario.
+           • Los usuarios registrados pueden consultar el estado de sus tickets en su panel.
+
+        7. 🛡️ GARANTÍAS, DEVOLUCIONES Y REEMBOLSOS (ESCROW):
+           • En Mercatto los compradores cuentan con garantía de satisfacción y custodia Escrow: el vendedor solo recibe el desembolso una vez verificado que el producto llegó en perfecto estado.
+           • Si un artículo llega defectuoso, incompleto o no coincide con la descripción, el comprador tiene 5 días hábiles para radicar un ticket o escribir al WhatsApp oficial (+57 323 388 2717) con fotos de evidencia para congelar el pago y solicitar cambio o reembolso del 100% de su dinero.
+
+        8. 📞 CANALES DE CONTACTO DIRECTO:
+           • WhatsApp Oficial de Soporte: +57 323 388 2717 (lunes a sábado de 8am a 7pm).
+           • Correo electrónico oficial: realmercatto@gmail.com.
+           • Centro de Ayuda y Tickets dentro de la aplicación.
 
         # Restricciones de seguridad y privacidad
         NO debes proporcionar información sobre:
@@ -170,10 +180,19 @@ public class MultiAgenteIaService {
            • 'BIENVENIDA': $20,000 COP discount on orders of $100,000 COP or more.
            • 'MERCATTO10': 10% discount on selected catalog items.
 
-        6. 📞 CUSTOMER SUPPORT:
-           • Official WhatsApp: +57 323 388 2717 (Monday to Saturday).
-           • Email: realmercatto@gmail.com.
-           • Online support tickets on the platform.
+        6. 🎫 HOW TO SUBMIT SUPPORT TICKETS:
+           • Users can file a formal support ticket directly by clicking the 'Submit Ticket' button in the chat widget or Help Center.
+           • Required details: Full name, reply email address, optional phone, and detailed inquiry or order code (e.g., PED-20261031-XXXX).
+           • Once submitted, the ticket is logged and a support representative reviews and responds via email.
+
+        7. 🛡️ RETURNS, WARRANTIES & REFUNDS (ESCROW):
+           • Buyer protection under Mercatto Escrow: funds are only released to the store once delivery is confirmed in satisfactory condition.
+           • If an item arrives broken, defective, or incorrect, buyers have 5 business days to report it with photos to request an exchange or full refund.
+
+        8. 📞 DIRECT SUPPORT CHANNELS:
+           • Official WhatsApp Support: +57 323 388 2717 (Monday to Saturday 8am - 7pm).
+           • Official Email: realmercatto@gmail.com.
+           • Online Help Center & ticketing on the platform.
 
         # Security and Privacy Restrictions
         You must NOT provide information about:
@@ -982,6 +1001,90 @@ public class MultiAgenteIaService {
         return v[ThreadLocalRandom.current().nextInt(v.length)].trim();
     }
 
+    private String obtenerRespuestaTickets(boolean isEn) {
+        if (isEn) {
+            String[] v = {
+                """
+                **How to submit a Support Ticket in Mercatto:**
+                
+                You can easily open a support ticket right here in the platform:
+                • **1. In this Chat Window:** Click the **'Submit Ticket'** button (headphones icon) at the bottom or in the support menu to open the form.
+                • **2. Enter your details:** Provide your name, contact email, phone number (optional), and explain your issue or include your Order Code.
+                • **3. Submit:** Once submitted, our customer care team will review your case and send a solution directly to your email.
+                
+                *You can also reach us via official WhatsApp at [+57 323 388 2717](https://wa.me/573233882717) or email `realmercatto@gmail.com`.*
+                """,
+                """
+                **Support Ticket Procedure:**
+                
+                • Click **'Submit Ticket'** in the chat menu.
+                • Fill out the quick form with your contact details and message.
+                • A dedicated support representative will contact you promptly.
+                """
+            };
+            return v[ThreadLocalRandom.current().nextInt(v.length)];
+        }
+        String[] v = {
+            """
+            **¿Cómo generar y radicar un Ticket de Soporte en Mercatto?:**
+            
+            Puedes radicar un ticket formal de atención de manera muy sencilla:
+            • **1. Desde este Asistente Virtual:** Haz clic en el botón verde **'Radicar Ticket'** (con el ícono de audífonos) en la parte inferior de esta ventana para desplegar el formulario de contacto.
+            • **2. Diligencia tus datos:** Escribe tu nombre, correo electrónico donde recibirás la respuesta, teléfono (opcional) y el detalle de tu solicitud o código de pedido (ej: `PED-20261031-1045`).
+            • **3. Presiona 'Enviar Solicitud':** Tu ticket quedará creado al instante con estado *Pendiente* y nuestro equipo humano te responderá directamente a tu correo.
+            
+            **Otros canales oficiales de atención directa:**
+            • **WhatsApp Oficial:** [+57 323 388 2717](https://wa.me/573233882717) *(Atención lunes a sábado)*.
+            • **Correo de Soporte:** `realmercatto@gmail.com`.
+            """,
+            """
+            **Paso a paso para radicar un Ticket de Soporte:**
+            
+            • 1. Abre el menú de este chat y pulsa en **'Radicar Ticket de Soporte'**.
+            • 2. Completa tu nombre, correo y redacta tu consulta o reporte de garantía.
+            • 3. Haz clic en **'Enviar Solicitud'**.
+            • 4. Te llegará la confirmación y un asesor de Mercatto te responderá a tu correo a la brevedad.
+            """
+        };
+        return v[ThreadLocalRandom.current().nextInt(v.length)];
+    }
+
+    private String obtenerRespuestaGarantias(boolean isEn) {
+        if (isEn) {
+            String[] v = {
+                """
+                **Mercatto Warranties, Returns & Escrow Protection:**
+                
+                • **100% Buyer Protection:** Your funds are safely held in Mercatto Escrow and only released to the store once you receive your order in perfect condition.
+                • **Defective or Incorrect Item?:**
+                  - You have **5 business days** after delivery to request a warranty or return.
+                  - File a **Support Ticket** in this chat or write to our WhatsApp [+57 323 388 2717](https://wa.me/573233882717) with photos of the item and your Order Code.
+                  - Funds remain frozen until an exchange or **100% refund** is completed.
+                • **Delivery Proof:** Couriers capture a physical photo upon delivery to ensure maximum transparency.
+                """
+            };
+            return v[ThreadLocalRandom.current().nextInt(v.length)];
+        }
+        String[] v = {
+            """
+            **Política de Garantías, Devoluciones y Reembolsos en Mercatto:**
+            
+            • **Protección al Comprador (Custodia Escrow):** Tu dinero está 100% seguro. La tienda NO recibe el pago hasta que el pedido sea entregado a tu entera satisfacción.
+            • **¿Tu producto llegó dañado, incompleto o no era lo que pediste?:**
+              1. Cuentas con un plazo de **5 días hábiles** tras recibir el paquete para reportarlo.
+              2. Radica un **Ticket de Soporte** desde este chat o escribe al WhatsApp [+57 323 388 2717](https://wa.me/573233882717) adjuntando fotos de evidencia y tu número de orden.
+              3. El equipo congelará el desembolso y coordinará el cambio del artículo o el **reembolso total** de tu dinero a tu cuenta bancaria.
+            • **Evidencia de Entrega:** Cada repartidor toma una fotografía obligatoria al momento de la entrega en tu puerta.
+            """,
+            """
+            **Garantías y Reembolsos Mercatto:**
+            
+            En Mercatto compras con respaldo total. Si requieres hacer efectiva la garantía de un producto o solicitar devolución, contáctanos dentro de los 5 días posteriores a la entrega mediante un ticket de soporte o por WhatsApp oficial con tu número de orden y fotos del producto.
+            """
+        };
+        return v[ThreadLocalRandom.current().nextInt(v.length)];
+    }
+
     public String responderConAgenteLocal(String mensaje, String idioma) {
         String t = mensaje != null ? mensaje.toLowerCase() : "";
         boolean isEn = esIngles(mensaje, idioma);
@@ -1044,6 +1147,17 @@ public class MultiAgenteIaService {
         if (t.contains("como comprar") || t.contains("pasos") || t.contains("comprar") || t.contains("que hago") || t.contains("funciona") ||
             t.contains("how to buy") || t.contains("purchase") || t.contains("order")) {
             return obtenerRespuestaComoComprar(isEn);
+        }
+
+        // 7.1. Tickets de soporte
+        if (t.contains("ticket") || t.contains("radicar") || t.contains("generar ticket") || t.contains("abrir ticket") || t.contains("formulario de soporte")) {
+            return obtenerRespuestaTickets(isEn);
+        }
+
+        // 7.2. Garantías, devoluciones y reembolsos
+        if (t.contains("garantia") || t.contains("garantía") || t.contains("devoluc") || t.contains("reembolso") || 
+            t.contains("cambio") || t.contains("defectuoso") || t.contains("warranty") || t.contains("refund") || t.contains("return")) {
+            return obtenerRespuestaGarantias(isEn);
         }
 
         // 8. Soporte humano y contacto
