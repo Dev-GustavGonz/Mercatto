@@ -76,6 +76,9 @@ public class RenderKeepAliveService {
             return null;
         }
         String clean = keepAliveUrl.trim();
+        if (!clean.startsWith("http://") && !clean.startsWith("https://")) {
+            clean = "https://" + clean;
+        }
         if (clean.endsWith("/")) {
             clean = clean.substring(0, clean.length() - 1);
         }
