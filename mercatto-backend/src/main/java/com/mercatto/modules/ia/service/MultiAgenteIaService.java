@@ -545,16 +545,19 @@ public class MultiAgenteIaService {
 
     private String obtenerDisculpaFueraDeTema(boolean isEn) {
         String[] disculpasEs = {
+            "Lo siento, no estoy programado para responder esa pregunta. Mi función es orientarte sobre el uso, compras, ventas y servicios de Mercatto. ¿En qué te puedo ayudar sobre la plataforma?",
+            "Disculpa, no estoy programado para responder sobre ese tema. Como asesor virtual de Mercatto, puedo ayudarte a realizar compras, consultar métodos de pago o abrir tu propia tienda. ¿Qué te gustaría saber sobre la tienda?",
+            "Lo siento, no puedo responder esa pregunta ya que está fuera de mis funciones. Estoy capacitado exclusivamente para atender consultas sobre el marketplace de Mercatto. ¿Deseas consultar sobre compras, envíos o cupones?",
             "Soy el asistente virtual de esta aplicación y estoy aquí para ayudarte con información sobre sus servicios y funcionalidades. ¿Qué te gustaría conocer sobre la plataforma?",
-            "Disculpa, como asistente virtual de Mercatto solo puedo responder consultas sobre nuestra plataforma, catálogo de productos, tiendas oficiales, compras, métodos de pago y envíos en Colombia. ¿Hay algo de Mercatto en lo que te pueda colaborar hoy?",
-            "Soy el asistente virtual de esta aplicación y estoy aquí para ayudarte con información sobre sus servicios y funcionalidades. ¿Qué te gustaría conocer sobre la plataforma?",
-            "Disculpa la molestia. Mi especialidad se enfoca exclusivamente en compras, pedidos, tiendas oficiales, comisiones de vendedores y envíos dentro de Mercatto. ¿En qué puedo orientarte de nuestra plataforma?"
+            "Disculpa la molestia, pero no tengo respuestas sobre ese asunto. Mi propósito es orientarte sobre el uso y los beneficios de Mercatto. ¿Te puedo colaborar con alguna duda sobre la plataforma?",
+            "Lo siento, esa pregunta no está relacionada con la plataforma. Con gusto te asisto con información de productos, despachos en Colombia o registro de vendedores. ¿En qué te colaboro?"
         };
         String[] disculpasEn = {
+            "I'm sorry, I am not programmed to answer that question. My role is to help you with information about products, orders, payments, shipping, and stores on Mercatto. What would you like to know about the platform?",
+            "I apologize, I am not programmed to respond to that topic. As Mercatto's virtual assistant, I can guide you through purchases, payment methods, or opening your own store. How may I assist you?",
             "I am the official virtual assistant of this application and I am here to help you with information about its services and features. What would you like to know about the platform?",
-            "I apologize, as Mercatto's virtual assistant I can only help with questions regarding our marketplace, products, official stores, shipping, and payments in Colombia. Can I assist you with an order or store inquiry today?",
-            "I am the official virtual assistant of this application and I am here to help you with information about its services and features. What would you like to know about the platform?",
-            "Sorry, that inquiry is outside the scope of Mercatto. I am here to help you shop safely, track deliveries, or launch your store in Colombia. What would you like to know about Mercatto?"
+            "I'm sorry, that question is outside my programming. I am strictly designed to assist with Mercatto marketplace inquiries. Would you like details on orders, shipping, or coupons?",
+            "I apologize, but I do not have answers on that subject. My sole focus is to assist you with Mercatto services, shopping, and seller features in Colombia. How can I help you today?"
         };
         String[] pool = isEn ? disculpasEn : disculpasEs;
         return pool[ThreadLocalRandom.current().nextInt(pool.length)];
