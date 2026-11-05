@@ -44,6 +44,12 @@ public class MultiAgenteIaService {
 
         === CONOCIMIENTO PROFUNDO DE MERCATTO ===
 
+        0. 🌐 ¿QUÉ ES Y CÓMO FUNCIONA MERCATTO?:
+           • Mercatto es el marketplace multitienda líder en Colombia que conecta a compradores con tiendas oficiales y emprendedores verificados en un ecosistema ágil y 100% seguro.
+           • Para Compradores: Permite buscar y adquirir artículos en múltiples categorías (Moda, Calzado, Tecnología, Hogar, Belleza), comprar con cuenta o como Invitado, pagar con Wompi (Tarjetas, PSE, Nequi) o Contra Entrega en efectivo, con rastreo en tiempo real y dinero 100% protegido bajo custodia Escrow hasta recibir a entera conformidad.
+           • Para Vendedores / Emprendedores: Permite crear una tienda virtual en menos de 2 minutos, publicar productos con fotos y variantes, vender con comisiones desde el 2% al 10% (Starter, Profesional o Élite Premium) y controlar inventario y analítica de ventas.
+           • Envíos: Cobertura en toda Colombia con Coordinadora, Servientrega e Interrapidísimo, con ¡Envío Gratis desde $150.000 COP!
+
         1. 🛒 ¿CÓMO COMPRAR EN MERCATTO?:
            • Los usuarios pueden explorar el catálogo libremente por categorías (Moda, Calzado, Tecnología, Hogar, Belleza).
            • Se puede comprar con una cuenta registrada o como INVITADO (Guest Checkout) indicando únicamente nombre, teléfono, dirección y correo electrónico para la factura y guía.
@@ -104,6 +110,12 @@ public class MultiAgenteIaService {
         Your goal is to provide top-notch customer support in fluent, natural, polished English.
 
         === MERCATTO CORE KNOWLEDGE ===
+
+        0. 🌐 WHAT IS MERCATTO & HOW DOES IT WORK?:
+           • Mercatto is Colombia's leading multi-vendor marketplace connecting buyers with verified brands and independent sellers in a safe, fast, and transparent ecosystem.
+           • For Buyers: Browse products by category or official storefront, check out registered or as a Guest, pay securely via Wompi (Cards, PSE, Nequi) or Cash on Delivery, with 24/7 tracking, delivery photo proof, and full Escrow protection until delivery is verified.
+           • For Sellers: Open a digital store in under 2 minutes, list products with variants, and sell nationwide with low commissions (2% to 10%) and full sales analytics.
+           • Shipping: Nationwide coverage with insured couriers and FREE SHIPPING on purchases of $150,000 COP or more.
 
         1. HOW TO BUY ON MERCATTO:
            • Explore the catalog across official categories (Fashion, Footwear, Technology, Home, Beauty, Sports).
@@ -825,9 +837,90 @@ public class MultiAgenteIaService {
         return v[ThreadLocalRandom.current().nextInt(v.length)];
     }
 
+    private String obtenerRespuestaComoFunciona(boolean isEn) {
+        if (isEn) {
+            String[] v = {
+                """
+                **How does Mercatto work? — Colombia's Multi-Vendor Marketplace:**
+
+                Mercatto brings together buyers and verified sellers across Colombia in a trusted shopping ecosystem:
+
+                • **For Shoppers:**
+                  1. **Browse Categories:** Explore thousands of products across Fashion, Technology, Home, Footwear, and Beauty.
+                  2. **Guest or Account Checkout:** Shop seamlessly with your user profile or simply as a **Guest** without requiring a password.
+                  3. **100% Secure Payments:** Certified payment processing through Wompi Bancolombia (Credit/Debit cards, PSE, Nequi) or **Cash on Delivery** at your door.
+                  4. **Mercatto Escrow Guarantee:** Your funds are safely held in custody and only released to the seller once your order is confirmed delivered.
+                  5. **Nationwide Delivery:** Free shipping on orders over $150,000 COP, real-time tracking, and physical delivery photo proof.
+
+                • **For Sellers & Brands:**
+                  1. **Open Your Store in 2 Minutes:** Quick registration, customized storefront, and simple product listing.
+                  2. **Transparent Commission:** Flexible plans starting at just 2% commission per sale (Starter, Professional, Elite Premium).
+                  3. **Powerful Dashboard:** Live inventory management, sales analytics, and integrated dispatching.
+
+                *Would you like assistance with how to buy, payment methods, opening a store, or tracking an order?*
+                """,
+                """
+                **Mercatto in a nutshell:**
+
+                We are Colombia's premier e-commerce marketplace connecting verified independent stores and shoppers nationwide:
+
+                • **Protected Shopping:** Pay securely via PSE, Nequi, credit cards, or cash upon delivery. Funds are held in escrow until you receive your items.
+                • **Reliable Shipping:** Fast dispatch across Colombia with delivery photo evidence and 24/7 tracking.
+                • **Empowering Entrepreneurs:** Businesses can easily launch an official storefront and sell nationwide with competitive commission rates.
+
+                How may I help you today? Would you like to explore products, learn about payment options, or register as a seller?
+                """
+            };
+            return v[ThreadLocalRandom.current().nextInt(v.length)].trim();
+        }
+
+        String[] v = {
+            """
+            **¿Cómo funciona Mercatto? — Tu Marketplace Multitienda en Colombia:**
+
+            Mercatto conecta a compradores de todo el país con tiendas oficiales y emprendedores verificados en un entorno seguro y transparente:
+
+            • **Para Compradores:**
+              1. **Explora el Catálogo:** Descubre miles de productos en Tecnología, Moda, Calzado, Hogar y Belleza.
+              2. **Compra Fácil y Rápido:** Puedes registrarte o comprar como **Invitado** indicando solo tu correo, teléfono y dirección.
+              3. **Pagos 100% Seguros:** Mediante pasarela certificada Wompi Bancolombia (Tarjetas, PSE, Nequi, Daviplata) o **Pago Contra Entrega** en efectivo al recibir en tu puerta.
+              4. **Garantía Mercatto Escrow:** Tu dinero está en custodia protegida y solo se entrega a la tienda cuando recibes tu pedido a entera satisfacción.
+              5. **Envíos y Rastreo en Vivo:** Cobertura en toda Colombia (¡gratis desde $150.000 COP!), seguimiento 24/7 y foto física como prueba de entrega.
+
+            • **Para Vendedores y Marcas:**
+              1. **Abre tu Tienda en 2 Minutos:** Regístrate gratis como vendedor, sube tu logo y publica tus artículos con tallas y variantes.
+              2. **Comisiones Bajas:** Desde el 2% por venta según tu plan (Starter gratuito al 10%, Profesional al 5% o Élite Premium al 2%).
+              3. **Control Total:** Panel administrativo con control de stock, gestión de órdenes y analítica predictiva de ventas.
+
+            *¿Deseas conocer más detalles sobre cómo comprar, medios de pago, cómo abrir tu propia tienda o rastrear una compra?*
+            """,
+            """
+            **Mercatto en pocas palabras:**
+
+            Somos la plataforma de comercio electrónico multitienda que reúne las mejores marcas y emprendimientos de Colombia en un solo lugar:
+
+            • **Compras Protegidas:** Pagas con PSE, Nequi, tarjetas o en efectivo al recibir. Tu pago permanece custodiado por nuestro sistema Escrow hasta que el transportista te entrega el paquete con foto de evidencia.
+            • **Logística Confiable:** Despachos a nivel nacional con Servientrega, Coordinadora e Interrapidísimo, con tarifa estándar de $12.000 COP y **Envío Gratis** desde $150.000 COP.
+            • **Oportunidad para Vendedores:** Cualquier emprendedor o empresa puede abrir su tienda virtual y vender a todo el país con las comisiones más accesibles del mercado.
+
+            ¿Te gustaría que te ayude con información de compras, métodos de pago o apertura de tu tienda?
+            """
+        };
+        return v[ThreadLocalRandom.current().nextInt(v.length)].trim();
+    }
+
     public String responderConAgenteLocal(String mensaje, String idioma) {
         String t = mensaje != null ? mensaje.toLowerCase() : "";
         boolean isEn = esIngles(mensaje, idioma);
+
+        // 0. ¿Cómo funciona Mercatto o de qué trata la plataforma?
+        if (t.contains("como funciona") || t.contains("cómo funciona") || t.contains("que es mercatto") || 
+            t.contains("cómo opera") || t.contains("como opera") || t.contains("de que trata") || 
+            t.contains("que hace mercatto") || t.contains("acerca de mercatto") ||
+            t.contains("how it works") || t.contains("what is mercatto") || t.contains("how does mercatto work") ||
+            (t.contains("funciona") && (t.contains("mercatto") || t.contains("plataforma") || t.contains("pagina") || t.contains("marketplace") || t.contains("app")))) {
+            return obtenerRespuestaComoFunciona(isEn);
+        }
 
         // 1. Saludo simple
         if (esSaludo(t)) {
@@ -883,8 +976,9 @@ public class MultiAgenteIaService {
         }
 
         // 9. Recomendación de productos si pregunta explícitamente por catálogo o artículos
-        if (t.contains("producto") || t.contains("articulo") || t.contains("catalogo") || t.contains("item") || 
-            t.contains("recomienda") || t.contains("que venden") || t.contains("precios") || t.contains("product")) {
+        if ((t.contains("producto") || t.contains("articulo") || t.contains("catalogo") || t.contains("item") || 
+            t.contains("recomienda") || t.contains("que venden") || t.contains("precios") || t.contains("product"))
+            && !t.contains("como") && !t.contains("funciona") && !t.contains("que es")) {
             try {
                 List<Producto> productos = productoRepo.findTop8ByActivoTrueOrderByTotalVentasDesc();
                 if (productos != null && !productos.isEmpty()) {
