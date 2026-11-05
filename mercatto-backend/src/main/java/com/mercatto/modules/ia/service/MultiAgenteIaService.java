@@ -20,6 +20,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class MultiAgenteIaService {
@@ -83,8 +84,16 @@ public class MultiAgenteIaService {
            • Correo de atención: realmercatto@gmail.com.
            • Formulario de tickets directo dentro de la plataforma.
 
+        === REGLA ESTRICTA DE ENFOQUE EXCLUSIVO EN MERCATTO Y DISCULPA ===
+        - Tu propósito ÚNICO y EXCLUSIVO es atender consultas sobre Mercatto (productos, compras, envíos, pasarela de pago Wompi Bancolombia, comisiones de tiendas, cupones, rastreo y soporte de la plataforma en Colombia).
+        - Si el usuario pregunta sobre CUALQUIER TEMA AJENO A MERCATTO (como tareas académicas, matemáticas, chistes, recetas de cocina, política, deportes generales, clima, religión, programación, otros comercios externos o temas de cultura general):
+          1. DEBES comenzar tu respuesta SIEMPRE con una DISCULPA cortés (por ejemplo: "Disculpa, como asistente de Mercatto...", "Disculpa la molestia, mi función...", "Lo siento, disculpa...").
+          2. Explica con amabilidad que únicamente estás programado para responder dudas sobre Mercatto, compras, tiendas y envíos en Colombia.
+          3. Invita al usuario a consultar sobre productos, pagos o tiendas en nuestra plataforma.
+          4. Varía la forma de disculparte y de responder en cada interacción para que tus mensajes no sean repetitivos.
+
         === PAUTAS DE ESTILO Y FORMATO ===
-        - Tono amable, seguro, profesional, conciso y minimalista.
+        - Tono amable, seguro, profesional, conciso y dinámico.
         - NO uses emojis exagerados o ruidosos (evita fuego, manos saludando, caritas o cadenas de emojis).
         - Mantén el diseño y texto sobrio, limpio y moderno usando viñetas simples ('•') y encabezados en negrita.
         - IDIOMA: Si el usuario escribe en inglés, o si la consulta proviene en inglés, responde completamente en inglés pulido y natural. Si es en español, responde en español.
@@ -132,6 +141,14 @@ public class MultiAgenteIaService {
            • Official WhatsApp Support: +57 323 388 2717 (Monday to Saturday).
            • Support Email: realmercatto@gmail.com.
            • Online contact tickets on the platform.
+
+        === STRICT MERCATTO SCOPE & APOLOGY RULE ===
+        - Your SOLE and EXCLUSIVE purpose is to assist users regarding Mercatto (products, orders, nationwide shipping, Wompi Bancolombia payment security, seller commissions, promo codes, parcel tracking, and platform customer support in Colombia).
+        - If the user asks about ANYTHING OUTSIDE MERCATTO (general knowledge, homework, coding, recipes, weather, politics, jokes, external sports, personal advice, or unrelated topics):
+          1. You MUST ALWAYS start your response with a polite APOLOGY (e.g., "I apologize, as Mercatto's assistant...", "Sorry, but as Mercatto's shopping assistant...", "I apologize for the inconvenience...").
+          2. Politely explain that you only handle Mercatto marketplace services, purchases, stores, payments, and shipping.
+          3. Guide the user back to how you can assist them with Mercatto.
+          4. Vary your apologies, greetings, and phrasing across responses so they feel fresh, natural, and never repetitive.
 
         === STYLE & LANGUAGE RULES ===
         - Answer directly, helpfully, professionally, and in a clean minimalist format.
@@ -421,292 +438,478 @@ public class MultiAgenteIaService {
         return responderConAgenteLocal(mensaje, "es");
     }
 
+    private boolean esSaludo(String t) {
+        if (t == null) return false;
+        String s = t.trim();
+        return s.matches("^(hola|buenas|buen dia|buenos dias|buenas tardes|buenas noches|hey|hi|hello|saludos|que tal|como estas|holi|alo).*");
+    }
+
+    private String obtenerSaludoAleatorio(boolean isEn) {
+        String[] saludosEs = {
+            "¡Hola! Qué gusto saludarte. Soy **MercattoBot**, tu asesor oficial de compras y tiendas en Colombia. ¿En qué te puedo colaborar hoy?",
+            "¡Hola! Bienvenido a **Mercatto**. Estoy aquí para orientarte sobre compras seguras, métodos de pago, envíos nacionales o cómo abrir tu propia tienda. ¿Qué te gustaría saber?",
+            "¡Hola! ¿Cómo estás? Te puedo guiar paso a paso con productos, cupones de descuento vigentes, seguimiento de pedidos o información para vendedores. ¿En qué te colaboro hoy?",
+            "¡Hola! Encantado de atenderte. Dime qué producto buscas o sobre qué proceso de Mercatto necesitas información y con gusto te asesoraré."
+        };
+        String[] saludosEn = {
+            "Hello! Great to have you here. I am **MercattoBot**, your official shopping and seller assistant for Mercatto Colombia. How can I assist you today?",
+            "Welcome to **Mercatto**! I am ready to help you with orders, certified payment methods, nationwide delivery, or opening your own store. What would you like to know?",
+            "Hi there! How can I assist you today? I can guide you through our product catalog, active discount coupons, parcel tracking, or customer support.",
+            "Hello! Nice to meet you. Tell me what you are looking for on Mercatto Colombia and I will gladly guide you."
+        };
+        String[] pool = isEn ? saludosEn : saludosEs;
+        return pool[ThreadLocalRandom.current().nextInt(pool.length)];
+    }
+
+    private String obtenerDisculpaFueraDeTema(boolean isEn) {
+        String[] disculpasEs = {
+            "Disculpa, como asistente virtual de Mercatto solo puedo responder consultas sobre nuestra plataforma, catálogo de productos, tiendas oficiales, compras, métodos de pago y envíos en Colombia. ¿Hay algo de Mercatto en lo que te pueda colaborar hoy?",
+            "Disculpa la molestia. Mi especialidad se enfoca exclusivamente en compras, pedidos, tiendas oficiales, comisiones de vendedores y envíos dentro de Mercatto. No dispongo de información sobre otros temas ajenos, pero con gusto te ayudo a buscar productos o conocer cómo vender con nosotros.",
+            "Disculpa, esa consulta está fuera de los temas y servicios de Mercatto. Estoy capacitado para ayudarte a comprar seguro, aplicar cupones de descuento, rastrear tus paquetes o abrir tu propia tienda. ¿En qué puedo orientarte de nuestra plataforma?",
+            "Lo siento, disculpa. Como bot de atención oficial de Mercatto Colombia, únicamente respondo dudas sobre compras, garantías, pagos y tiendas en nuestra plataforma. ¿Deseas consultar sobre alguno de estos temas?"
+        };
+        String[] disculpasEn = {
+            "I apologize, as Mercatto's virtual assistant I can only help with questions regarding our marketplace, products, official stores, shipping, and payments in Colombia. Can I assist you with an order or store inquiry today?",
+            "Sorry about that! My expertise is strictly focused on Mercatto purchases, orders, seller plans, and shipping. I am unable to answer outside topics, but I would be glad to help you explore our catalog or track a package.",
+            "I apologize for the inconvenience, but I am only trained to assist with Mercatto-related topics such as orders, coupons, payment methods, and store management. How can I help you regarding our marketplace?",
+            "Sorry, that inquiry is outside the scope of Mercatto. I am here to help you shop safely, track deliveries, or launch your store in Colombia. What would you like to know about Mercatto?"
+        };
+        String[] pool = isEn ? disculpasEn : disculpasEs;
+        return pool[ThreadLocalRandom.current().nextInt(pool.length)];
+    }
+
+    private String obtenerRespuestaPagos(boolean isEn) {
+        if (isEn) {
+            String[] v = {
+                """
+                **Payment Methods and Security in Mercatto:**
+                
+                All purchases in Mercatto are 100% protected through the certified **Wompi Bancolombia** gateway:
+                
+                • **Digital Wallets:** Pay instantly from your phone via **Nequi** or **Daviplata**.
+                • **Bank Transfers (PSE):** Direct debit from any bank account in Colombia.
+                • **Credit and Debit Cards:** Visa, Mastercard, and American Express with installment options.
+                • **Cash on Delivery:** Pay in cash directly when the courier arrives at your door.
+                
+                **Mercatto Escrow Guarantee:**
+                Your payment remains safely in escrow. The seller only receives payout once your order has been successfully delivered with physical delivery proof.
+                """,
+                """
+                **How to Pay Securely on Mercatto:**
+                
+                We provide maximum security for all transactions in Colombia:
+                • **Wompi Bancolombia:** Certified digital checkout accepting all Colombian debit/credit cards, PSE, and Nequi.
+                • **Cash on Delivery Option:** Pay in cash upon physical receipt of your package at your address.
+                • **Funds Escrow Protection:** Money is held securely by Mercatto and never released until your parcel is delivered in perfect condition.
+                """
+            };
+            return v[ThreadLocalRandom.current().nextInt(v.length)];
+        }
+        String[] v = {
+            """
+            **Métodos de Pago y Seguridad en Mercatto:**
+            
+            En Mercatto todas tus compras están 100% protegidas mediante la pasarela certificada **Wompi Bancolombia**:
+            
+            • **Billeteras Digitales:** Paga al instante desde tu celular con **Nequi** o **Daviplata** sin costos adicionales.
+            • **Transferencias Bancarias (PSE):** Débito directo desde cualquier cuenta bancaria en Colombia.
+            • **Tarjetas de Crédito y Débito:** Visa, Mastercard y American Express con opción de cuotas.
+            • **Pago Contra Entrega (Efectivo):** Puedes pagar en efectivo en el momento de recibir tu paquete en tu puerta.
+            
+            **Protección de Fondos (Escrow Mercatto):**
+            Tu dinero queda bajo custodia segura de Mercatto. El vendedor solo recibe la liquidación de su venta una vez que el pedido haya sido entregado satisfactoriamente con su respectiva evidencia física.
+            """,
+            """
+            **Opciones de Pago Disponibles en Mercatto:**
+            
+            Comprar en Mercatto es totalmente confiable y respaldado:
+            • **Pasarela Oficial Wompi:** Paga con tarjetas Visa, Mastercard o mediante PSE y Nequi en segundos.
+            • **Pago en Efectivo Contra Entrega:** Si prefieres, abona el valor directamente al repartidor cuando recibas tu pedido.
+            • **Custodia Mercatto:** No liberamos los fondos al vendedor hasta verificar que tu paquete llegó completo y conforme.
+            """
+        };
+        return v[ThreadLocalRandom.current().nextInt(v.length)];
+    }
+
+    private String obtenerRespuestaVender(boolean isEn) {
+        if (isEn) {
+            String[] v = {
+                """
+                **How to Sell & Open Your Store on Mercatto:**
+                
+                Starting to sell on Mercatto is free and takes under 2 minutes:
+                
+                **Steps to get started:**
+                • 1. Click **'Sell'** or register choosing the **Seller** role.
+                • 2. Customize your store with your logo, banner, and brand description.
+                • 3. Publish your items with photos, colors/sizes, stock, and prices.
+                • 4. Manage your orders and customers from your seller dashboard.
+                
+                **Transparent Seller Plans:**
+                • **Starter Plan ($0 COP/month):** No monthly fee, **10%** commission per completed sale. Ideal to start risk-free.
+                • **Professional Plan ($49,000 COP/month):** **5%** commission per sale, great for growing stores.
+                • **Elite Premium Plan ($99,000 COP/month):** Minimal **2%** commission, verified Elite badge, and top search priority.
+                
+                *Payouts are transferred directly to your Colombian bank account.*
+                """,
+                """
+                **Seller Plans and Commissions on Mercatto:**
+                
+                Sell your products to thousands of shoppers across Colombia:
+                • **Starter ($0/mo):** 10% commission. Zero fixed costs.
+                • **Professional ($49,000 COP/mo):** 5% commission. Advanced analytics.
+                • **Elite ($99,000 COP/mo):** Lowest 2% commission, verified badge and top featured placements.
+                
+                You can register your vendor account at `/registro` in just a few clicks!
+                """
+            };
+            return v[ThreadLocalRandom.current().nextInt(v.length)];
+        }
+        String[] v = {
+            """
+            **¿Cómo Vender y Abrir tu Tienda en Mercatto?**
+            
+            ¡Empezar a vender tus productos en Mercatto es gratis y toma menos de 2 minutos!
+            
+            **Pasos para comenzar:**
+            • 1. Haz clic en **'Vender'** o regístrate eligiendo el rol **Vendedor**.
+            • 2. Personaliza tu tienda con tu logo, portada, descripción y enlaces.
+            • 3. Publica tus artículos con fotografías, variantes de talla/color y precios.
+            • 4. Gestiona tus pedidos y clientes desde tu propio panel administrativo.
+            
+            **Planes Transparentes para Vendedores:**
+            • **Plan Starter ($0 COP/mes):** Sin costo fijo mensual, comisión del **10%** por venta concretada. Ideal para probar sin riesgo.
+            • **Plan Profesional ($49.000 COP/mes):** Comisión del **5%** por venta, perfecto para tiendas en crecimiento.
+            • **Plan Elite Premium ($99.000 COP/mes):** Comisión mínima del **2%**, insignia Élite de verificación y máxima prioridad en las búsquedas.
+            
+            *El desembolso de tus ventas se realiza de forma automática a tu cuenta bancaria.*
+            """,
+            """
+            **Planes y Comisiones para Emprendedores en Mercatto:**
+            
+            Abre tu vitrina digital y vende a clientes de todo el país:
+            • **Starter (Gratis):** 10% de comisión por venta, sin mensualidad.
+            • **Profesional ($49.000 COP/mes):** 5% de comisión, métricas y control de stock.
+            • **Elite ($99.000 COP/mes):** 2% de comisión mínima, sello verificado y máxima exposición en el catálogo.
+            
+            *Crea tu cuenta de vendedor en segundos desde el botón de Registro.*
+            """
+        };
+        return v[ThreadLocalRandom.current().nextInt(v.length)];
+    }
+
+    private String obtenerRespuestaEnvios(boolean isEn) {
+        if (isEn) {
+            String[] v = {
+                """
+                **Shipping Policy & Delivery Times:**
+                
+                Mercatto connects verified local businesses with buyers across Colombia:
+                
+                • **Free Shipping:** On all purchases of **$150,000 COP** or more.
+                • **Standard Flat Fee:** Only **$12,000 COP** for smaller orders nationwide.
+                • **Estimated Delivery Times:**
+                  - **Cartagena de Indias:** 24 to 48 business hours.
+                  - **Major Cities in Colombia:** 48 to 72 business hours.
+                • **Courier Partners:** Insured shipping with Coordinadora, Servientrega, and Interrapidísimo.
+                • **Delivery Proof:** Couriers take a mandatory physical photo upon delivery for your peace of mind.
+                """,
+                """
+                **Deliveries and Coverage in Colombia:**
+                
+                • **Free Shipping Threshold:** Automatic free shipping when your cart reaches $150,000 COP.
+                • **Fixed Low Shipping:** $12,000 COP flat fee for orders under the threshold.
+                • **National Coverage:** Direct shipments via Servientrega, Coordinadora, and Interrapidísimo with live tracking code.
+                """
+            };
+            return v[ThreadLocalRandom.current().nextInt(v.length)];
+        }
+        String[] v = {
+            """
+            **Política de Envíos y Tiempos de Entrega en Mercatto:**
+            
+            • **Envío Gratis:** En todas tus compras iguales o superiores a **$150.000 COP** a nivel nacional.
+            • **Tarifa Fija Estándar:** Únicamente **$12.000 COP** para compras menores.
+            • **Tiempos de Entrega:**
+              - **Cartagena de Indias:** 24 a 48 horas hábiles.
+              - **Ciudades Principales:** 48 a 72 horas hábiles.
+            • **Empresas Aliadas:** Despachos asegurados a través de Coordinadora, Servientrega e Interrapidísimo.
+            • **Foto de Evidencia:** El repartidor captura una fotografía obligatoria al momento de la entrega en tu puerta.
+            """,
+            """
+            **Información de Fletes y Cobertura Nacional:**
+            
+            • **¡Aprovecha Envío Gratis!** Por compras desde $150.000 COP el flete corre por cuenta de la tienda.
+            • **Tarifa Nacional Fija:** Solo $12.000 COP para pedidos inferiores.
+            • **Seguimiento Seguro:** Recibes número de guía y confirmación por correo para rastrear el trayecto hasta tu casa.
+            """
+        };
+        return v[ThreadLocalRandom.current().nextInt(v.length)];
+    }
+
+    private String obtenerRespuestaRastreo(boolean isEn) {
+        if (isEn) {
+            String[] v = {
+                """
+                **Real-Time Order Tracking:**
+                
+                Track your package status 24/7:
+                • 1. Go to **'Track Order'** in the navigation bar or visit `/rastreo`.
+                • 2. Enter your **Order Code** (e.g. `PED-20261031-1045`) and your **email address**.
+                • 3. You will see the complete timeline: *Pending → In Preparation → In Transit → Delivered*.
+                • 4. Once delivered, you can view the physical delivery photo proof uploaded by the courier.
+                """,
+                """
+                **How to Track Your Purchases on Mercatto:**
+                
+                • **Registered Users:** Open **'My Orders'** from your profile icon to view details, invoices, and delivery photos.
+                • **Guest Purchases:** Visit `/rastreo`, enter your order code and email to inspect the live shipping status instantly.
+                """
+            };
+            return v[ThreadLocalRandom.current().nextInt(v.length)];
+        }
+        String[] v = {
+            """
+            **Rastreo de Pedidos en Tiempo Real:**
+            
+            Puedes seguir el recorrido de tu compra las 24 horas del día:
+            • 1. Ingresa a la sección **'Rastrear Pedido'** en la barra superior o visita `/rastreo`.
+            • 2. Digita tu **Código de Pedido** (ejemplo: `PED-20261031-1045`) y tu **correo electrónico**.
+            • 3. Verás la línea de tiempo completa: *Pendiente → En Preparación → En Camino → Entregado*.
+            • 4. Una vez entregado, podrás visualizar la **foto de evidencia de entrega** cargada por el vendedor o repartidor.
+            """,
+            """
+            **Consulta el Estado de tu Paquete:**
+            
+            • **Con Cuenta:** Ingresa a **Mis Pedidos** desde el icono de usuario para ver historial, facturas y fotos de entrega.
+            • **Como Invitado:** Ingresa a `/rastreo` con tu código de pedido y correo para conocer la ubicación de tu envío al instante.
+            """
+        };
+        return v[ThreadLocalRandom.current().nextInt(v.length)];
+    }
+
+    private String obtenerRespuestaCupones(boolean isEn) {
+        if (isEn) {
+            String[] v = {
+                """
+                **Active Discount Coupons on Mercatto:**
+                
+                Take advantage of our current promo codes:
+                • **BIENVENIDA:** Direct discount of **$20,000 COP** on orders of $100,000 COP or more.
+                • **MERCATTO10:** **10% discount** across selected catalog items (orders from $30,000 COP, max discount $50,000 COP).
+                
+                **How to apply:** Enter the code in the *'Coupon code'* field in the Cart drawer or at Checkout and click *Apply*.
+                """,
+                """
+                **Current Mercatto Promo Codes:**
+                
+                • Code `BIENVENIDA`: Save **$20,000 COP** on purchases starting from $100,000 COP.
+                • Code `MERCATTO10`: Get **10% OFF** on eligible catalog items.
+                
+                Paste either coupon in your shopping cart before clicking 'Checkout' to enjoy instant savings!
+                """
+            };
+            return v[ThreadLocalRandom.current().nextInt(v.length)];
+        }
+        String[] v = {
+            """
+            **Cupones de Descuento Activos en Mercatto:**
+            
+            Aprovecha nuestros códigos promocionales vigentes:
+            • **BIENVENIDA:** Descuento directo de **$20.000 COP** en compras a partir de $100.000 COP.
+            • **MERCATTO10:** Descuento del **10%** en todo el catálogo seleccionado (válido desde $30.000 COP, ahorro máximo de $50.000 COP).
+            
+            **¿Cómo aplicarlo?:** Escribe el código en el recuadro *'Código de cupón'* en el Carrito o en el Checkout y haz clic en *Aplicar*.
+            """,
+            """
+            **Descuentos y Promociones Disponibles:**
+            
+            • Cupón `BIENVENIDA`: Te descuenta **$20.000 COP** directos en compras de $100.000 COP en adelante.
+            • Cupón `MERCATTO10`: Te otorga un **10% de rebaja** en compras desde $30.000 COP.
+            
+            ¡Ingrésalos en tu carrito de compras antes de pagar para aplicar el beneficio de inmediato!
+            """
+        };
+        return v[ThreadLocalRandom.current().nextInt(v.length)];
+    }
+
+    private String obtenerRespuestaComoComprar(boolean isEn) {
+        if (isEn) {
+            String[] v = {
+                """
+                **Step-by-Step Guide to Buying on Mercatto:**
+                
+                • 1. **Browse:** Explore our official stores or use the search bar to find what you need.
+                • 2. **Add to Cart:** Select your preferred variant (color, size) and click *'Add to cart'*.
+                • 3. **Checkout with Account or as Guest:** No password required; guest checkout is available with just your name, email, and address.
+                • 4. **Pay Securely:** Choose your preferred payment method (Card, Nequi, PSE, or Cash on Delivery).
+                • 5. **Confirmation & Tracking:** You will receive your official receipt by email with a real-time tracking link.
+                """,
+                """
+                **How to Place an Order on Mercatto:**
+                
+                • Find your desired items in the catalog.
+                • Add them to your shopping cart.
+                • You can checkout with a registered account or directly as a guest.
+                • Choose your payment method via Wompi Bancolombia or cash upon delivery.
+                • Your receipt and tracking code will arrive immediately in your email!
+                """
+            };
+            return v[ThreadLocalRandom.current().nextInt(v.length)];
+        }
+        String[] v = {
+            """
+            **Guía Paso a Paso para Comprar en Mercatto:**
+            
+            • 1. **Explora:** Navega por nuestras tiendas oficiales o usa la barra de búsqueda para encontrar lo que te gusta.
+            • 2. **Agrega al Carrito:** Elige la talla, color o variante deseada y haz clic en *'Agregar al carrito'*.
+            • 3. **Compra con Cuenta o como Invitado:** Puedes comprar como invitado indicando únicamente tu correo y dirección.
+            • 4. **Paga Seguro:** Selecciona tu medio de pago favorito (Tarjeta, Nequi, PSE o Pago Contra Entrega en efectivo).
+            • 5. **Confirmación y Guía:** Recibirás tu recibo oficial en el correo y podrás rastrear el pedido en vivo hasta tu puerta.
+            """,
+            """
+            **¿Cómo hacer tu pedido en Mercatto?:**
+            
+            • Elige tus artículos en el catálogo y añádelos al carrito.
+            • Ve al carrito y presiona 'Proceder al Pago'.
+            • Ingresa tus datos de envío (no requieres contraseña si compras como invitado).
+            • Paga con Wompi Bancolombia (Tarjetas, PSE, Nequi) o Contra Entrega.
+            • ¡Listo! Tu compra queda protegida bajo garantía Mercatto.
+            """
+        };
+        return v[ThreadLocalRandom.current().nextInt(v.length)];
+    }
+
+    private String obtenerRespuestaSoporte(boolean isEn) {
+        if (isEn) {
+            String[] v = {
+                """
+                **Mercatto Customer Support Channels:**
+                
+                If you need personalized assistance from our team:
+                • **Official WhatsApp:** [+57 323 388 2717](https://wa.me/573233882717) *(Monday to Saturday)*.
+                • **Email:** `realmercatto@gmail.com`
+                • **Ticket System:** Submit a detailed message using the support form in the platform.
+                • **Location:** Cartagena de Indias, Bolívar, Colombia.
+                """,
+                """
+                **Contact Our Support Team:**
+                
+                Our customer care team is available to assist you:
+                • WhatsApp Support: [+57 323 388 2717](https://wa.me/573233882717).
+                • Email: `realmercatto@gmail.com`.
+                • You can also submit an inquiry through our Help Center form.
+                """
+            };
+            return v[ThreadLocalRandom.current().nextInt(v.length)];
+        }
+        String[] v = {
+            """
+            **Canales de Atención al Cliente Mercatto:**
+            
+            Si necesitas asesoría personalizada con un asesor de nuestro equipo:
+            • **WhatsApp Oficial:** [+57 323 388 2717](https://wa.me/573233882717) *(Atención de lunes a sábado)*.
+            • **Correo Electrónico:** `realmercatto@gmail.com`
+            • **Sistema de Tickets:** Puedes dejar un mensaje detallado a través del formulario de soporte en la plataforma.
+            • **Sede:** Cartagena de Indias, Bolívar, Colombia.
+            """,
+            """
+            **Atención Personalizada y Soporte:**
+            
+            Estamos listos para ayudarte:
+            • Escríbenos a nuestro WhatsApp oficial: [+57 323 388 2717](https://wa.me/573233882717).
+            • Envíanos un correo a: `realmercatto@gmail.com`.
+            • O radica un ticket directo desde la opción 'Centro de Soporte' en la web.
+            """
+        };
+        return v[ThreadLocalRandom.current().nextInt(v.length)];
+    }
+
     public String responderConAgenteLocal(String mensaje, String idioma) {
         String t = mensaje != null ? mensaje.toLowerCase() : "";
         boolean isEn = esIngles(mensaje, idioma);
 
-        // 1. Métodos de pago y seguridad
+        // 1. Saludo simple
+        if (esSaludo(t)) {
+            return obtenerSaludoAleatorio(isEn);
+        }
+
+        // 2. Métodos de pago y seguridad
         if (t.contains("pago") || t.contains("tarjeta") || t.contains("nequi") || t.contains("pse") || 
             t.contains("bancolombia") || t.contains("efectivo") || t.contains("daviplata") || t.contains("wompi") || t.contains("segur") ||
             t.contains("pay") || t.contains("card") || t.contains("cash") || t.contains("method") || t.contains("accept") || t.contains("wallet")) {
-            if (isEn) {
-                return """
-                    **Payment Methods and Security in Mercatto:**
-                    
-                    All purchases in Mercatto are 100% protected through the certified **Wompi Bancolombia** gateway:
-                    
-                    • **Digital Wallets:** Pay instantly from your phone via **Nequi** or **Daviplata**.
-                    • **Bank Transfers (PSE):** Direct debit from any bank account in Colombia.
-                    • **Credit and Debit Cards:** Visa, Mastercard, and American Express with installment options.
-                    • **Cash on Delivery:** Pay in cash directly when the courier arrives at your door.
-                    
-                    **Mercatto Escrow Guarantee:**
-                    Your payment remains safely in escrow. The seller only receives payout once your order has been successfully delivered with physical delivery proof.
-                    """;
-            }
-            return """
-                **Métodos de Pago y Seguridad en Mercatto:**
-                
-                En Mercatto todas tus compras están 100% protegidas mediante la pasarela certificada **Wompi Bancolombia**:
-                
-                • **Billeteras Digitales:** Paga al instante desde tu celular con **Nequi** o **Daviplata** sin costos adicionales.
-                • **Transferencias Bancarias (PSE):** Débito directo desde cualquier cuenta bancaria en Colombia.
-                • **Tarjetas de Crédito y Débito:** Visa, Mastercard y American Express con opción de cuotas.
-                • **Pago Contra Entrega (Efectivo):** Puedes pagar en efectivo en el momento de recibir tu paquete en tu puerta.
-                
-                **Protección de Fondos (Escrow Mercatto):**
-                Tu dinero queda bajo custodia segura de Mercatto. El vendedor solo recibe la liquidación de su venta una vez que el pedido haya sido entregado satisfactoriamente con su respectiva evidencia física.
-                """;
+            return obtenerRespuestaPagos(isEn);
         }
 
-        // 2. Cómo vender, comisiones y planes
+        // 3. Cómo vender, comisiones y planes
         if (t.contains("vender") || t.contains("abrir tienda") || t.contains("comision") || 
             t.contains("plan") || t.contains("registro vendedor") || t.contains("proveedor") || t.contains("ganar dinero") ||
             t.contains("sell") || t.contains("store") || t.contains("fee")) {
-            if (isEn) {
-                return """
-                    **How to Sell & Open Your Store on Mercatto:**
-                    
-                    Starting to sell on Mercatto is free and takes under 2 minutes:
-                    
-                    **Steps to get started:**
-                    • 1. Click **'Sell'** or register choosing the **Seller** role.
-                    • 2. Customize your store with your logo, banner, and brand description.
-                    • 3. Publish your items with photos, colors/sizes, stock, and prices.
-                    • 4. Manage your orders and customers from your seller dashboard.
-                    
-                    **Transparent Seller Plans:**
-                    • **Starter Plan ($0 COP/month):** No monthly fee, **10%** commission per completed sale. Ideal to start risk-free.
-                    • **Professional Plan ($49,000 COP/month):** **5%** commission per sale, great for growing stores.
-                    • **Elite Premium Plan ($99,000 COP/month):** Minimal **2%** commission, verified Elite badge, and top search priority.
-                    
-                    *Payouts are transferred directly to your Colombian bank account.*
-                    """;
-            }
-            return """
-                **¿Cómo Vender y Abrir tu Tienda en Mercatto?**
-                
-                ¡Empezar a vender tus productos en Mercatto es gratis y toma menos de 2 minutos!
-                
-                **Pasos para comenzar:**
-                • 1. Haz clic en **'Vender'** o regístrate eligiendo el rol **Vendedor**.
-                • 2. Personaliza tu tienda con tu logo, portada, descripción y enlaces.
-                • 3. Publica tus artículos con fotografías, variantes de talla/color y precios.
-                • 4. Gestiona tus pedidos y clientes desde tu propio panel administrativo.
-                
-                **Planes Transparentes para Vendedores:**
-                • **Plan Starter ($0 COP/mes):** Sin costo fijo mensual, comisión del **10%** por venta concretada. Ideal para probar sin riesgo.
-                • **Plan Profesional ($49.000 COP/mes):** Comisión del **5%** por venta, perfecto para tiendas en crecimiento.
-                • **Plan Elite Premium ($99.000 COP/mes):** Comisión mínima del **2%**, insignia Élite de verificación y máxima prioridad en las búsquedas.
-                
-                *El desembolso de tus ventas se realiza de forma automática a tu cuenta bancaria.*
-                """;
+            return obtenerRespuestaVender(isEn);
         }
 
-        // 3. Envíos, fletes, tiempos de entrega y cobertura
+        // 4. Envíos, fletes, tiempos de entrega y cobertura
         if (t.contains("envio") || t.contains("flete") || t.contains("costo") || t.contains("cobertura") || 
             t.contains("transportadora") || t.contains("tiempo") || t.contains("demora") || t.contains("cartagena") ||
             t.contains("ship") || t.contains("delivery") || t.contains("freight")) {
-            if (isEn) {
-                return """
-                    **Shipping Policy & Delivery Times:**
-                    
-                    Mercatto connects verified local businesses with buyers across Colombia:
-                    
-                    • **Free Shipping:** On all purchases of **$150,000 COP** or more.
-                    • **Standard Flat Fee:** Only **$12,000 COP** for smaller orders nationwide.
-                    • **Estimated Delivery Times:**
-                      - **Cartagena de Indias:** 24 to 48 business hours.
-                      - **Major Cities in Colombia:** 48 to 72 business hours.
-                    • **Official Couriers:** Coordinadora, Servientrega, and Interrapidísimo.
-                    • **Delivery Photo Proof:** Couriers must submit a physical delivery proof photo upon completion.
-                    """;
-            }
-            return """
-                **Política de Envíos y Tiempos de Entrega:**
-                
-                En Mercatto conectamos comercios locales con compradores en toda Colombia:
-                
-                • **Envío Gratis:** En todas tus compras iguales o superiores a **$150.000 COP**.
-                • **Tarifa Fija Estándar:** Únicamente **$12.000 COP** para compras menores a nivel nacional.
-                • **Tiempos de Entrega Estimados:**
-                  - **Cartagena de Indias:** De 24 a 48 horas hábiles.
-                  - **Ciudades Principales de Colombia:** De 48 a 72 horas hábiles.
-                • **Transportadoras Oficiales:** Coordinadora, Servientrega e Interrapidísimo.
-                • **Seguridad en la Entrega:** Todos los despachos exigen la carga de una fotografía de evidencia de entrega por parte del repartidor o vendedor antes de finalizar la orden.
-                """;
+            return obtenerRespuestaEnvios(isEn);
         }
 
-        // 4. Rastreo de pedidos y seguimiento
-        if (t.contains("rastre") || t.contains("seguimiento") || t.contains("donde esta mi pedido") || 
-            t.contains("guia") || t.contains("estado") || t.contains("mi orden") ||
-            t.contains("track") || t.contains("where is my order")) {
-            if (isEn) {
-                return """
-                    **Real-Time Order Tracking:**
-                    
-                    You can track your package 24 hours a day:
-                    
-                    • 1. Go to the **'Track Order'** section in the navigation bar or visit `/rastreo`.
-                    • 2. Enter your **Order Code** (e.g. `PED-20261031-1045`) and your **email address**.
-                    • 3. You will see the complete timeline: *Pending → In Preparation → In Transit → Delivered*.
-                    • 4. Once delivered, you can view the physical delivery photo proof uploaded by the courier.
-                    """;
-            }
-            return """
-                **Rastreo de Pedidos en Tiempo Real:**
-                
-                Puedes seguir el recorrido de tu compra las 24 horas del día:
-                
-                • 1. Ingresa a la sección **'Rastrear Pedido'** en la barra superior o visita `/rastreo`.
-                • 2. Digita tu **Código de Pedido** (ejemplo: `PED-20261031-1045`) y tu **correo electrónico**.
-                • 3. Verás la línea de tiempo completa: *Pendiente → En Preparación → En Camino → Entregado*.
-                • 4. Una vez entregado, podrás visualizar la **foto de evidencia de entrega** cargada por el vendedor.
-                """;
+        // 5. Rastreo y estado de pedidos
+        if (t.contains("rastre") || t.contains("seguimiento") || t.contains("donde esta") || t.contains("guia") || 
+            t.contains("mi pedido") || t.contains("estado") || t.contains("paquete") ||
+            t.contains("track") || t.contains("where is") || t.contains("status")) {
+            return obtenerRespuestaRastreo(isEn);
         }
 
-        // 5. Cupones de descuento y promociones
+        // 6. Cupones de descuento y promociones
         if (t.contains("cupon") || t.contains("descuento") || t.contains("promo") || 
             t.contains("oferta") || t.contains("codigo") || t.contains("rebaja") ||
             t.contains("coupon") || t.contains("discount")) {
-            if (isEn) {
-                return """
-                    **Active Discount Coupons on Mercatto:**
-                    
-                    Take advantage of our current promo codes:
-                    
-                    • **BIENVENIDA:**
-                      - Direct discount of **$20,000 COP**.
-                      - Valid on orders of $100,000 COP or more.
-                    • **MERCATTO10:**
-                      - **10% discount** across selected catalog items.
-                      - Valid on orders from $30,000 COP (max discount $50,000 COP).
-                    
-                    **How to apply:** Enter the code in the *'Coupon code'* field in the Cart drawer or at Checkout and click *Apply*.
-                    """;
-            }
-            return """
-                **Cupones de Descuento Activos en Mercatto:**
-                
-                Aprovecha nuestros códigos promocionales vigentes:
-                
-                • **BIENVENIDA:**
-                  - Descuento directo de **$20.000 COP**.
-                  - Válido en compras a partir de $100.000 COP.
-                • **MERCATTO10:**
-                  - Descuento del **10%** en todo el catálogo seleccionado.
-                  - Válido en compras desde $30.000 COP (ahorro máximo de $50.000 COP).
-                
-                **¿Cómo aplicarlo?:** Escribe el código en el recuadro *'Código de cupón'* en el Carrito o en el Checkout y haz clic en *Aplicar*.
-                """;
+            return obtenerRespuestaCupones(isEn);
         }
 
-        // 6. Proceso de compra paso a paso
+        // 7. Proceso de compra paso a paso
         if (t.contains("como comprar") || t.contains("pasos") || t.contains("comprar") || t.contains("funciona") ||
             t.contains("how to buy") || t.contains("purchase") || t.contains("order")) {
-            if (isEn) {
-                return """
-                    **Step-by-Step Guide to Buying on Mercatto:**
-                    
-                    • 1. **Browse:** Explore our official stores or use the search bar to find what you need.
-                    • 2. **Add to Cart:** Select your preferred variant (color, size) and click *'Add to cart'*.
-                    • 3. **Checkout with Account or as Guest:** No password required; guest checkout is available with just your name, email, and address.
-                    • 4. **Pay Securely:** Choose your preferred payment method (Card, Nequi, PSE, or Cash on Delivery).
-                    • 5. **Confirmation & Tracking:** You will receive your official receipt by email with a real-time tracking link.
-                    """;
-            }
-            return """
-                **Guía Paso a Paso para Comprar en Mercatto:**
-                
-                • 1. **Explora:** Navega por nuestras tiendas oficiales o usa la barra de búsqueda para encontrar lo que te gusta.
-                • 2. **Agrega al Carrito:** Elige la talla, color o variante deseada y haz clic en *'Agregar al carrito'*.
-                • 3. **Compra con Cuenta o como Invitado:** Puedes comprar como invitado indicando únicamente tu correo y dirección.
-                • 4. **Paga Seguro:** Selecciona tu medio de pago favorito (Tarjeta, Nequi, PSE o Pago Contra Entrega en efectivo).
-                • 5. **Confirmación y Guía:** Recibirás tu recibo oficial en el correo y podrás rastrear el pedido en vivo hasta tu puerta.
-                """;
+            return obtenerRespuestaComoComprar(isEn);
         }
 
-        // 7. Soporte humano y contacto
+        // 8. Soporte humano y contacto
         if (t.contains("soporte") || t.contains("ayuda") || t.contains("asesor") || 
             t.contains("humano") || t.contains("telefono") || t.contains("whatsapp") || t.contains("correo") ||
             t.contains("support") || t.contains("agent") || t.contains("human")) {
-            if (isEn) {
-                return """
-                    **Mercatto Customer Support Channels:**
-                    
-                    If you need personalized assistance from our team:
-                    
-                    • **Official WhatsApp:** [+57 323 388 2717](https://wa.me/573233882717) *(Monday to Saturday)*.
-                    • **Email:** `realmercatto@gmail.com`
-                    • **Ticket System:** Submit a detailed message using the support form in the platform.
-                    • **Location:** Cartagena de Indias, Bolívar, Colombia.
-                    """;
-            }
-            return """
-                **Canales de Atención al Cliente Mercatto:**
-                
-                Si necesitas asesoría personalizada con un asesor de nuestro equipo:
-                
-                • **WhatsApp Oficial:** [+57 323 388 2717](https://wa.me/573233882717) *(Atención de lunes a sábado)*.
-                • **Correo Electrónico:** `realmercatto@gmail.com`
-                • **Sistema de Tickets:** Puedes dejar un mensaje detallado a través del formulario de soporte en la plataforma.
-                • **Sede:** Cartagena de Indias, Bolívar, Colombia.
-                """;
+            return obtenerRespuestaSoporte(isEn);
         }
 
-        // Recomendación dinámica de productos reales desde la base de datos
-        try {
-            List<Producto> productos = productoRepo.findTop8ByActivoTrueOrderByTotalVentasDesc();
-            if (productos != null && !productos.isEmpty()) {
-                StringBuilder sb = new StringBuilder(isEn
-                        ? "**Top featured and best-selling items in the store today:**\n\n"
-                        : "**Artículos más destacados y populares en la tienda hoy:**\n\n");
-                for (Producto p : productos) {
-                    double precioFinal = p.getPrecioOferta() != null ? p.getPrecioOferta() : p.getPrecio();
-                    sb.append(String.format("• **%s** — *$%,.0f COP*", p.getTitulo(), precioFinal));
-                    if (p.getMarca() != null && !p.getMarca().isBlank()) {
-                        sb.append(String.format(" *(%s: %s)*", isEn ? "Brand" : "Marca", p.getMarca().trim()));
+        // 9. Recomendación de productos si pregunta explícitamente por catálogo o artículos
+        if (t.contains("producto") || t.contains("articulo") || t.contains("catalogo") || t.contains("item") || 
+            t.contains("recomienda") || t.contains("que venden") || t.contains("precios") || t.contains("product")) {
+            try {
+                List<Producto> productos = productoRepo.findTop8ByActivoTrueOrderByTotalVentasDesc();
+                if (productos != null && !productos.isEmpty()) {
+                    StringBuilder sb = new StringBuilder(isEn
+                            ? "**Top featured and best-selling items in the store today:**\n\n"
+                            : "**Artículos más destacados y populares en la tienda hoy:**\n\n");
+                    for (Producto p : productos) {
+                        double precioFinal = p.getPrecioOferta() != null ? p.getPrecioOferta() : p.getPrecio();
+                        sb.append(String.format("• **%s** — *$%,.0f COP*", p.getTitulo(), precioFinal));
+                        if (p.getMarca() != null && !p.getMarca().isBlank()) {
+                            sb.append(String.format(" *(%s: %s)*", isEn ? "Brand" : "Marca", p.getMarca().trim()));
+                        }
+                        sb.append("\n");
                     }
-                    sb.append("\n");
+                    sb.append(isEn
+                            ? "\n*You can ask me about:* payment methods, free shipping, discount coupons, or opening your own store."
+                            : "\n*Puedes preguntarme por:* métodos de pago seguros, envíos gratis, cupones de descuento o cómo abrir tu propia tienda.");
+                    return sb.toString();
                 }
-                sb.append(isEn
-                        ? "\n*You can ask me about:* payment methods, free shipping, discount coupons, or opening your own store."
-                        : "\n*Puedes preguntarme por:* métodos de pago seguros, envíos gratis, cupones de descuento o cómo abrir tu propia tienda.");
-                return sb.toString();
-            }
-        } catch (Exception ignored) {}
-
-        if (isEn) {
-            return """
-                Hello! I am **MercattoBot**, your shopping assistant at Mercatto Colombia.
-                
-                I am ready to help you with:
-                • **How to buy:** Easy, fast, and 100% secure checkout.
-                • **Payment methods:** Cards, Nequi, PSE, and Cash on Delivery.
-                • **Shipping & coverage:** Free shipping from $150,000 COP and fast delivery.
-                • **Sell on Mercatto:** Open your store with commission rates from 2%.
-                • **Order tracking:** Live delivery progress and courier photo proof.
-                • **Discount coupons:** Use `BIENVENIDA` or `MERCATTO10` to save on your order.
-                
-                How can I assist you today?
-                """;
+            } catch (Exception ignored) {}
         }
 
-        return """
-            ¡Hola! Soy **MercattoBot**, el asistente oficial de Mercatto Colombia.
-            
-            Estoy listo para ayudarte con lo que necesites:
-            • **¿Cómo comprar?:** Pasos para comprar de forma fácil y 100% segura.
-            • **Medios de pago:** Tarjetas, Nequi, PSE y Pago Contra Entrega.
-            • **Envíos y cobertura:** Envío gratis desde $150.000 COP y tiempos de entrega.
-            • **Vender en Mercatto:** Abre tu tienda con planes desde el 2% de comisión.
-            • **Rastreo de pedido:** Consulta el estado y foto de entrega con tu código.
-            • **Cupones:** Usa `BIENVENIDA` o `MERCATTO10` para ahorrar en tu orden.
-            
-            ¿Sobre cuál de estos temas te gustaría saber más?
-            """;
+        // 10. Consulta fuera del tema de Mercatto: Disculpa cortés obligatoria con variación
+        return obtenerDisculpaFueraDeTema(isEn);
     }
-
     // ── Construcción Dinámica del Pool de Agentes ──────────────────────
     private List<AgenteConfig> construirPoolAgentes() {
         List<AgenteConfig> pool = new ArrayList<>();
