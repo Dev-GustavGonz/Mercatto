@@ -48,7 +48,9 @@ public class VendedorController {
             @AuthenticationPrincipal UserDetails userDetails) {
         Usuario usuario = usuarioRepo.findByEmail(userDetails.getUsername()).orElseThrow();
         String plan = body.getOrDefault("plan", "STARTER");
-        return ResponseEntity.ok(vendedorService.actualizarSuscripcion(usuario, plan));
+        String cuentaBancaria = body.get("cuentaBancaria");
+        String banco = body.get("banco");
+        return ResponseEntity.ok(vendedorService.actualizarSuscripcion(usuario, plan, cuentaBancaria, banco));
     }
 
     // GET /api/vendedor/modelo-predictivo

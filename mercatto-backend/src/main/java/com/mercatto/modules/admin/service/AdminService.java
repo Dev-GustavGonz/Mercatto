@@ -223,9 +223,9 @@ public class AdminService {
         int pedidosPro = (int) (totalPro * comprasPorTiendaPro);
         int pedidosElite = (int) (totalElite * comprasPorTiendaElite);
 
-        double comisionStarter = gmvStarter * 0.10; // 10%
-        double comisionPro = gmvPro * 0.05;         // 5%
-        double comisionElite = gmvElite * 0.02;     // 2%
+        double comisionStarter = gmvStarter * 0.06; // 6%
+        double comisionPro = gmvPro * 0.03;         // 3%
+        double comisionElite = gmvElite * 0.01;     // 1%
 
         double suscripcionStarter = 0.0;
         double suscripcionPro = totalPro * 49000.0;
@@ -253,7 +253,7 @@ public class AdminService {
         res.put("mes", mes);
         res.put("ticketPromedio", ticketPromedio);
         res.put("totalTiendas", totalTiendas);
-        res.put("formula", "Ganancia Plataforma = Comisiones por Venta (Starter 10%, Pro 5%, Elite 2%) + Suscripciones Mensuales (Pro $49.000, Elite $99.000)");
+        res.put("formula", "Ganancia Plataforma = Comisiones por Venta (Starter 6%, Pro 3%, Elite 1%) + Suscripciones Mensuales (Pro $49.000, Elite $99.000)");
 
         // Totales Escenario Esperado (Base ML)
         res.put("ventasTotalesMarketplace", Math.round(gmvTotal));
@@ -268,7 +268,7 @@ public class AdminService {
         desglose.put("STARTER", Map.of(
             "nombre", "Plan Starter",
             "tiendas", totalStarter,
-            "porcentajeComision", 10.0,
+            "porcentajeComision", 6.0,
             "cuotaMensual", 0.0,
             "ventasBrutas", Math.round(gmvStarter),
             "pedidos", pedidosStarter,
@@ -280,7 +280,7 @@ public class AdminService {
         desglose.put("PRO", Map.of(
             "nombre", "Plan Profesional",
             "tiendas", totalPro,
-            "porcentajeComision", 5.0,
+            "porcentajeComision", 3.0,
             "cuotaMensual", 49000.0,
             "ventasBrutas", Math.round(gmvPro),
             "pedidos", pedidosPro,
@@ -292,7 +292,7 @@ public class AdminService {
         desglose.put("ELITE", Map.of(
             "nombre", "Plan Elite Premium",
             "tiendas", totalElite,
-            "porcentajeComision", 2.0,
+            "porcentajeComision", 1.0,
             "cuotaMensual", 99000.0,
             "ventasBrutas", Math.round(gmvElite),
             "pedidos", pedidosElite,

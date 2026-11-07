@@ -26,9 +26,9 @@ def generar_dataset(n_muestras=2500, semilla=42, ruta_salida=None):
     planes = ['STARTER', 'PRO', 'ELITE']
     prob_planes = [0.55, 0.32, 0.13] # Más tiendas inician en Starter
     comisiones_plan = {
-        'STARTER': 0.10,   # 10% de comisión
-        'PRO': 0.05,       # 5% de comisión
-        'ELITE': 0.02      # 2% de comisión
+        'STARTER': 0.06,   # 10% de comisión
+        'PRO': 0.03,       # 5% de comisión
+        'ELITE': 0.01      # 2% de comisión
     }
 
     categorias = [

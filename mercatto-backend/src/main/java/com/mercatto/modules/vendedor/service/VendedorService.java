@@ -71,13 +71,28 @@ public class VendedorService {
 
     @Transactional
     @CacheEvict(value = {CacheConfig.CACHE_TIENDAS_PUBLICAS, CacheConfig.CACHE_TIENDA_DETALLE}, allEntries = true)
-    public VendedorResponse actualizarSuscripcion(Usuario usuario, String planStr) {
+    public VendedorResponse actualizarSuscripcion(Usuario usuario, String planStr, String cuentaBancaria, String banco) {
         Vendedor v = obtenerPorUsuario(usuario);
         Vendedor.TipoSuscripcion nuevoPlan;
         try {
             nuevoPlan = Vendedor.TipoSuscripcion.valueOf(planStr.toUpperCase());
         } catch (Exception e) {
             throw new com.mercatto.exception.BadRequestException("Plan de suscripción no válido: " + planStr);
+        }
+
+        // Actualizar datos de cuenta bancaria si se suministran
+        if (cuentaBancaria != null && !cuentaBancaria.trim().isEmpty()) {
+            v.setCuentaBancaria(cuentaBancaria.trim());
+        }
+        if (banco != null && !banco.trim().isEmpty()) {
+            v.setBanco(banco.trim());
+        }
+
+        // Obligatorio: Todo vendedor debe registrar su número de cuenta bancaria para el débito de la suscripción
+        if (v.getCuentaBancaria() == null || v.getCuentaBancaria().trim().isEmpty()) {
+            throw new com.mercatto.exception.BadRequestException(
+                "Debes ingresar y registrar un número de cuenta bancaria para el cobro de la suscripción antes de seleccionar tu plan."
+            );
         }
 
         v.setTipoSuscripcion(nuevoPlan);
@@ -91,13 +106,17 @@ public class VendedorService {
         return convertirAResponse(vendedorRepo.save(v));
     }
 
+    public VendedorResponse actualizarSuscripcion(Usuario usuario, String planStr) {
+        return actualizarSuscripcion(usuario, planStr, null, null);
+    }
+
     public double obtenerTasaComision(Vendedor.TipoSuscripcion plan) {
-        if (plan == null) return 0.10;
+        if (plan == null) return 0.06;
         switch (plan) {
-            case PRO: return 0.05;
-            case ELITE: return 0.02;
+            case PRO: return 0.03;
+            case ELITE: return 0.01;
             case STARTER:
-            default: return 0.10;
+            default: return 0.06;
         }
     }
 
@@ -192,14 +211,14 @@ public class VendedorService {
         double comisionOptimista = valorOptimista * tasaActual;
         double netoOptimista = valorOptimista - comisionOptimista;
 
-        // Comparativa por Planes sobre el volumen Esperado
-        double comisionStarter = valorEsperado * 0.10;
+        // Comparativa por Planes sobre el volumen Esperado (Starter 6%, Pro 3%, Elite 1%)
+        double comisionStarter = valorEsperado * 0.06;
         double netoStarter = valorEsperado - comisionStarter;
         
-        double comisionPro = valorEsperado * 0.05;
+        double comisionPro = valorEsperado * 0.03;
         double netoPro = valorEsperado - comisionPro;
         
-        double comisionElite = valorEsperado * 0.02;
+        double comisionElite = valorEsperado * 0.01;
         double netoElite = valorEsperado - comisionElite;
 
         modelo.put("nombreTienda", vendedor.getNombreTienda());

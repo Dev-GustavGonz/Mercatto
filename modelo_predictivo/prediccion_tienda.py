@@ -33,9 +33,9 @@ MODELO_VENTAS_PATH = os.path.join(DIR_ACTUAL, 'modelo_ventas.joblib')
 MODELO_COMPRAS_PATH = os.path.join(DIR_ACTUAL, 'modelo_compras.joblib')
 
 TASAS_COMISION = {
-    'STARTER': 0.10,  # 10% de comisión por venta
-    'PRO': 0.05,      # 5% de comisión por venta
-    'ELITE': 0.02     # 2% de comisión por venta
+    'STARTER': 0.06,  # 6% comision de comisión por venta
+    'PRO': 0.03,      # 3% comision de comisión por venta
+    'ELITE': 0.01     # 1% comision de comisión por venta
 }
 
 NOMBRES_PLANES = {

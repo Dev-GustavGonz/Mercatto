@@ -171,7 +171,7 @@ def predecir_administrador(
             'ticketPromedio': ticket_promedio,
             'mes': mes
         },
-        'formulaMonetizacion': "Ganancia Plataforma = Comisiones de Venta por Plan (Starter 10%, Pro 5%, Elite 2%) + Suscripciones Mensuales (Pro $49.000, Elite $99.000)",
+        'formulaMonetizacion': "Ganancia Plataforma = Comisiones de Venta por Plan (Starter 6%, Pro 3%, Elite 1%) + Suscripciones Mensuales (Pro $49.000, Elite $99.000)",
         # Valores Escenario Esperado (Base ML)
         'ventasTotalesMarketplace': ventas_totales_esperadas,
         'comprasTotalesMarketplace': compras_totales_esperadas,
