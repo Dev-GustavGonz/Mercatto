@@ -333,6 +333,17 @@ public class MultiAgenteIaService {
         return m.matches("(?i).*\\b(how|what|where|when|why|who|which|can|could|would|should|do|does|did|is|are|was|were|will|shall|hello|hi|hey|good\\s+(morning|afternoon|evening)|please|help|buy|buying|purchase|order|orders|shipping|ship|delivery|store|shop|seller|sell|payment|pay|paid|price|cost|discount|coupon|coupons|track|tracking|product|products|item|items|refund|thanks|thank\\s+you|support|recommend|shoes|clothes|laptop|phone|tech|kitchen|furniture)\\b.*");
     }
 
+    private String sanitizarRespuestaPlanes(String texto, boolean isEn) {
+        if (texto == null) return null;
+        String lower = texto.toLowerCase();
+        if (lower.contains("4%") || lower.contains("sin membresías fijas") || lower.contains("sin membresias fijas") || 
+            lower.contains("sin cobros mensuales") || lower.contains("sin planes ni cuotas") || 
+            lower.contains("comisión fija única") || lower.contains("comision fija unica")) {
+            return obtenerRespuestaPlanes(isEn);
+        }
+        return texto;
+    }
+
     public ChatIaResponse procesarMensaje(String mensajeUsuario, String sessionId) {
         return procesarMensaje(mensajeUsuario, sessionId, "es");
     }
@@ -380,6 +391,7 @@ public class MultiAgenteIaService {
                         failoversRealizados.incrementAndGet();
                         log.warn("Failover exitoso hacia [{}] tras agotamiento de tokens previos.", agente.nombre());
                     }
+                    respuesta = sanitizarRespuestaPlanes(respuesta, isEn);
                     return new ChatIaResponse(respuesta, agente.nombre(), agente.proveedor(), huboTokensAgotados, intento);
                 }
             } catch (Exception e) {
@@ -410,6 +422,7 @@ public class MultiAgenteIaService {
         failoversRealizados.incrementAndGet();
         consultasPorAgente.merge("Agente Experto Mercatto Local", 1, Integer::sum);
 
+        respuestaFallback = sanitizarRespuestaPlanes(respuestaFallback, isEn);
         return new ChatIaResponse(
                 respuestaFallback,
                 "Agente Experto Mercatto Local",
