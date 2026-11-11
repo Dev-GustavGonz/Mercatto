@@ -89,6 +89,8 @@ public class AuthService {
                 datosVendedor.getOrDefault("tipo", "PERSONA_NATURAL")));
             vendedor.setNitCedula(datosVendedor.get("nitCedula"));
             vendedor.setCiudad(datosVendedor.get("ciudad"));
+            vendedor.setBanco(datosVendedor.get("banco"));
+            vendedor.setCuentaBancaria(datosVendedor.get("cuentaBancaria"));
             vendedor.setEstado(Vendedor.Estado.PENDIENTE);
             vendedorRepo.save(vendedor);
 

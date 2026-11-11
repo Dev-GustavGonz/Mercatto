@@ -29,6 +29,8 @@ public class RegistroRequest {
         private String nitCedula;
         private String ciudad;
         private String tipo; // PERSONA_NATURAL | EMPRESA | PYME
+        private String banco;
+        private String cuentaBancaria;
 
         public String getNombreTienda() { return nombreTienda; }
         public void setNombreTienda(String nombreTienda) { this.nombreTienda = nombreTienda; }
@@ -41,6 +43,12 @@ public class RegistroRequest {
 
         public String getTipo() { return tipo; }
         public void setTipo(String tipo) { this.tipo = tipo; }
+
+        public String getBanco() { return banco; }
+        public void setBanco(String banco) { this.banco = banco; }
+
+        public String getCuentaBancaria() { return cuentaBancaria; }
+        public void setCuentaBancaria(String cuentaBancaria) { this.cuentaBancaria = cuentaBancaria; }
     }
 
     // Constructors
