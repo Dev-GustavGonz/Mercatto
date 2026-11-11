@@ -22,27 +22,32 @@ import java.util.UUID;
 
 /**
  * Servicio para gestión y subida de imágenes a Supabase Storage con validaciones
- * de tipo de archivo (JPG, PNG, WEBP, GIF) y tamaño máximo de 2 MB.
+ * de tipo de archivo (JPG, PNG, WEBP, GIF) y tamaño máximo de 30 MB.
  */
 @Service
 public class SupabaseStorageService {
 
     private static final Logger log = LoggerFactory.getLogger(SupabaseStorageService.class);
 
-    // Límite estricto de tamaño: 2 MB (2,097,152 bytes)
-    public static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
+    // Límite estricto de tamaño: 30 MB
+    public static final long MAX_FILE_SIZE = 30L * 1024 * 1024;
 
     // MIME types permitidos para imágenes
     private static final List<String> MIME_TYPES_PERMITIDOS = Arrays.asList(
             "image/jpeg",
+            "image/jpg",
+            "image/pjpeg",
+            "image/jfif",
             "image/png",
+            "image/x-png",
             "image/webp",
-            "image/gif"
+            "image/gif",
+            "application/octet-stream"
     );
 
     // Extensiones de archivo permitidas
     private static final List<String> EXTENSIONES_PERMITIDAS = Arrays.asList(
-            ".jpg", ".jpeg", ".png", ".webp", ".gif"
+            ".jpg", ".jpeg", ".jfif", ".png", ".webp", ".gif"
     );
 
     @Value("${supabase.url:https://cirxekyibynidhbnffll.supabase.co}")
@@ -59,7 +64,7 @@ public class SupabaseStorageService {
             .build();
 
     /**
-     * Valida el archivo (formato y tamaño máx 2 MB) y lo sube al bucket de Supabase Storage.
+     * Valida el archivo (formato y tamaño máx 30 MB) y lo sube al bucket de Supabase Storage.
      *
      * @param archivo Archivo multipart recibido en la petición
      * @return Map con la URL pública generada ("url") y el identificador/ruta ("publicId")
@@ -76,10 +81,7 @@ public class SupabaseStorageService {
         }
 
         String extension = obtenerExtension(archivo.getOriginalFilename());
-        String contentType = archivo.getContentType();
-        if (contentType == null || contentType.isBlank()) {
-            contentType = deducirMimeType(extension);
-        }
+        String contentType = normalizarMimeParaSupabase(archivo.getContentType(), extension);
 
         // Nombre de archivo único y sanitizado
         String safeOriginal = sanitizarNombre(archivo.getOriginalFilename());
@@ -121,7 +123,7 @@ public class SupabaseStorageService {
     /**
      * Valida obligatoriamente:
      * 1. Que el archivo no sea nulo ni vacío.
-     * 2. Que no supere 2 MB.
+     * 2. Que no supere 30 MB.
      * 3. Que sea formato JPG, PNG, WEBP o GIF (por extensión y por Content-Type).
      */
     public void validarArchivo(MultipartFile archivo) {
@@ -129,11 +131,11 @@ public class SupabaseStorageService {
             throw new IllegalArgumentException("No se ha proporcionado ningún archivo para subir.");
         }
 
-        // Validación de tamaño (máximo 2 MB)
+        // Validación de tamaño (máximo 30 MB)
         if (archivo.getSize() > MAX_FILE_SIZE) {
             double megas = (double) archivo.getSize() / (1024 * 1024);
             throw new IllegalArgumentException(String.format(
-                    "El archivo pesa %.2f MB y supera el tamaño máximo permitido de 2 MB.", megas));
+                    "El archivo pesa %.2f MB y supera el tamaño máximo permitido de 30 MB.", megas));
         }
 
         // Validación por extensión del archivo
@@ -171,11 +173,37 @@ public class SupabaseStorageService {
         };
     }
 
+    private String normalizarMimeParaSupabase(String rawType, String extension) {
+        if (rawType != null && !rawType.isBlank()) {
+            String lower = rawType.toLowerCase().split(";")[0].trim();
+            if ("image/jpeg".equals(lower) || "image/png".equals(lower)
+                    || "image/webp".equals(lower) || "image/gif".equals(lower)) {
+                return lower;
+            }
+            if ("image/jpg".equals(lower) || "image/pjpeg".equals(lower) || "image/jfif".equals(lower)) {
+                return "image/jpeg";
+            }
+            if ("image/x-png".equals(lower)) {
+                return "image/png";
+            }
+        }
+        return deducirMimeType(extension);
+    }
+
     private String sanitizarNombre(String original) {
         if (original == null || original.isBlank()) {
             return "imagen.jpg";
         }
-        return original.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String sanitized = original.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String ext = obtenerExtension(sanitized).toLowerCase();
+        String base = sanitized.contains(".") ? sanitized.substring(0, sanitized.lastIndexOf(".")) : sanitized;
+        if (base.length() > 50) {
+            base = base.substring(0, 50);
+        }
+        if (base.isBlank()) {
+            base = "imagen";
+        }
+        return base + (".jfif".equals(ext) ? ".jpg" : ext);
     }
 
     private String limpiarUrl(String url) {
@@ -190,7 +218,7 @@ public class SupabaseStorageService {
         }
         String fileName = UUID.randomUUID() + "_" + sanitizarNombre(archivo.getOriginalFilename());
         Path filePath = path.resolve(fileName);
-        Files.copy(archivo.getInputStream(), filePath);
+        Files.copy(archivo.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
         return Map.of(
                 "url", "/uploads/" + fileName,

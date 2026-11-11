@@ -72,7 +72,7 @@ render.keep-alive.url=${RENDER_EXTERNAL_URL:${APP_KEEP_ALIVE_URL:}}
 render.keep-alive.rate-ms=${RENDER_KEEP_ALIVE_RATE_MS:810000}
 
 # ── Subida de Archivos ────────────────────────────────────────────
-spring.servlet.multipart.max-file-size=2MB
+spring.servlet.multipart.max-file-size=30MB
 spring.servlet.multipart.max-request-size=50MB
 
 # ── CORS ──────────────────────────────────────────────────────────

@@ -90,7 +90,7 @@ public class GlobalExceptionHandler {
     // ──────────────────────────────────────────
     @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
     public ResponseEntity<Map<String, Object>> handleMaxUploadSize(org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, "El archivo supera el tamaño máximo permitido de 2 MB.");
+        return buildResponse(HttpStatus.BAD_REQUEST, "El archivo supera el tamaño máximo permitido de 30 MB.");
     }
 
     // ──────────────────────────────────────────

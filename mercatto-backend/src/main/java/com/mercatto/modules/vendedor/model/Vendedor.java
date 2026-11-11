@@ -27,10 +27,10 @@ public class Vendedor {
     @Column(columnDefinition = "TEXT")
     private String descripcion;
 
-    @Column(name = "logo_url")
+    @Column(name = "logo_url", columnDefinition = "TEXT")
     private String logoUrl;
 
-    @Column(name = "portada_url", length = 500)
+    @Column(name = "portada_url", columnDefinition = "TEXT")
     private String portadaUrl;
 
     @Enumerated(EnumType.STRING)
