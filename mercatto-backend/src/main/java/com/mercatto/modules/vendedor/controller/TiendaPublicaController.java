@@ -29,14 +29,14 @@ public class TiendaPublicaController {
     @GetMapping
     public ResponseEntity<List<TiendaPublicaResponse>> listarTiendas() {
         return ResponseEntity.ok()
-                .header("Cache-Control", "public, max-age=180, stale-while-revalidate=360")
+                .header("Cache-Control", "no-cache")
                 .body(tiendaPublicaService.listarTiendas());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TiendaPublicaResponse> obtenerTienda(@PathVariable Long id) {
         return ResponseEntity.ok()
-                .header("Cache-Control", "public, max-age=180, stale-while-revalidate=360")
+                .header("Cache-Control", "no-cache")
                 .body(tiendaPublicaService.obtenerTienda(id));
     }
 
