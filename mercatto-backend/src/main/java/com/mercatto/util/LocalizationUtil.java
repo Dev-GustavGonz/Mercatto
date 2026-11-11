@@ -116,6 +116,12 @@ public final class LocalizationUtil {
         copia.setImagenUrl(c.getImagenUrl());
         copia.setActivo(c.isActivo());
         copia.setOrdenVisual(c.getOrdenVisual());
+        if (c.getPadre() != null) {
+            Categoria padreCopia = new Categoria();
+            padreCopia.setId(c.getPadre().getId());
+            padreCopia.setNombre(isEn ? traducirCategoria(c.getPadre().getNombre()) : c.getPadre().getNombre());
+            copia.setPadre(padreCopia);
+        }
         if (c.getSubcategorias() != null) {
             copia.setSubcategorias(c.getSubcategorias().stream()
                     .map(sub -> clonarYTraducirCategoria(sub, isEn))
