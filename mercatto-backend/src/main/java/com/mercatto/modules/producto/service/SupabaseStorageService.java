@@ -97,6 +97,7 @@ public class SupabaseStorageService {
                     .header("Authorization", "Bearer " + supabaseKey.trim())
                     .header("apikey", supabaseKey.trim())
                     .header("Content-Type", contentType)
+                    .header("x-upsert", "true")
                     .POST(HttpRequest.BodyPublishers.ofByteArray(archivo.getBytes()))
                     .build();
 
