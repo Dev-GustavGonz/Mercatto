@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
@@ -27,8 +28,16 @@ public class DataSeeder {
                                       CuponRepository cuponRepository,
                                       ProductoRepository productoRepository,
                                       PedidoItemRepository pedidoItemRepository,
-                                      PasswordEncoder passwordEncoder) {
+                                      PasswordEncoder passwordEncoder,
+                                      JdbcTemplate jdbcTemplate) {
         return args -> {
+            // Asegurar que la columna evidencia_entrega_url soporte URLs largas o Data URIs sin error de longitud
+            try {
+                jdbcTemplate.execute("ALTER TABLE pedidos ALTER COLUMN evidencia_entrega_url TYPE TEXT");
+            } catch (Exception e) {
+                // Silencioso si la columna ya es TEXT o si se ejecuta en otra BD
+            }
+
             // Asegurar Admin inicial
             Usuario admin = usuarioRepository.findByEmail("admin@mercatto.com").orElseGet(() -> {
                 Usuario u = new Usuario();
