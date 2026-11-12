@@ -44,11 +44,13 @@ public class ProductoService {
     @Autowired private ProductoImagenRepository imagenRepo;
     @Autowired private VarianteRepository varianteRepo;
 
+    @Transactional(readOnly = true)
     public Page<ProductoResponse> listar(Long categoriaId, String marca, Double precioMin, Double precioMax,
                                         String termino, int pagina, int tamano, String orden) {
         return listar(categoriaId, marca, precioMin, precioMax, termino, null, pagina, tamano, orden);
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductoResponse> listar(Long categoriaId, String marca, Double precioMin, Double precioMax,
                                         String termino, Boolean soloElite, int pagina, int tamano, String orden) {
         Sort sort = Sort.by(Sort.Direction.DESC, "fechaCreacion");
@@ -88,6 +90,7 @@ public class ProductoService {
         return productos.map(this::convertirAResponse);
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductoResponse> filtrarPorTienda(Long vendedorId, Long categoriaId, String marca,
                                                   Double precioMin, Double precioMax, String termino,
                                                   int pagina, int tamano, String orden) {
@@ -116,6 +119,7 @@ public class ProductoService {
         };
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_PRODUCTOS_DESTACADOS)
     public List<ProductoResponse> obtenerDestacados() {
         List<Producto> list = productoRepo.findTop12ByActivoTrueOrderByTotalVentasDesc();
@@ -138,18 +142,21 @@ public class ProductoService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS)
     public List<ProductoResponse> obtenerMasVendidos() {
         return productoRepo.findTop8ByActivoTrueOrderByTotalVentasDesc()
                 .stream().map(this::convertirAResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_PRODUCTOS_NUEVOS)
     public List<ProductoResponse> obtenerNuevos() {
         return productoRepo.findTop8ByActivoTrueOrderByFechaCreacionDesc()
                 .stream().map(this::convertirAResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_PRODUCTO_DETALLE, key = "'id_' + #id")
     public ProductoResponse obtenerPorId(Long id) {
         Producto producto = productoRepo.findByIdAndActivoTrue(id)
@@ -157,6 +164,7 @@ public class ProductoService {
         return convertirAResponse(producto);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_PRODUCTO_DETALLE, key = "'slug_' + #slug")
     public ProductoResponse obtenerPorSlug(String slug) {
         Producto producto = productoRepo.findBySlugAndActivoTrue(slug)
@@ -164,6 +172,7 @@ public class ProductoService {
         return convertirAResponse(producto);
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductoResponse> listarPorVendedor(Vendedor vendedor, int pagina, int tamano) {
         Pageable pageable = PageRequest.of(pagina, tamano, Sort.by(Sort.Direction.DESC, "fechaCreacion"));
         return productoRepo.findByVendedor(vendedor, pageable).map(this::convertirAResponse);
@@ -463,7 +472,12 @@ public class ProductoService {
         }
 
         if (p.getImagenes() != null) {
-            res.setImagenes(p.getImagenes().stream().map(img -> {
+            res.setImagenes(p.getImagenes().stream()
+                .filter(img -> img != null && img.getUrl() != null && !img.getUrl().isBlank())
+                .sorted(java.util.Comparator
+                    .comparing(ProductoImagen::isPrincipal, java.util.Comparator.reverseOrder())
+                    .thenComparing(img -> img.getOrdenVisual() != null ? img.getOrdenVisual() : Integer.MAX_VALUE))
+                .map(img -> {
                 ProductoResponse.ImagenDTO dto = new ProductoResponse.ImagenDTO();
                 dto.setId(img.getId());
                 dto.setUrl(img.getUrl());
