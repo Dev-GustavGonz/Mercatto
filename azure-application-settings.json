@@ -15,6 +15,11 @@
     "slotSetting": false
   },
   {
+    "name": "SUPABASE_SERVICE_ROLE_KEY",
+    "value": "SUPABASE_SERVICE_ROLE_KEY_AQUI",
+    "slotSetting": false
+  },
+  {
     "name": "SPRING_JPA_HIBERNATE_DDL_AUTO",
     "value": "update",
     "slotSetting": false

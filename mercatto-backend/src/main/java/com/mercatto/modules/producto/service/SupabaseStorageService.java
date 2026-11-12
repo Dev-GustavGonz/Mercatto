@@ -213,17 +213,30 @@ public class SupabaseStorageService {
 
     private Map<String, Object> guardarLocalmente(MultipartFile archivo) throws IOException {
         String uploadsDir = "uploads/";
-        Path path = Paths.get(uploadsDir);
-        if (!Files.exists(path)) {
-            Files.createDirectories(path);
+        try {
+            Path path = Paths.get(uploadsDir);
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+            String fileName = UUID.randomUUID() + "_" + sanitizarNombre(archivo.getOriginalFilename());
+            Path filePath = path.resolve(fileName);
+            Files.copy(archivo.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        } catch (Exception e) {
+            log.warn("No se pudo escribir archivo en disco efímero local: {}", e.getMessage());
         }
-        String fileName = UUID.randomUUID() + "_" + sanitizarNombre(archivo.getOriginalFilename());
-        Path filePath = path.resolve(fileName);
-        Files.copy(archivo.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
+        // Para evitar enlaces rotos o redirecciones fallidas a Azure (/uploads/...) en entornos
+        // donde Supabase Storage aún no tenga la credencial configurada, generamos un Data URI
+        // autónomo que se visualiza de forma nativa e inmediata en cualquier navegador sin errores HTTP 500.
+        String ext = obtenerExtension(archivo.getOriginalFilename());
+        String mime = normalizarMimeParaSupabase(archivo.getContentType(), ext);
+        String base64 = java.util.Base64.getEncoder().encodeToString(archivo.getBytes());
+        String dataUrl = "data:" + mime + ";base64," + base64;
+
+        String safeFileName = UUID.randomUUID() + "_" + sanitizarNombre(archivo.getOriginalFilename());
         return Map.of(
-                "url", "/uploads/" + fileName,
-                "publicId", fileName
+                "url", dataUrl,
+                "publicId", safeFileName
         );
     }
 }

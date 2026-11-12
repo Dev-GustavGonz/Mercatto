@@ -59,7 +59,7 @@ public class Pedido {
     @Column(name = "empresa_envio", length = 100)
     private String empresaEnvio;
 
-    @Column(name = "evidencia_entrega_url", length = 500)
+    @Column(name = "evidencia_entrega_url", columnDefinition = "TEXT")
     private String evidenciaEntregaUrl;
 
     @Column(columnDefinition = "TEXT")
