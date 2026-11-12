@@ -212,56 +212,56 @@ public class ProductoService {
 
         String slug = generarSlugUnico(request.getTitulo());
         producto.setSlug(slug);
+        producto.setCalificacion(0.0);
+        producto.setTotalResenas(0);
+        producto.setTotalVentas(0);
 
-        Producto guardado = productoRepo.save(producto);
-
-        // Guardar imágenes
+        // Guardar imágenes directamente sobre la colección gestionada (cascada JPA segura)
         if (request.getImagenes() != null && !request.getImagenes().isEmpty()) {
-            List<ProductoImagen> imagenes = new ArrayList<>();
             for (int i = 0; i < request.getImagenes().size(); i++) {
                 ProductoRequest.ImagenDTO imgDto = request.getImagenes().get(i);
-                ProductoImagen img = new ProductoImagen();
-                img.setProducto(guardado);
-                img.setUrl(imgDto.getUrl());
-                img.setPublicId(imgDto.getPublicId());
-                img.setPrincipal(i == 0 || imgDto.isPrincipal());
-                img.setOrdenVisual(imgDto.getOrdenVisual() != null ? imgDto.getOrdenVisual() : i);
-                imagenes.add(img);
-            }
-            imagenRepo.saveAll(imagenes);
-            guardado.setImagenes(imagenes);
-        }
-
-        // Guardar variantes
-        if (request.getVariantes() != null && !request.getVariantes().isEmpty()) {
-            List<ProductoVariante> variantes = new ArrayList<>();
-            for (ProductoRequest.VarianteDTO varDto : request.getVariantes()) {
-                ProductoVariante v = new ProductoVariante();
-                v.setProducto(guardado);
-                v.setNombre(varDto.getNombre());
-                v.setSku(varDto.getSku());
-                v.setPrecio(varDto.getPrecio() != null ? varDto.getPrecio() : guardado.getPrecio());
-                v.setPrecioOferta(varDto.getPrecioOferta());
-                v.setStock(varDto.getStock() != null ? varDto.getStock() : 0);
-                v.setImagenUrl(varDto.getImagenUrl());
-
-                if (varDto.getAtributos() != null) {
-                    List<VarianteAtributo> atributos = new ArrayList<>();
-                    for (ProductoRequest.AtributoDTO atrDto : varDto.getAtributos()) {
-                        VarianteAtributo atr = new VarianteAtributo();
-                        atr.setVariante(v);
-                        atr.setNombre(atrDto.getNombre());
-                        atr.setValor(atrDto.getValor());
-                        atributos.add(atr);
-                    }
-                    v.setAtributos(atributos);
+                if (imgDto != null && imgDto.getUrl() != null && !imgDto.getUrl().trim().isEmpty()) {
+                    ProductoImagen img = new ProductoImagen();
+                    img.setProducto(producto);
+                    img.setUrl(imgDto.getUrl().trim());
+                    img.setPublicId(imgDto.getPublicId());
+                    img.setPrincipal(i == 0 || imgDto.isPrincipal());
+                    img.setOrdenVisual(imgDto.getOrdenVisual() != null ? imgDto.getOrdenVisual() : i);
+                    producto.getImagenes().add(img);
                 }
-                variantes.add(v);
             }
-            varianteRepo.saveAll(variantes);
-            guardado.setVariantes(variantes);
         }
 
+        // Guardar variantes directamente sobre la colección gestionada (cascada JPA segura)
+        if (request.getVariantes() != null && !request.getVariantes().isEmpty()) {
+            for (ProductoRequest.VarianteDTO varDto : request.getVariantes()) {
+                if (varDto != null && varDto.getNombre() != null && !varDto.getNombre().trim().isEmpty()) {
+                    ProductoVariante v = new ProductoVariante();
+                    v.setProducto(producto);
+                    v.setNombre(varDto.getNombre().trim());
+                    v.setSku(varDto.getSku());
+                    v.setPrecio(varDto.getPrecio() != null ? varDto.getPrecio() : producto.getPrecio());
+                    v.setPrecioOferta(varDto.getPrecioOferta());
+                    v.setStock(varDto.getStock() != null ? varDto.getStock() : 0);
+                    v.setImagenUrl(varDto.getImagenUrl());
+
+                    if (varDto.getAtributos() != null) {
+                        List<VarianteAtributo> atributos = new ArrayList<>();
+                        for (ProductoRequest.AtributoDTO atrDto : varDto.getAtributos()) {
+                            VarianteAtributo atr = new VarianteAtributo();
+                            atr.setVariante(v);
+                            atr.setNombre(atrDto.getNombre());
+                            atr.setValor(atrDto.getValor());
+                            atributos.add(atr);
+                        }
+                        v.setAtributos(atributos);
+                    }
+                    producto.getVariantes().add(v);
+                }
+            }
+        }
+
+        Producto guardado = productoRepo.save(producto);
         return convertirAResponse(guardado);
     }
 

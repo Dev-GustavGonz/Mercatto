@@ -107,7 +107,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrity(org.springframework.dao.DataIntegrityViolationException ex) {
         log.error("Error de integridad de datos: {}", ex.getMessage(), ex);
-        return buildResponse(HttpStatus.BAD_REQUEST, "No se puede completar la operación debido a restricciones de integridad o elementos vinculados.");
+        String detalle = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+        if (detalle != null && (detalle.contains("foreign key") || detalle.contains("is still referenced"))) {
+            return buildResponse(HttpStatus.BAD_REQUEST, "No se puede completar la operación debido a que el registro está vinculado con otros elementos.");
+        }
+        String mensaje = (detalle != null && !detalle.isBlank()) ? detalle : "Error de integridad de datos en la base de datos.";
+        return buildResponse(HttpStatus.BAD_REQUEST, mensaje);
     }
 
     // ──────────────────────────────────────────

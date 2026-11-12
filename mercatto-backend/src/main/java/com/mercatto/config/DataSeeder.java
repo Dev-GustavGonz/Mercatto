@@ -31,12 +31,34 @@ public class DataSeeder {
                                       PasswordEncoder passwordEncoder,
                                       JdbcTemplate jdbcTemplate) {
         return args -> {
-            // Asegurar que la columna evidencia_entrega_url soporte URLs largas o Data URIs sin error de longitud
+            // Asegurar que las columnas de almacenamiento y referencias sean tolerantes a variaciones de esquema
             try {
                 jdbcTemplate.execute("ALTER TABLE pedidos ALTER COLUMN evidencia_entrega_url TYPE TEXT");
-            } catch (Exception e) {
-                // Silencioso si la columna ya es TEXT o si se ejecuta en otra BD
-            }
+            } catch (Exception ignored) {}
+            try {
+                jdbcTemplate.execute("ALTER TABLE producto_imagenes ALTER COLUMN url TYPE TEXT");
+            } catch (Exception ignored) {}
+            try {
+                jdbcTemplate.execute("ALTER TABLE producto_imagenes ALTER COLUMN principal DROP NOT NULL");
+            } catch (Exception ignored) {}
+            try {
+                jdbcTemplate.execute("ALTER TABLE producto_imagenes ALTER COLUMN principal SET DEFAULT false");
+            } catch (Exception ignored) {}
+            try {
+                jdbcTemplate.execute("ALTER TABLE producto_imagenes ALTER COLUMN es_principal SET DEFAULT false");
+            } catch (Exception ignored) {}
+            try {
+                jdbcTemplate.execute("ALTER TABLE producto_imagenes ALTER COLUMN orden_visual SET DEFAULT 0");
+            } catch (Exception ignored) {}
+            try {
+                jdbcTemplate.execute("ALTER TABLE producto_imagenes ADD COLUMN IF NOT EXISTS es_principal BOOLEAN DEFAULT false");
+            } catch (Exception ignored) {}
+            try {
+                jdbcTemplate.execute("ALTER TABLE producto_imagenes ADD COLUMN IF NOT EXISTS principal BOOLEAN DEFAULT false");
+            } catch (Exception ignored) {}
+            try {
+                jdbcTemplate.execute("UPDATE producto_imagenes SET es_principal = principal WHERE es_principal IS NULL AND principal IS NOT NULL");
+            } catch (Exception ignored) {}
 
             // Asegurar Admin inicial
             Usuario admin = usuarioRepository.findByEmail("admin@mercatto.com").orElseGet(() -> {
