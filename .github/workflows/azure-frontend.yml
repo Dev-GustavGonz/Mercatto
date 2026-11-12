@@ -21,7 +21,20 @@ jobs:
           submodules: true
           lfs: false
 
+      - name: Check Azure Frontend Token
+        id: check_token
+        env:
+          AZURE_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+        run: |
+          if [ -n "$AZURE_TOKEN" ]; then
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Azure Static Web Apps Token Missing::No se encontró el token AZURE_STATIC_WEB_APPS_API_TOKEN en los Secrets. El despliegue en Azure Static Web Apps se omite (el frontend se sirve vía Vercel)."
+          fi
+
       - name: Deploy to Azure Static Web Apps
+        if: steps.check_token.outputs.has_token == 'true'
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:

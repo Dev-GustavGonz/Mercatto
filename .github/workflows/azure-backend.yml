@@ -32,9 +32,40 @@ jobs:
         working-directory: mercatto-backend
         run: mvn clean package -DskipTests
 
-      - name: Deploy to Azure Web App
+      - name: Check Azure Credentials
+        id: check_creds
+        env:
+          AZURE_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          if [ -n "$AZURE_PUBLISH_PROFILE" ]; then
+            echo "has_publish_profile=true" >> "$GITHUB_OUTPUT"
+            echo "has_credentials=true" >> "$GITHUB_OUTPUT"
+          elif [ -n "$AZURE_CREDENTIALS" ]; then
+            echo "has_login=true" >> "$GITHUB_OUTPUT"
+            echo "has_credentials=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_credentials=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Azure Credentials Missing::No se encontraron credenciales de Azure (AZURE_WEBAPP_PUBLISH_PROFILE o AZURE_CREDENTIALS) en los Secrets del repositorio. El paquete JAR de Maven compiló con éxito, pero el despliegue automático fue omitido. Configura AZURE_WEBAPP_PUBLISH_PROFILE en Settings -> Secrets and variables -> Actions para activar el despliegue."
+          fi
+
+      - name: Azure Login
+        if: steps.check_creds.outputs.has_login == 'true'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App (Publish Profile)
+        if: steps.check_creds.outputs.has_publish_profile == 'true'
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME || 'mercatto-backend' }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: 'mercatto-backend/target/*.jar'
+
+      - name: Deploy to Azure Web App (Azure Login)
+        if: steps.check_creds.outputs.has_login == 'true'
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME || 'mercatto-backend' }}
           package: 'mercatto-backend/target/*.jar'
