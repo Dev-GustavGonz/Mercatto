@@ -16,6 +16,11 @@ public class WebConfig implements WebMvcConfigurer {
         String uploadPath = uploadDir.toUri().toString();
 
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(uploadPath + "/");
+                .addResourceLocations(
+                    uploadPath.endsWith("/") ? uploadPath : uploadPath + "/",
+                    "file:uploads/",
+                    "file:mercatto/mercatto-backend/uploads/",
+                    "file:mercatto-backend/uploads/"
+                );
     }
 }
