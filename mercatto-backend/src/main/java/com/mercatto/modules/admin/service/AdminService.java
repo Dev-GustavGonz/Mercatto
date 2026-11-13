@@ -17,7 +17,9 @@ import com.mercatto.exception.BadRequestException;
 import com.mercatto.exception.ResourceNotFoundException;
 import com.mercatto.modules.usuario.model.Usuario;
 import com.mercatto.modules.vendedor.model.Vendedor;
+import com.mercatto.config.CacheConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -348,6 +350,7 @@ public class AdminService {
     }
 
     @Transactional
+    @CacheEvict(value = {CacheConfig.CACHE_TIENDAS_PUBLICAS, CacheConfig.CACHE_TIENDA_DETALLE, CacheConfig.CACHE_MARCAS_PUBLICAS}, allEntries = true)
     public VendedorResponse cambiarEstadoVendedor(Long vendedorId, String nuevoEstadoStr) {
         Vendedor v = vendedorRepo.findById(vendedorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vendedor no encontrado"));
@@ -414,6 +417,7 @@ public class AdminService {
     }
 
     @Transactional
+    @CacheEvict(value = {CacheConfig.CACHE_TIENDAS_PUBLICAS, CacheConfig.CACHE_TIENDA_DETALLE, CacheConfig.CACHE_MARCAS_PUBLICAS}, allEntries = true)
     public void eliminarUsuario(Long usuarioId) {
         Usuario u = usuarioRepo.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + usuarioId));
