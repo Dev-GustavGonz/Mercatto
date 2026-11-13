@@ -76,8 +76,21 @@ public class ProductoService {
                 Vendedor.TipoSuscripcion.ELITE,
                 pageable
             );
+        } else if (orden == null || orden.isBlank() || "recientes".equalsIgnoreCase(orden)) {
+            // Prioridad Élite > Pro > Starter en BD para que queden en la Página 1 de forma global
+            Pageable pageablePrioridad = PageRequest.of(pagina, tamano);
+            productos = productoRepo.filtrarCatalogoConPrioridad(
+                categoriaId,
+                marca,
+                precioMin,
+                precioMax,
+                termino,
+                Vendedor.TipoSuscripcion.ELITE,
+                Vendedor.TipoSuscripcion.PRO,
+                pageablePrioridad
+            );
         } else {
-            // Por defecto muestra TODOS los productos de TODAS las tiendas sin restricción de plan
+            // Respeta el orden explícito solicitado por el usuario (precio, calificación, ventas)
             productos = productoRepo.filtrarCatalogo(
                 categoriaId,
                 marca,

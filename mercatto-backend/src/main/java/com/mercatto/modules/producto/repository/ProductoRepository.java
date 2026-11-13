@@ -52,6 +52,31 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
            "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
            "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
            "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
+           "(CAST(:termino AS string) IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%'))) " +
+           "ORDER BY " +
+           "CASE " +
+           "  WHEN p.vendedor.tipoSuscripcion = :eliteEnum THEN 3 " +
+           "  WHEN p.vendedor.tipoSuscripcion = :proEnum THEN 2 " +
+           "  ELSE 1 END DESC, " +
+           "p.destacado DESC, " +
+           "p.totalVentas DESC, " +
+           "p.fechaCreacion DESC")
+    Page<Producto> filtrarCatalogoConPrioridad(
+        @Param("categoriaId") Long categoriaId,
+        @Param("marca") String marca,
+        @Param("precioMin") Double precioMin,
+        @Param("precioMax") Double precioMax,
+        @Param("termino") String termino,
+        @Param("eliteEnum") Vendedor.TipoSuscripcion eliteEnum,
+        @Param("proEnum") Vendedor.TipoSuscripcion proEnum,
+        Pageable pageable
+    );
+
+    @Query("SELECT p FROM Producto p WHERE p.activo = true AND " +
+           "(CAST(:categoriaId AS long) IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
+           "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
+           "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
+           "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
            "p.vendedor.tipoSuscripcion = :suscripcionElite AND " +
            "(CAST(:termino AS string) IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')))")
     Page<Producto> filtrarCatalogoElite(
