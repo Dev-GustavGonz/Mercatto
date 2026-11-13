@@ -33,7 +33,7 @@ ICONIC_PACKSHOTS = [
         "category_id": 2,
         "price_cop": 75000,
         "desc": "Sandalias brasileñas con tiras finas elegantes y acabado metalizado brillante. Máximo confort y ligereza para climas cálidos y outfits frescos en Cartagena.",
-        "img_url": "https://cdn.dummyjson.com/product-images/womens-shoes/chunky-sneakers/1.webp",
+        "img_url": "https://cdn.dummyjson.com/product-images/womens-shoes/black-&-brown-slipper/1.webp",
         "var_name": "Talla",
         "var_vals": ["35-36", "37-38", "39-40"]
     },
@@ -86,7 +86,7 @@ ICONIC_PACKSHOTS = [
         "category_id": 8, # Computadores y Laptops
         "price_cop": 5350000,
         "desc": "Superligero y con solo 1.13 cm de grosor. Pantalla Liquid Retina de 13.6 pulgadas, batería de hasta 18 horas y cámara FaceTime HD de 1080p.",
-        "img_url": "https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14/1.webp",
+        "img_url": "https://cdn.dummyjson.com/product-images/laptops/apple-macbook-pro-14-inch-space-grey/1.webp",
         "var_name": "Color",
         "var_vals": ["Blanco Estelar", "Gris Espacial", "Medianoche"]
     },
@@ -118,7 +118,7 @@ ICONIC_PACKSHOTS = [
         "category_id": 9, # Calzado Deportivo
         "price_cop": 520000,
         "desc": "El ícono clásico del baloncesto llevado al streetwear urbano. Cuero prémium fácil de limpiar, costuras reforzadas y amortiguación Nike Air para confort todo el día.",
-        "img_url": "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-retro-high-og/1.webp",
+        "img_url": "https://cdn.dummyjson.com/product-images/mens-shoes/nike-air-jordan-1-red-and-black/1.webp",
         "var_name": "Talla US",
         "var_vals": ["7.5 (38)", "8.5 (39-40)", "9.5 (41)", "10.5 (42)"]
     },
@@ -139,7 +139,7 @@ ICONIC_PACKSHOTS = [
         "category_id": 10, # Cocina y Menaje
         "price_cop": 320000,
         "desc": "Cocina hasta un 99.5% menos aceite con revestimiento cerámico Bioceramic antiadherente y libre de PTFE. 7 programas digitales preestablecidos de cocción.",
-        "img_url": "https://cdn.dummyjson.com/product-images/kitchen-accessories/pot-with-lid/1.webp",
+        "img_url": "https://cdn.dummyjson.com/product-images/kitchen-accessories/silver-pot-with-glass-cap/1.webp",
         "var_name": "Color",
         "var_vals": ["Negro / Acero", "Blanco Glaciar"]
     },
@@ -149,7 +149,7 @@ ICONIC_PACKSHOTS = [
         "category_id": 10,
         "price_cop": 380000,
         "desc": "Cuchilla con tecnología de motor reversible que gira hacia adelante y hacia atrás. Vaso de vidrio Boroclass resistente a choques térmicos e ingredientes hirviendo.",
-        "img_url": "https://cdn.dummyjson.com/product-images/kitchen-accessories/electric-kettle/1.webp",
+        "img_url": "https://cdn.dummyjson.com/product-images/kitchen-accessories/boxed-blender/1.webp",
         "var_name": "Acabado",
         "var_vals": ["Acero Cepillado", "Rojo Metalizado"]
     }
@@ -335,7 +335,7 @@ BARRIOS_CARTAGENA = [
 buyers = []
 buyer_addresses = []
 for i in range(1, 121):
-    uid = 2000 + i
+    uid = 5000 + i
     nom = f"{random.choice(NOMBRES_COL)} {random.choice(APELLIDOS_COL)} {random.choice(APELLIDOS_COL)}"
     mail = f"comprador{i}@mock.mercatto.co"
     tel = f"30{random.randint(10000000, 99999999)}"
@@ -406,7 +406,8 @@ BANCOS_COL = ["Bancolombia", "Nequi", "Daviplata", "Davivienda", "Banco de Bogot
 sellers = []
 stores = []
 for idx, (t_name, t_desc, t_logo, t_plan, s_id) in enumerate(TIENDAS_SEED):
-    u_seller_id = 3000 + s_id
+    u_seller_id = 6000 + s_id
+    store_id = 6000 + s_id
     owner_nom = f"{random.choice(NOMBRES_COL)} {random.choice(APELLIDOS_COL)}"
     owner_email = f"tienda{s_id}_{re.sub(r'[^a-z0-9]', '', t_name.lower())[:10]}@mock.mercatto.co"
     owner_tel = f"30{random.randint(10000000, 99999999)}"
@@ -425,7 +426,7 @@ for idx, (t_name, t_desc, t_logo, t_plan, s_id) in enumerate(TIENDAS_SEED):
     })
 
     stores.append({
-        "id": s_id,
+        "id": store_id,
         "usuario_id": u_seller_id,
         "nombre_tienda": t_name,
         "descripcion": t_desc,
@@ -446,16 +447,16 @@ images = []
 variants = []
 var_attrs = []
 
-prod_id_seq = 1001
-img_id_seq = 1001
-var_id_seq = 1001
-attr_id_seq = 1001
+prod_id_seq = 7001
+img_id_seq = 7001
+var_id_seq = 8001
+attr_id_seq = 8001
 
 TARGET_TOTAL_PRODUCTS = 540
 num_master = len(master_products)
 
 for p_idx in range(TARGET_TOTAL_PRODUCTS):
-    store_id = (p_idx % 40) + 1
+    store_id = 6000 + ((p_idx % 40) + 1)
     master_item = master_products[p_idx % num_master]
     
     pid = prod_id_seq
@@ -536,10 +537,10 @@ payments = []
 
 ESTADOS_ORDEN = ["ENTREGADO", "PAGADO", "ENVIADO", "PENDIENTE"]
 PESOS_ESTADOS = [0.45, 0.35, 0.15, 0.05]
-order_item_seq = 1001
+order_item_seq = 10001
 
 for o_idx in range(300):
-    oid = 1001 + o_idx
+    oid = 9001 + o_idx
     buyer = random.choice(buyers)
     buyer_id = buyer["id"]
     code = f"PED-MOCK-2026-{oid}"
@@ -788,21 +789,32 @@ with open(purge_path, "w", encoding="utf-8") as f:
     f.write("-- 2. Eliminar pedido_items de prueba" + NL)
     f.write("DELETE FROM pedido_items WHERE pedido_id IN (SELECT id FROM pedidos WHERE codigo LIKE 'PED-MOCK-%' OR notas LIKE '%MOCK_FERIA%');" + NL + NL)
     f.write("-- 3. Eliminar pedidos de prueba" + NL)
-    f.write("DELETE FROM pedidos WHERE codigo LIKE 'PED-MOCK-%' OR notas LIKE '%MOCK_FERIA%';" + NL + NL)
-    f.write("-- 4. Eliminar productos generados por seed (sus variantes e imágenes caen en cascada)" + NL)
-    f.write("DELETE FROM productos WHERE sku LIKE 'SEED-%' OR vendedor_id IN (SELECT v.id FROM vendedores v JOIN usuarios u ON v.usuario_id = u.id WHERE u.google_id = 'MOCK_DATA_2026' OR u.email LIKE '%@mock.mercatto.co');" + NL + NL)
-    f.write("-- 5. Eliminar tiendas de prueba" + NL)
-    f.write("DELETE FROM vendedores WHERE usuario_id IN (SELECT id FROM usuarios WHERE google_id = 'MOCK_DATA_2026' OR email LIKE '%@mock.mercatto.co');" + NL + NL)
-    f.write("-- 6. Eliminar direcciones de compradores de prueba" + NL)
-    f.write("DELETE FROM direcciones WHERE usuario_id IN (SELECT id FROM usuarios WHERE google_id = 'MOCK_DATA_2026' OR email LIKE '%@mock.mercatto.co');" + NL + NL)
-    f.write("-- 7. Eliminar usuarios de prueba (compradores y vendedores)" + NL)
-    f.write("DELETE FROM usuarios WHERE google_id = 'MOCK_DATA_2026' OR email LIKE '%@mock.mercatto.co';" + NL + NL)
-    f.write("-- 8. Sincronizar secuencias con los datos reales restantes" + NL)
+    f.write("DELETE FROM pedidos WHERE codigo LIKE 'PED-MOCK-%' OR id >= 9001;" + NL + NL)
+    f.write("-- 4. Eliminar atributos de variantes de prueba" + NL)
+    f.write("DELETE FROM variante_atributos WHERE variante_id >= 8001 OR variante_id IN (SELECT id FROM producto_variantes WHERE sku LIKE 'SEED-%' OR producto_id >= 7001);" + NL + NL)
+    f.write("-- 5. Eliminar variantes de productos de prueba" + NL)
+    f.write("DELETE FROM producto_variantes WHERE id >= 8001 OR sku LIKE 'SEED-%' OR producto_id >= 7001;" + NL + NL)
+    f.write("-- 6. Eliminar imágenes de productos de prueba" + NL)
+    f.write("DELETE FROM producto_imagenes WHERE id >= 7001 OR producto_id >= 7001;" + NL + NL)
+    f.write("-- 7. Eliminar productos generados por seed" + NL)
+    f.write("DELETE FROM productos WHERE id >= 7001 OR sku LIKE 'SEED-%' OR vendedor_id >= 6001;" + NL + NL)
+    f.write("-- 8. Eliminar tiendas de prueba" + NL)
+    f.write("DELETE FROM vendedores WHERE id >= 6001 OR usuario_id IN (SELECT id FROM usuarios WHERE google_id = 'MOCK_DATA_2026' OR email LIKE '%@mock.mercatto.co');" + NL + NL)
+    f.write("-- 9. Eliminar direcciones de compradores de prueba" + NL)
+    f.write("DELETE FROM direcciones WHERE id >= 5001 OR usuario_id >= 5001 OR usuario_id IN (SELECT id FROM usuarios WHERE google_id = 'MOCK_DATA_2026' OR email LIKE '%@mock.mercatto.co');" + NL + NL)
+    f.write("-- 10. Eliminar usuarios de prueba (compradores y vendedores)" + NL)
+    f.write("DELETE FROM usuarios WHERE id >= 5001 OR google_id = 'MOCK_DATA_2026' OR email LIKE '%@mock.mercatto.co';" + NL + NL)
+    f.write("-- 11. Sincronizar secuencias con los datos reales restantes" + NL)
     f.write("SELECT setval(pg_get_serial_sequence('usuarios', 'id'), COALESCE((SELECT MAX(id) FROM usuarios), 1));" + NL)
     f.write("SELECT setval(pg_get_serial_sequence('direcciones', 'id'), COALESCE((SELECT MAX(id) FROM direcciones), 1));" + NL)
     f.write("SELECT setval(pg_get_serial_sequence('vendedores', 'id'), COALESCE((SELECT MAX(id) FROM vendedores), 1));" + NL)
     f.write("SELECT setval(pg_get_serial_sequence('productos', 'id'), COALESCE((SELECT MAX(id) FROM productos), 1));" + NL)
-    f.write("SELECT setval(pg_get_serial_sequence('pedidos', 'id'), COALESCE((SELECT MAX(id) FROM pedidos), 1));" + NL + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('producto_imagenes', 'id'), COALESCE((SELECT MAX(id) FROM producto_imagenes), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('producto_variantes', 'id'), COALESCE((SELECT MAX(id) FROM producto_variantes), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('variante_atributos', 'id'), COALESCE((SELECT MAX(id) FROM variante_atributos), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('pedidos', 'id'), COALESCE((SELECT MAX(id) FROM pedidos), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('pedido_items', 'id'), COALESCE((SELECT MAX(id) FROM pedido_items), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('pagos', 'id'), COALESCE((SELECT MAX(id) FROM pagos), 1));" + NL + NL)
     f.write("COMMIT;" + NL)
 
 print("SUCCESS: Pipeline completed!")
