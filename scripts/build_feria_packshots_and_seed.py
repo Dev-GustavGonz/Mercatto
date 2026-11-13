@@ -254,69 +254,115 @@ def process_packshot_to_white_canvas(source_url, output_filename):
         print(f"Warning processing {source_url}: {e}")
         return source_url
 
-# Helper to resolve exact category dynamically in Supabase/PostgreSQL
+# Helper to resolve exact category dynamically in Supabase/PostgreSQL based on real catalog categories
 def resolve_cat_sql(cat_key, title):
     tl = (title or "").lower()
     ck = (cat_key or "").lower()
     
-    # 1. Videojuegos / Consolas / Gaming
+    # 1. Videojuegos / Consolas / Gaming / Tecnología
     if any(k in tl for k in ["switch", "playstation", "gamer", "gaming", "consola", "nintendo", "xbox"]):
-        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%videojuego%' OR LOWER(nombre) LIKE '%juguete%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), 1)"
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%computador%' LIMIT 1), 1)"
     
     # 2. Celulares / Smartphones
     if ck == "smartphones" or any(k in tl for k in ["iphone", "galaxy", "celular", "smartphone", "xiaomi", "motorola"]):
         return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%smartphone%' OR LOWER(nombre) LIKE '%celular%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), 1)"
     
     # 3. Computadores / Laptops / Portátiles
-    if ck == "laptops" or any(k in tl for k in ["macbook", "laptop", "computador", "portátil", "portatil", "pc"]):
+    if ck == "laptops" or any(k in tl for k in ["macbook", "laptop", "computador", "portátil", "portatil", "pc", "thinkpad"]):
         return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%computador%' OR LOWER(nombre) LIKE '%laptop%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), 1)"
     
     # 4. Audio / Audífonos
-    if any(k in tl for k in ["audífono", "audifono", "auricular", "headphone", "earphone", "bafle", "parlante", "sonido"]):
+    if any(k in tl for k in ["audífono", "audifono", "auricular", "headphone", "earphone", "bafle", "parlante", "sonido", "audio"]):
         return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%audio%' OR LOWER(nombre) LIKE '%audífono%' OR LOWER(nombre) LIKE '%audifono%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), 1)"
     
     # 5. Calzado Deportivo / Urbano / Zapatos
-    if ck in ["mens-shoes", "womens-shoes"] or any(k in tl for k in ["tenis", "sandalia", "chancla", "zapat", "calzado", "havaianas", "sneaker", "cleats"]):
+    if ck in ["mens-shoes", "womens-shoes"] or any(k in tl for k in ["tenis", "sandalia", "chancla", "zapat", "calzado", "havaianas", "sneaker", "cleats", "mocasines"]):
         return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%calzado%' OR LOWER(nombre) LIKE '%zapato%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%moda%' LIMIT 1), 2)"
     
     # 6. Ropa Hombre
-    if ck == "mens-shirts" or any(k in tl for k in ["hombre", "men's", "camisa hombre", "jogger"]):
-        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%ropa hombre%' OR LOWER(nombre) LIKE '%moda hombre%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%moda%' LIMIT 1), 2)"
+    if ck == "mens-shirts" or any(k in tl for k in ["hombre", "men's", "camisa hombre", "jogger", "chaqueta hombre"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%ropa hombre%' OR LOWER(nombre) LIKE '%hombre%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%moda%' LIMIT 1), 2)"
     
     # 7. Ropa Mujer
-    if ck in ["womens-dresses", "womens-bags", "tops"] or any(k in tl for k in ["mujer", "women", "vestido", "blusa", "falda", "cartera", "bolso"]):
-        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%ropa mujer%' OR LOWER(nombre) LIKE '%moda mujer%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%moda%' LIMIT 1), 2)"
+    if ck in ["womens-dresses", "womens-bags", "tops"] or any(k in tl for k in ["mujer", "women", "vestido", "blusa", "falda", "cartera", "bolso", "traje de baño"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%ropa mujer%' OR LOWER(nombre) LIKE '%mujer%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%moda%' LIMIT 1), 2)"
     
-    # 8. Deportes / Gimnasio / Fitness / Ciclismo
-    if ck == "sports-accessories" or any(k in tl for k in ["running", "fitness", "gimnasio", "deport", "pesas", "mancuerna", "bicicleta", "ciclismo", "watch"]):
-        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%gimnasio%' OR LOWER(nombre) LIKE '%ciclismo%' OR LOWER(nombre) LIKE '%deporte%' OR LOWER(nombre) LIKE '%fitness%' ORDER BY id DESC LIMIT 1), 4)"
+    # 8. Ciclismo y Patinaje
+    if any(k in tl for k in ["bicicleta", "ciclismo", "casco", "patín", "patin", "bike"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%ciclismo%' OR LOWER(nombre) LIKE '%deporte%' ORDER BY id DESC LIMIT 1), 4)"
+
+    # 9. Gimnasio y Fitness / Deportes
+    if ck == "sports-accessories" or any(k in tl for k in ["running", "fitness", "gimnasio", "deport", "pesas", "mancuerna", "watch", "proteína"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%gimnasio%' OR LOWER(nombre) LIKE '%deporte%' OR LOWER(nombre) LIKE '%fitness%' ORDER BY id DESC LIMIT 1), 4)"
     
-    # 9. Cocina / Menaje / Pequeños electrodomésticos
-    if ck == "kitchen-accessories" or any(k in tl for k in ["oster", "freidora", "licuadora", "cocina", "olla", "sartén", "sarten", "menaje", "taza", "plato"]):
+    # 10. Cocina / Menaje / Pequeños electrodomésticos
+    if ck == "kitchen-accessories" or any(k in tl for k in ["oster", "freidora", "licuadora", "cocina", "olla", "sartén", "sarten", "menaje", "taza", "plato", "cuchillo", "vajilla"]):
         return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%cocina%' OR LOWER(nombre) LIKE '%menaje%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%hogar%' LIMIT 1), 3)"
     
-    # 10. Muebles / Sala / Hogar
-    if ck in ["home-decoration", "furniture"] or any(k in tl for k in ["mueble", "sofá", "sofa", "sala", "cama", "colchón", "colchon", "mesa", "lámpara", "lampara"]):
+    # 11. Muebles / Sala / Confort
+    if ck in ["home-decoration", "furniture"] or any(k in tl for k in ["mueble", "sofá", "sofa", "sala", "cama", "colchón", "colchon", "mesa", "lámpara", "lampara", "hamaca"]):
         return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%muebles y sala%' OR LOWER(nombre) LIKE '%mueble%' OR LOWER(nombre) LIKE '%hogar%' ORDER BY id DESC LIMIT 1), 3)"
+
+    # 12. Cuidado de la Piel / Skincare
+    if ck in ["skin-care"] or any(k in tl for k in ["skincare", "piel", "crema", "suero", "sérum", "serum", "bloqueador", "limpiador facial"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%cuidado de la piel%' OR LOWER(nombre) LIKE '%piel%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%belleza%' LIMIT 1), 5)"
     
-    # 11. Belleza / Cuidado Personal / Piel
-    if ck in ["beauty", "skin-care", "fragrances", "womens-jewellery"] or any(k in tl for k in ["skincare", "piel", "crema", "suero", "sérum", "serum", "perfum", "maquillaje", "labial", "cosmético"]):
-        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%cuidado de la piel%' OR LOWER(nombre) LIKE '%piel%' OR LOWER(nombre) LIKE '%belleza%' OR LOWER(nombre) LIKE '%cuidado%' ORDER BY id DESC LIMIT 1), 5)"
+    # 13. Belleza / Cosméticos / Perfumes
+    if ck in ["beauty", "fragrances", "womens-jewellery"] or any(k in tl for k in ["perfum", "maquillaje", "labial", "cosmético", "cosmetico", "esmalte", "aroma"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%belleza%' OR LOWER(nombre) LIKE '%cuidado personal%' ORDER BY id DESC LIMIT 1), 5)"
     
-    # 12. Herramientas / Industria / Automotriz
-    if ck in ["motorcycle", "vehicle"] or any(k in tl for k in ["taladro", "herramienta", "tornillo", "batería", "bateria", "llave", "pulidora"]):
-        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%herramientas eléctricas%' OR LOWER(nombre) LIKE '%herramienta%' OR LOWER(nombre) LIKE '%automotriz%' ORDER BY id DESC LIMIT 1), 6)"
+    # 14. Herramientas Eléctricas / Industria
+    if ck in ["motorcycle", "vehicle"] or any(k in tl for k in ["taladro", "herramienta", "tornillo", "batería", "bateria", "llave", "pulidora", "sierra"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%herramientas eléctricas%' OR LOWER(nombre) LIKE '%herramienta%' OR LOWER(nombre) LIKE '%industria%' ORDER BY id DESC LIMIT 1), 6)"
     
-    # 13. Supermercado / Alimentos
+    # 15. Supermercado / Alimentos / Café
     if ck == "groceries" or any(k in tl for k in ["alimento", "snack", "café", "cafe", "bebida"]):
         return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%supermercado%' OR LOWER(nombre) LIKE '%alimento%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%hogar%' LIMIT 1), 3)"
     
-    # 14. Juguetes / Niños / Bebés
+    # 16. Juguetes / Niños / Bebés
     if any(k in tl for k in ["juguete", "bebé", "bebe", "niño", "nino", "infantil", "montessori", "biberón", "biberon"]):
         return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%juguete%' OR LOWER(nombre) LIKE '%bebé%' OR LOWER(nombre) LIKE '%bebe%' ORDER BY id DESC LIMIT 1), 1)"
     
     # Fallback general
     return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%moda%' LIMIT 1), 1)"
+
+# Helper to determine commercial niche tag
+def get_niche_tag(cat_key, title):
+    tl = (title or "").lower()
+    ck = (cat_key or "").lower()
+    if any(k in tl for k in ["switch", "playstation", "gamer", "gaming", "consola", "nintendo", "xbox"]):
+        return "GAMING"
+    if ck == "smartphones" or any(k in tl for k in ["iphone", "galaxy", "celular", "smartphone", "xiaomi", "motorola"]):
+        return "SMARTPHONES"
+    if ck == "laptops" or any(k in tl for k in ["macbook", "laptop", "computador", "portátil", "portatil", "pc"]):
+        return "LAPTOPS"
+    if any(k in tl for k in ["audífono", "audifono", "auricular", "headphone", "earphone", "bafle", "parlante", "sonido"]):
+        return "AUDIO"
+    if ck in ["mens-shoes", "womens-shoes"] or any(k in tl for k in ["tenis", "sandalia", "chancla", "zapat", "calzado", "havaianas", "sneaker", "cleats"]):
+        return "FOOTWEAR"
+    if ck == "mens-shirts" or any(k in tl for k in ["hombre", "men's", "camisa hombre", "jogger"]):
+        return "MENS_FASHION"
+    if ck in ["womens-dresses", "womens-bags", "tops"] or any(k in tl for k in ["mujer", "women", "vestido", "blusa", "falda", "cartera", "bolso"]):
+        return "WOMENS_FASHION"
+    if ck in ["mens-watches", "womens-watches", "womens-jewellery"] or any(k in tl for k in ["reloj", "joya", "anillo", "pulsera", "collar"]):
+        return "JEWELRY_WATCHES"
+    if ck == "sunglasses" or "lentes" in tl or "gafas" in tl:
+        return "OPTICA"
+    if ck in ["beauty", "skin-care", "fragrances"] or any(k in tl for k in ["skincare", "piel", "crema", "suero", "sérum", "serum", "perfum", "maquillaje", "labial", "cosmético"]):
+        return "BEAUTY_SKINCARE"
+    if ck == "sports-accessories" or any(k in tl for k in ["running", "fitness", "gimnasio", "deport", "pesas", "mancuerna", "bicicleta", "ciclismo", "watch"]):
+        return "SPORTS_FITNESS"
+    if ck == "kitchen-accessories" or any(k in tl for k in ["oster", "freidora", "licuadora", "cocina", "olla", "sartén", "sarten", "menaje", "taza", "plato"]):
+        return "KITCHEN"
+    if ck in ["home-decoration", "furniture"] or any(k in tl for k in ["mueble", "sofá", "sofa", "sala", "cama", "colchón", "colchon", "mesa", "lámpara", "lampara"]):
+        return "FURNITURE_HOME"
+    if ck in ["motorcycle", "vehicle"] or any(k in tl for k in ["taladro", "herramienta", "tornillo", "batería", "bateria", "llave", "pulidora"]):
+        return "TOOLS_AUTO"
+    if ck == "groceries" or any(k in tl for k in ["alimento", "snack", "café", "cafe", "bebida"]):
+        return "GROCERIES"
+    if any(k in tl for k in ["juguete", "bebé", "bebe", "niño", "nino", "infantil", "montessori", "biberón", "biberon"]):
+        return "TOYS_BABY"
+    return "GENERAL"
 
 # 3. BUILD UNIQUE MASTER PRODUCT CATALOG
 print("Processing and composing packshots onto 800x800 #FFFFFF canvas...")
@@ -330,6 +376,7 @@ for idx, item in enumerate(ICONIC_PACKSHOTS):
     master_products.append({
         "title": item["title"],
         "brand": item["brand"],
+        "niche_tag": get_niche_tag("", item["title"]),
         "categoria_sql": resolve_cat_sql("", item["title"]),
         "price_cop": item["price_cop"],
         "description": item["desc"],
@@ -369,6 +416,7 @@ for p in dj_products:
     master_products.append({
         "title": title,
         "brand": brand,
+        "niche_tag": get_niche_tag(cat_key, title),
         "categoria_sql": resolve_cat_sql(cat_key, title),
         "price_cop": price_cop,
         "description": desc,
@@ -512,7 +560,50 @@ for idx, (t_name, t_desc, t_logo, t_plan, s_id) in enumerate(TIENDAS_SEED):
         "days_ago": dias
     })
 
-# 6. DISTRIBUTE EXACTLY 540 PRODUCTS ACROSS THE 40 STORES
+# 6. ASIGNACIÓN TEMÁTICA ESTRICTA POR TIENDA (NICHOS DE VENTA COHERENTES)
+STORE_NICHES = {
+    1: ["FOOTWEAR"], # Nexo Shop (Calzado urbano y zapatillas de colección)
+    2: ["GAMING", "AUDIO"], # Underwater Electro (Consolas, Nintendo Switch, PS5, gaming)
+    3: ["BEAUTY_SKINCARE"], # Dermatología del Caribe (Dermocosmética y skincare exclusivo)
+    4: ["JEWELRY_WATCHES"], # Lorduy Joyería Fina (Joyería fina, esmeraldas y plata)
+    5: ["FOOTWEAR"], # Havaianas Oficial Cartagena (Sandalias brasileñas y chanclas)
+    6: ["GAMING", "LAPTOPS"], # Hakzr Games & Tech (Hardware gamer, RTX, esports)
+    7: ["AUDIO", "SMARTPHONES"], # Electrónicos El Bosque (Televisores y sonido)
+    8: ["GROCERIES", "KITCHEN"], # Aura Café Cartagena (Cafés especiales, cafeteras y tazas)
+    9: ["SMARTPHONES", "AUDIO"], # CaribeTech Solutions (Smartphones, smartwatches, GaN)
+    10: ["JEWELRY_WATCHES"], # Pretelt Relojería (Relojes analógicos y cronógrafos)
+    11: ["OPTICA", "JEWELRY_WATCHES"], # Zenith Óptica (Lentes de sol polarizados UV400)
+    12: ["AUDIO"], # Audio & Sonido Cartagena (Bafles Bluetooth y barras de sonido)
+    13: ["SPORTS_FITNESS", "GROCERIES"], # Cartagena Fit Nutrition (Proteínas y suplementos)
+    14: ["KITCHEN"], # Challenger Oficial Caribe (Electrodomésticos, hornos y freidoras)
+    15: ["FOOTWEAR"], # Calzados La Heroica (Mocasines y calzado artesanal)
+    16: ["WOMENS_FASHION"], # Moda Bocagrande (Vestidos y moda fresca mujer)
+    17: ["KITCHEN"], # ElectroHogar Manglar (Air fryers, batidoras y licuadoras)
+    18: ["SPORTS_FITNESS", "FOOTWEAR"], # Chaljub Deportes (Running, pádel, zapatillas)
+    19: ["WOMENS_FASHION", "OPTICA"], # Playa & Soleil (Trajes de baño y pareos)
+    20: ["TOOLS_AUTO"], # De Ávila Motor Repuestos (Baterías Bosch, aceites, repuestos)
+    21: ["BEAUTY_SKINCARE"], # Meza Beauty Bar (Cosmética vegana y maquillaje)
+    22: ["MENS_FASHION"], # Urban Style Cartagena (Streetwear hombre, joggers, camisetas)
+    23: ["FURNITURE_HOME", "KITCHEN"], # Carriazo Home Decor (Vajillas, ratán y decoración)
+    24: ["LAPTOPS"], # Lecompte Computadores (Servidores, RAM, laptops corporativas)
+    25: ["BEAUTY_SKINCARE", "FURNITURE_HOME"], # Aromas de Indias (Velas y difusores mikado)
+    26: ["WOMENS_FASHION"], # Benedetti Boutique (Vestidos de gala y coctel)
+    27: ["AUDIO"], # Pareja Instrumentos (Guitarras, percusión, sonido)
+    28: ["WOMENS_FASHION", "JEWELRY_WATCHES"], # Turbay Accesorios (Bolsos de palma y aretes)
+    29: ["SPORTS_FITNESS"], # Marrugo Bikes (Bicicletas de montaña y ciclismo)
+    30: ["FURNITURE_HOME"], # Angulo Muebles & Confort (Colchones y sofás modulares)
+    31: ["SMARTPHONES"], # Castillo Celulares (Reparación Apple, Samsung, pantallas)
+    32: ["BEAUTY_SKINCARE"], # Pinedo Cosméticos (Labiales, mascarillas y skincare)
+    33: ["KITCHEN"], # Senior Kitchen Gourmet (Cuchillos damasco, sartenes granito)
+    34: ["FOOTWEAR", "TOYS_BABY"], # Burgos Calzado Infantil (Calzado niños ergonómico)
+    35: ["SMARTPHONES", "TOOLS_AUTO", "AUDIO"], # Lemaitre Smart Security (Cámaras WiFi y cerraduras)
+    36: ["TOYS_BABY"], # Román Juguetes & Bebés (Juguetes Montessori y coches)
+    37: ["TOOLS_AUTO"], # Badel Ferretería Industrial (Taladros Stanley, compresores)
+    38: ["SPORTS_FITNESS", "MENS_FASHION"], # Calvo Sportswear (Uniformes y licras compresión)
+    39: ["LAPTOPS"], # De La Rosa Laptops (MacBooks M3, Dell XPS, ThinkPad)
+    40: ["FURNITURE_HOME"] # Fortich Home & Living (Hamacas artesanales y cojines)
+}
+
 products = []
 images = []
 variants = []
@@ -524,80 +615,89 @@ var_id_seq = 8001
 attr_id_seq = 8001
 
 TARGET_TOTAL_PRODUCTS = 540
-num_master = len(master_products)
+# 20 tiendas con 14 productos y 20 tiendas con 13 productos = 540 productos en total
+products_per_store = [14 if i < 20 else 13 for i in range(40)]
 
-for p_idx in range(TARGET_TOTAL_PRODUCTS):
-    store_id = 6000 + ((p_idx % 40) + 1)
-    master_item = master_products[p_idx % num_master]
+for s_idx, (t_name, t_desc, t_logo, t_plan, s_id) in enumerate(TIENDAS_SEED):
+    store_id = 6000 + s_id
+    allowed_niches = STORE_NICHES.get(s_id, ["GENERAL"])
     
-    pid = prod_id_seq
-    sku = f"SEED-PROD-{pid}"
-    slug = f"{re.sub(r'[^a-z0-9]+', '-', master_item['title'].lower()).strip('-')}-{pid}"
+    # Filtrar productos maestros compatibles con el nicho de esta tienda
+    niche_products = [mp for mp in master_products if mp.get("niche_tag") in allowed_niches]
+    if not niche_products:
+        niche_products = master_products
     
-    norm_price = master_item["price_cop"]
-    # 35% discount rate
-    has_discount = (p_idx % 3 == 0)
-    discount_pct = random.choice([0.10, 0.15, 0.20, 0.25])
-    offer_price = int(norm_price * (1.0 - discount_pct)) if has_discount else None
-    
-    stock = random.randint(8, 48)
-    calif = round(random.uniform(4.6, 4.9), 1)
-    reviews = random.randint(2, 20)
-    sales = random.randint(0, 3)
-    days_ago = random.randint(1, 45)
+    num_to_add = products_per_store[s_idx]
+    for p_offset in range(num_to_add):
+        master_item = niche_products[p_offset % len(niche_products)]
+        
+        pid = prod_id_seq
+        sku = f"SEED-PROD-{pid}"
+        slug = f"{re.sub(r'[^a-z0-9]+', '-', master_item['title'].lower()).strip('-')}-{pid}"
+        
+        norm_price = master_item["price_cop"]
+        has_discount = (pid % 3 == 0)
+        discount_pct = random.choice([0.10, 0.15, 0.20, 0.25])
+        offer_price = int(norm_price * (1.0 - discount_pct)) if has_discount else None
+        
+        stock = random.randint(8, 48)
+        calif = round(random.uniform(4.6, 4.9), 1)
+        reviews = random.randint(2, 20)
+        sales = random.randint(0, 3)
+        days_ago = random.randint(1, 45)
 
-    products.append({
-        "id": pid,
-        "vendedor_id": store_id,
-        "categoria_sql": master_item["categoria_sql"],
-        "titulo": master_item["title"],
-        "slug": slug,
-        "descripcion": master_item["description"],
-        "precio": norm_price,
-        "precio_oferta": offer_price,
-        "stock": stock,
-        "sku": sku,
-        "marca": master_item["brand"],
-        "calificacion": calif,
-        "total_resenas": reviews,
-        "total_ventas": sales,
-        "days_ago": days_ago
-    })
-
-    # Image
-    images.append({
-        "id": img_id_seq,
-        "producto_id": pid,
-        "url": master_item["image_url"],
-        "principal": True,
-        "orden": 0
-    })
-    img_id_seq += 1
-
-    # 1 to 2 variants
-    for v_val in master_item["var_vals"][:2]:
-        var_sku = f"{sku}-{re.sub(r'[^a-zA-Z0-9]', '', v_val)[:4].upper()}"
-        variants.append({
-            "id": var_id_seq,
-            "producto_id": pid,
-            "sku": var_sku,
-            "nombre": v_val,
+        products.append({
+            "id": pid,
+            "vendedor_id": store_id,
+            "categoria_sql": master_item["categoria_sql"],
+            "titulo": master_item["title"],
+            "slug": slug,
+            "descripcion": master_item["description"],
             "precio": norm_price,
             "precio_oferta": offer_price,
-            "stock": max(3, stock // 2),
-            "imagen_url": master_item["image_url"]
+            "stock": stock,
+            "sku": sku,
+            "marca": master_item["brand"],
+            "calificacion": calif,
+            "total_resenas": reviews,
+            "total_ventas": sales,
+            "days_ago": days_ago
         })
 
-        var_attrs.append({
-            "id": attr_id_seq,
-            "variante_id": var_id_seq,
-            "nombre": master_item["var_name"],
-            "valor": v_val
+        # Image
+        images.append({
+            "id": img_id_seq,
+            "producto_id": pid,
+            "url": master_item["image_url"],
+            "principal": True,
+            "orden": 0
         })
-        attr_id_seq += 1
-        var_id_seq += 1
+        img_id_seq += 1
 
-    prod_id_seq += 1
+        # 1 to 2 variants
+        for v_val in master_item["var_vals"][:2]:
+            var_sku = f"{sku}-{re.sub(r'[^a-zA-Z0-9]', '', v_val)[:4].upper()}"
+            variants.append({
+                "id": var_id_seq,
+                "producto_id": pid,
+                "sku": var_sku,
+                "nombre": v_val,
+                "precio": norm_price,
+                "precio_oferta": offer_price,
+                "stock": max(3, stock // 2),
+                "imagen_url": master_item["image_url"]
+            })
+
+            var_attrs.append({
+                "id": attr_id_seq,
+                "variante_id": var_id_seq,
+                "nombre": master_item["var_name"],
+                "valor": v_val
+            })
+            attr_id_seq += 1
+            var_id_seq += 1
+
+        prod_id_seq += 1
 
 print(f"Generated {len(products)} products, {len(images)} packshot images, and {len(variants)} variants.")
 
