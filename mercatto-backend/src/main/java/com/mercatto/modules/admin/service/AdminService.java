@@ -366,8 +366,25 @@ public class AdminService {
         return vendedorService.convertirAResponse(vendedorRepo.save(v));
     }
 
+    @Transactional
     public Page<Usuario> listarUsuarios(int pagina, int tamano) {
-        return usuarioRepo.findAll(PageRequest.of(pagina, tamano));
+        Page<Usuario> page = usuarioRepo.findAll(PageRequest.of(pagina, tamano));
+        for (Usuario u : page.getContent()) {
+            if ("realmercatto@gmail.com".equalsIgnoreCase(u.getEmail())) {
+                if (u.getRol() != Usuario.Rol.ADMIN || !"Mercatto".equals(u.getNombre())) {
+                    u.setRol(Usuario.Rol.ADMIN);
+                    u.setNombre("Mercatto");
+                    usuarioRepo.save(u);
+                }
+            }
+            if ("magudelo522@gmail.com".equalsIgnoreCase(u.getEmail())) {
+                if ("Admin Superior".equalsIgnoreCase(u.getNombre())) {
+                    u.setNombre("admin");
+                    usuarioRepo.save(u);
+                }
+            }
+        }
+        return page;
     }
 
     @Transactional
@@ -382,7 +399,17 @@ public class AdminService {
     public Usuario cambiarRolUsuario(Long usuarioId, String nuevoRolStr) {
         Usuario u = usuarioRepo.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
-        u.setRol(Usuario.Rol.valueOf(nuevoRolStr.toUpperCase()));
+        if ("realmercatto@gmail.com".equalsIgnoreCase(u.getEmail())) {
+            throw new BadRequestException("No es posible modificar el rol del Administrador Principal (Mercatto).");
+        }
+        if (u.getRol() == Usuario.Rol.VENDEDOR) {
+            throw new BadRequestException("Las cuentas de vendedores oficiales no se modifican desde este selector.");
+        }
+        String rolUpper = nuevoRolStr.toUpperCase();
+        if (!"ADMIN".equals(rolUpper) && !"COMPRADOR".equals(rolUpper)) {
+            throw new BadRequestException("Solo se permite alternar entre COMPRADOR y ADMIN.");
+        }
+        u.setRol(Usuario.Rol.valueOf(rolUpper));
         return usuarioRepo.save(u);
     }
 
@@ -391,8 +418,8 @@ public class AdminService {
         Usuario u = usuarioRepo.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con ID: " + usuarioId));
 
-        if (u.getRol() == Usuario.Rol.ADMIN) {
-            throw new BadRequestException("No es posible eliminar una cuenta con rol de Administrador");
+        if ("realmercatto@gmail.com".equalsIgnoreCase(u.getEmail())) {
+            throw new BadRequestException("No es posible eliminar la cuenta del Administrador Principal (Mercatto).");
         }
 
         // 1. Validar si el usuario tiene pedidos registrados en la cuenta como comprador

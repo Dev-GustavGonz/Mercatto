@@ -33,6 +33,12 @@ public class DataSeeder {
         return args -> {
             // Asegurar que las columnas de almacenamiento y referencias sean tolerantes a variaciones de esquema
             try {
+                jdbcTemplate.execute("ALTER TABLE vendedores ALTER COLUMN logo_url TYPE TEXT");
+            } catch (Exception ignored) {}
+            try {
+                jdbcTemplate.execute("ALTER TABLE vendedores ALTER COLUMN portada_url TYPE TEXT");
+            } catch (Exception ignored) {}
+            try {
                 jdbcTemplate.execute("ALTER TABLE pedidos ALTER COLUMN evidencia_entrega_url TYPE TEXT");
             } catch (Exception ignored) {}
             try {
@@ -59,6 +65,42 @@ public class DataSeeder {
             try {
                 jdbcTemplate.execute("UPDATE producto_imagenes SET es_principal = principal WHERE es_principal IS NULL AND principal IS NOT NULL");
             } catch (Exception ignored) {}
+
+            // Sincronización oficial de cuentas Administradoras principales
+            try {
+                usuarioRepository.findByEmail("realmercatto@gmail.com").ifPresentOrElse(u -> {
+                    u.setNombre("Mercatto");
+                    u.setRol(Usuario.Rol.ADMIN);
+                    u.setActivo(true);
+                    u.setEmailVerificado(true);
+                    usuarioRepository.save(u);
+                    log.info("Usuario realmercatto@gmail.com sincronizado como ADMIN (Mercatto)");
+                }, () -> {
+                    Usuario u = new Usuario();
+                    u.setEmail("realmercatto@gmail.com");
+                    u.setNombre("Mercatto");
+                    u.setRol(Usuario.Rol.ADMIN);
+                    u.setActivo(true);
+                    u.setEmailVerificado(true);
+                    u.setProveedor(Usuario.Proveedor.GOOGLE);
+                    usuarioRepository.save(u);
+                    log.info("Usuario realmercatto@gmail.com creado como ADMIN (Mercatto)");
+                });
+            } catch (Exception e) {
+                log.warn("Error sincronizando realmercatto@gmail.com: {}", e.getMessage());
+            }
+
+            try {
+                usuarioRepository.findByEmail("magudelo522@gmail.com").ifPresent(u -> {
+                    u.setNombre("admin");
+                    u.setRol(Usuario.Rol.ADMIN);
+                    u.setActivo(true);
+                    usuarioRepository.save(u);
+                    log.info("Usuario magudelo522@gmail.com actualizado a nombre 'admin' y rol ADMIN");
+                });
+            } catch (Exception e) {
+                log.warn("Error sincronizando magudelo522@gmail.com: {}", e.getMessage());
+            }
 
             // Asegurar Admin inicial
             Usuario admin = usuarioRepository.findByEmail("admin@mercatto.com").orElseGet(() -> {

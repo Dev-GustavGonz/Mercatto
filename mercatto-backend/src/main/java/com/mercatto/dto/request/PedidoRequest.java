@@ -53,6 +53,8 @@ public class PedidoRequest {
 
     public String getCuponCodigo() { return cuponCodigo; }
     public void setCuponCodigo(String cuponCodigo) { this.cuponCodigo = cuponCodigo; }
+    public String getCodigoCupon() { return cuponCodigo; }
+    public void setCodigoCupon(String codigoCupon) { this.cuponCodigo = codigoCupon; }
 
     public String getMetodoPago() { return metodoPago; }
     public void setMetodoPago(String metodoPago) { this.metodoPago = metodoPago; }

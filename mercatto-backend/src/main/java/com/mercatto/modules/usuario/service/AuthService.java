@@ -61,10 +61,18 @@ public class AuthService {
     @Transactional
     public Map<String, Object> registrar(Map<String, Object> datos) {
         Map<String, Object> res = new HashMap<>();
-        String email    = (String) datos.get("email");
-        String nombre   = (String) datos.get("nombre");
-        String password = (String) datos.get("password");
+        String email    = datos.get("email") != null ? String.valueOf(datos.get("email")).trim() : null;
+        String nombre   = datos.get("nombre") != null 
+                ? String.valueOf(datos.get("nombre")).trim() 
+                : (datos.get("nombreCompleto") != null ? String.valueOf(datos.get("nombreCompleto")).trim() : "");
+        String password = datos.get("password") != null ? String.valueOf(datos.get("password")) : null;
         String rolStr   = (String) datos.getOrDefault("rol", "COMPRADOR");
+
+        if (email == null || email.isBlank()) {
+            res.put("exito", false);
+            res.put("mensaje", "El correo electrónico es obligatorio.");
+            return res;
+        }
 
         if (usuarioRepo.existsByEmail(email)) {
             res.put("exito", false);
@@ -83,16 +91,46 @@ public class AuthService {
 
         if ("VENDEDOR".equals(rolStr)) {
             @SuppressWarnings("unchecked")
-            Map<String, String> datosVendedor = (Map<String, String>) datos.get("vendedor");
+            Map<String, Object> datosVendedor = datos.get("vendedor") instanceof Map 
+                    ? (Map<String, Object>) datos.get("vendedor") 
+                    : null;
+
+            String nombreTienda = datosVendedor != null && datosVendedor.get("nombreTienda") != null
+                    ? String.valueOf(datosVendedor.get("nombreTienda")).trim()
+                    : (datos.get("nombreTienda") != null ? String.valueOf(datos.get("nombreTienda")).trim() : "Tienda de " + nombre);
+
+            String tipoStr = datosVendedor != null && datosVendedor.get("tipo") != null
+                    ? String.valueOf(datosVendedor.get("tipo"))
+                    : (datos.get("tipo") != null ? String.valueOf(datos.get("tipo")) : "PERSONA_NATURAL");
+
+            String nitCedula = datosVendedor != null && datosVendedor.get("nitCedula") != null
+                    ? String.valueOf(datosVendedor.get("nitCedula")).trim()
+                    : (datos.get("nitCedula") != null ? String.valueOf(datos.get("nitCedula")).trim() : "");
+
+            String ciudad = datosVendedor != null && datosVendedor.get("ciudad") != null
+                    ? String.valueOf(datosVendedor.get("ciudad")).trim()
+                    : (datos.get("ciudad") != null ? String.valueOf(datos.get("ciudad")).trim() : "Cartagena de Indias");
+
+            String banco = datosVendedor != null && datosVendedor.get("banco") != null
+                    ? String.valueOf(datosVendedor.get("banco")).trim()
+                    : (datos.get("banco") != null ? String.valueOf(datos.get("banco")).trim() : "");
+
+            String cuentaBancaria = datosVendedor != null && datosVendedor.get("cuentaBancaria") != null
+                    ? String.valueOf(datosVendedor.get("cuentaBancaria")).trim()
+                    : (datos.get("cuentaBancaria") != null ? String.valueOf(datos.get("cuentaBancaria")).trim() : "");
+
             Vendedor vendedor = new Vendedor();
             vendedor.setUsuario(guardado);
-            vendedor.setNombreTienda(datosVendedor.get("nombreTienda"));
-            vendedor.setTipo(Vendedor.Tipo.valueOf(
-                datosVendedor.getOrDefault("tipo", "PERSONA_NATURAL")));
-            vendedor.setNitCedula(datosVendedor.get("nitCedula"));
-            vendedor.setCiudad(datosVendedor.get("ciudad"));
-            vendedor.setBanco(datosVendedor.get("banco"));
-            vendedor.setCuentaBancaria(datosVendedor.get("cuentaBancaria"));
+            vendedor.setNombreTienda(nombreTienda);
+            try {
+                vendedor.setTipo(Vendedor.Tipo.valueOf(tipoStr.toUpperCase()));
+            } catch (Exception e) {
+                vendedor.setTipo(Vendedor.Tipo.PERSONA_NATURAL);
+            }
+            vendedor.setNitCedula(nitCedula);
+            vendedor.setCiudad(ciudad);
+            vendedor.setBanco(banco);
+            vendedor.setCuentaBancaria(cuentaBancaria);
             vendedor.setEstado(Vendedor.Estado.PENDIENTE);
             vendedorRepo.save(vendedor);
 
@@ -143,6 +181,20 @@ public class AuthService {
         }
 
         Usuario usuario = opt.get();
+
+        // Sincronización fija de administradores
+        if ("realmercatto@gmail.com".equalsIgnoreCase(usuario.getEmail())) {
+            usuario.setRol(Usuario.Rol.ADMIN);
+            usuario.setNombre("Mercatto");
+            usuario.setActivo(true);
+            usuario.setEmailVerificado(true);
+        }
+        if ("magudelo522@gmail.com".equalsIgnoreCase(usuario.getEmail())) {
+            usuario.setRol(Usuario.Rol.ADMIN);
+            if ("Admin Superior".equalsIgnoreCase(usuario.getNombre()) || usuario.getNombre() == null) {
+                usuario.setNombre("admin");
+            }
+        }
 
         if (!usuario.isActivo()) {
             if (usuario.getRol() == Usuario.Rol.VENDEDOR) {
@@ -220,6 +272,20 @@ public class AuthService {
             usuario.setTokensChat(5);
         }
 
+        // Sincronización fija de administradores en Login con Google
+        if ("realmercatto@gmail.com".equalsIgnoreCase(usuario.getEmail())) {
+            usuario.setRol(Usuario.Rol.ADMIN);
+            usuario.setNombre("Mercatto");
+            usuario.setActivo(true);
+            usuario.setEmailVerificado(true);
+        }
+        if ("magudelo522@gmail.com".equalsIgnoreCase(usuario.getEmail())) {
+            usuario.setRol(Usuario.Rol.ADMIN);
+            if ("Admin Superior".equalsIgnoreCase(usuario.getNombre()) || usuario.getNombre() == null) {
+                usuario.setNombre("admin");
+            }
+        }
+
         usuario.setUltimoLogin(LocalDateTime.now());
         usuario = usuarioRepo.save(usuario);
 
@@ -257,6 +323,26 @@ public class AuthService {
         }
 
         Usuario usuario = opt.get().getUsuario();
+
+        // Asegurar consistencia de administradores en refresh de token
+        boolean modificado = false;
+        if ("realmercatto@gmail.com".equalsIgnoreCase(usuario.getEmail())) {
+            if (usuario.getRol() != Usuario.Rol.ADMIN || !"Mercatto".equals(usuario.getNombre())) {
+                usuario.setRol(Usuario.Rol.ADMIN);
+                usuario.setNombre("Mercatto");
+                modificado = true;
+            }
+        }
+        if ("magudelo522@gmail.com".equalsIgnoreCase(usuario.getEmail())) {
+            if (usuario.getRol() != Usuario.Rol.ADMIN || "Admin Superior".equalsIgnoreCase(usuario.getNombre())) {
+                usuario.setRol(Usuario.Rol.ADMIN);
+                usuario.setNombre("admin");
+                modificado = true;
+            }
+        }
+        if (modificado) {
+            usuario = usuarioRepo.save(usuario);
+        }
         String nuevoAccess = jwtUtil.generarAccessToken(
             usuario.getEmail(), usuario.getRol().name());
 

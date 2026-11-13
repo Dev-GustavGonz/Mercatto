@@ -259,21 +259,21 @@ public class VendedorService {
         Map<String, Object> comparativaPlanes = new HashMap<>();
         comparativaPlanes.put("STARTER", Map.of(
             "nombre", "Plan Starter",
-            "porcentaje", 10.0,
+            "porcentaje", 6.0,
             "comision", comisionStarter,
             "gananciaNeta", netoStarter,
             "ahorroFrenteStarter", 0.0
         ));
         comparativaPlanes.put("PRO", Map.of(
             "nombre", "Plan Profesional",
-            "porcentaje", 5.0,
+            "porcentaje", 3.0,
             "comision", comisionPro,
             "gananciaNeta", netoPro,
             "ahorroFrenteStarter", comisionStarter - comisionPro
         ));
         comparativaPlanes.put("ELITE", Map.of(
             "nombre", "Plan Elite Premium",
-            "porcentaje", 2.0,
+            "porcentaje", 1.0,
             "comision", comisionElite,
             "gananciaNeta", netoElite,
             "ahorroFrenteStarter", comisionStarter - comisionElite

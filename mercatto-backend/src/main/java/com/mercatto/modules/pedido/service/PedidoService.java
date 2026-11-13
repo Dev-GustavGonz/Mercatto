@@ -144,7 +144,7 @@ public class PedidoService {
             direccion.setNotasEntrega(notasDir);
             direccion = direccionRepo.save(direccion);
 
-            if (!telDir.isBlank() && (comprador.getTelefono() == null || comprador.getTelefono().isBlank())) {
+            if (comprador != null && !telDir.isBlank() && (comprador.getTelefono() == null || comprador.getTelefono().isBlank())) {
                 comprador.setTelefono(telDir);
                 usuarioRepo.save(comprador);
             }
@@ -233,13 +233,18 @@ public class PedidoService {
         // 3. CupÃ³n de descuento
         double descuento = 0.0;
         Cupon cupon = null;
-        if (req.getCuponCodigo() != null && !req.getCuponCodigo().isBlank()) {
-            cupon = cuponRepo.findByCodigoIgnoreCaseAndActivoTrue(req.getCuponCodigo()).orElse(null);
-            if (cupon != null && cupon.esValidoParaMonto(subtotal)) {
-                descuento = cupon.calcularDescuento(subtotal);
-                cupon.setUsosActuales(cupon.getUsosActuales() + 1);
-                cuponRepo.save(cupon);
+        String codigoCupon = req.getCuponCodigo() != null && !req.getCuponCodigo().isBlank()
+                ? req.getCuponCodigo()
+                : req.getCodigoCupon();
+        if (codigoCupon != null && !codigoCupon.isBlank()) {
+            cupon = cuponRepo.findByCodigoIgnoreCaseAndActivoTrue(codigoCupon.trim())
+                    .orElseThrow(() -> new ResourceNotFoundException("Cupón '" + codigoCupon + "' no encontrado o inactivo"));
+            if (!cupon.esValidoParaMonto(subtotal)) {
+                throw new BadRequestException("El cupón no aplica para el monto actual (mínimo: $" + cupon.getMontoMinimo() + ")");
             }
+            descuento = cupon.calcularDescuento(subtotal);
+            cupon.setUsosActuales(cupon.getUsosActuales() + 1);
+            cuponRepo.save(cupon);
         }
 
         // 4. Costo de envÃ­o (ej: Gratis a partir de 150.000 COP, o tarifa estÃ¡ndar 12.000 COP)
