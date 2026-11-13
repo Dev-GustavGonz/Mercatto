@@ -31,7 +31,9 @@ public class TiendaPublicaService {
     @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_TIENDAS_PUBLICAS, key = "'todas'")
     public List<TiendaPublicaResponse> listarTiendas() {
-        List<Vendedor> vendedores = vendedorRepo.findByEstado(Vendedor.Estado.APROBADO);
+        List<Vendedor> vendedores = vendedorRepo.findAll().stream()
+                .filter(v -> v.getEstado() != Vendedor.Estado.SUSPENDIDO && v.getEstado() != Vendedor.Estado.RECHAZADO)
+                .collect(Collectors.toList());
         return vendedores.stream()
                 .map(this::convertirATiendaResponse)
                 .sorted((a, b) -> {
@@ -53,7 +55,7 @@ public class TiendaPublicaService {
         Vendedor vendedor = vendedorRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tienda no encontrada"));
 
-        if (vendedor.getEstado() != Vendedor.Estado.APROBADO) {
+        if (vendedor.getEstado() == Vendedor.Estado.SUSPENDIDO || vendedor.getEstado() == Vendedor.Estado.RECHAZADO) {
             throw new ResourceNotFoundException("La tienda no se encuentra disponible");
         }
 

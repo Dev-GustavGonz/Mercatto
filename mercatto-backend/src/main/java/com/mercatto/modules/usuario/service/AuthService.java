@@ -8,9 +8,11 @@ import com.mercatto.modules.usuario.repository.UsuarioRepository;
 import com.mercatto.modules.vendedor.model.Vendedor;
 import com.mercatto.modules.vendedor.repository.VendedorRepository;
 
+import com.mercatto.config.CacheConfig;
 import com.mercatto.modules.soporte.service.EmailService;
 import com.mercatto.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +61,7 @@ public class AuthService {
 
     // ── REGISTRO ──────────────────────────────────────────────────
     @Transactional
+    @CacheEvict(value = {CacheConfig.CACHE_TIENDAS_PUBLICAS, CacheConfig.CACHE_TIENDA_DETALLE, CacheConfig.CACHE_MARCAS_PUBLICAS}, allEntries = true)
     public Map<String, Object> registrar(Map<String, Object> datos) {
         Map<String, Object> res = new HashMap<>();
         String email    = datos.get("email") != null ? String.valueOf(datos.get("email")).trim() : null;
@@ -131,25 +134,26 @@ public class AuthService {
             vendedor.setCiudad(ciudad);
             vendedor.setBanco(banco);
             vendedor.setCuentaBancaria(cuentaBancaria);
-            vendedor.setEstado(Vendedor.Estado.PENDIENTE);
+            vendedor.setEstado(Vendedor.Estado.APROBADO);
             vendedorRepo.save(vendedor);
 
-            res.put("exito", true);
-            res.put("pendiente", true);
-            res.put("mensaje", "Solicitud enviada. El administrador la revisará pronto.");
-        } else {
-            boolean recordarme = !Boolean.FALSE.equals(datos.get("recordarme"));
-            String accessToken  = jwtUtil.generarAccessToken(email, rolStr);
-            String refreshToken = jwtUtil.generarRefreshToken(email);
-            guardarRefreshToken(guardado, refreshToken, recordarme);
-
-            res.put("exito", true);
-            res.put("accessToken", accessToken);
-            res.put("refreshToken", refreshToken); // el controller la mueve a una cookie httpOnly
-            res.put("recordarme", recordarme);
-            res.put("usuario", usuarioAMapa(guardado));
-            res.put("mensaje", "¡Bienvenido a Mercatto!");
+            guardado.setActivo(true);
+            usuarioRepo.save(guardado);
         }
+
+        boolean recordarme = !Boolean.FALSE.equals(datos.get("recordarme"));
+        String accessToken  = jwtUtil.generarAccessToken(email, rolStr);
+        String refreshToken = jwtUtil.generarRefreshToken(email);
+        guardarRefreshToken(guardado, refreshToken, recordarme);
+
+        res.put("exito", true);
+        res.put("accessToken", accessToken);
+        res.put("refreshToken", refreshToken); // el controller la mueve a una cookie httpOnly
+        res.put("recordarme", recordarme);
+        res.put("usuario", usuarioAMapa(guardado));
+        res.put("mensaje", "VENDEDOR".equalsIgnoreCase(rolStr) 
+                ? "¡Tienda oficial registrada y activada con éxito!" 
+                : "¡Bienvenido a Mercatto!");
         return res;
     }
 

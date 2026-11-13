@@ -94,7 +94,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("TC-10: Registro de Vendedor - Crea cuenta con estado PENDIENTE y registra tienda")
+    @DisplayName("TC-10: Registro de Vendedor - Crea cuenta activa y registra tienda oficial con tokens")
     void testRegistroVendedorPendiente() {
         Map<String, Object> datos = new HashMap<>();
         datos.put("email", "tienda@mercatto.com");
@@ -108,12 +108,18 @@ public class AuthServiceTest {
 
         when(usuarioRepo.existsByEmail("tienda@mercatto.com")).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-        when(usuarioRepo.save(any(Usuario.class))).thenAnswer(i -> (Usuario) i.getArgument(0));
+        when(usuarioRepo.save(any(Usuario.class))).thenAnswer(i -> {
+            Usuario u = i.getArgument(0);
+            u.setId(3L);
+            return u;
+        });
+        when(jwtUtil.generarAccessToken(anyString(), anyString())).thenReturn("mock-vendor-access-token");
+        when(jwtUtil.generarRefreshToken(anyString())).thenReturn("mock-vendor-refresh-token");
 
         Map<String, Object> res = authService.registrar(datos);
 
         assertTrue((Boolean) res.get("exito"));
-        assertTrue((Boolean) res.get("pendiente"));
+        assertEquals("mock-vendor-access-token", res.get("accessToken"));
         verify(vendedorRepo, times(1)).save(any(Vendedor.class));
     }
 
