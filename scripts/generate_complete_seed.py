@@ -375,197 +375,209 @@ print(f"  Order Items: {len(order_items)}")
 print(f"  Payments: {len(payments)}")
 
 # NOW WRITE SQL SCRIPT: supabase_seed_feria_1000.sql
+NL = chr(10)
+SEP = "," + NL
+
 with open(r"c:\Users\gjgh2\Downloads\mercatto\supabase_seed_feria_1000.sql", "w", encoding="utf-8") as f:
-    f.write("-- ============================================================================\n")
-    f.write("-- MERCATTO MARKETPLACE - SEEDING OFICIAL PARA FERIA COMERCIAL CARTAGENA 2026\n")
-    f.write("-- Base de Datos: PostgreSQL 14+ / Supabase\n")
-    f.write("-- Total Registros: ~1000 con Integridad Referencial Estricta y Tag SEED_FERIA\n")
-    f.write("-- ============================================================================\n\n")
-    f.write("BEGIN;\n\n")
+    f.write("-- ============================================================================" + NL)
+    f.write("-- MERCATTO MARKETPLACE - SEEDING OFICIAL PARA FERIA COMERCIAL CARTAGENA 2026" + NL)
+    f.write("-- Base de Datos: PostgreSQL 14+ / Supabase" + NL)
+    f.write("-- Total Registros: ~1000 con Integridad Referencial Estricta" + NL)
+    f.write("-- Tag de Aislamiento: google_id = 'MOCK_DATA_2026' / email = '%@mock.mercatto.co'" + NL)
+    f.write("-- ============================================================================" + NL + NL)
+    f.write("BEGIN;" + NL + NL)
+
+    # 0. ASEGURAR COLUMNAS DE COMPATIBILIDAD
+    f.write("-- 0. ASEGURAR COLUMNAS DE COMPATIBILIDAD" + NL)
+    f.write("ALTER TABLE IF EXISTS usuarios ADD COLUMN IF NOT EXISTS tokens_chat INT DEFAULT 5;" + NL)
+    f.write("ALTER TABLE IF EXISTS producto_imagenes ADD COLUMN IF NOT EXISTS es_principal BOOLEAN DEFAULT false;" + NL)
+    f.write("ALTER TABLE IF EXISTS producto_imagenes ADD COLUMN IF NOT EXISTS principal BOOLEAN DEFAULT false;" + NL)
+    f.write("ALTER TABLE IF EXISTS producto_variantes ADD COLUMN IF NOT EXISTS activo BOOLEAN DEFAULT true;" + NL)
+    f.write("ALTER TABLE IF EXISTS pagos ADD COLUMN IF NOT EXISTS fecha_pago TIMESTAMP;" + NL)
+    f.write("ALTER TABLE IF EXISTS pagos ADD COLUMN IF NOT EXISTS fecha_confirmacion TIMESTAMP;" + NL + NL)
 
     # 1. USUARIOS COMPRADORES
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 1. USUARIOS COMPRADORES (120 Registros)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("INSERT INTO usuarios (id, nombre, email, password_hash, rol, activo, email_verificado, telefono, proveedor, google_id, fecha_registro)\nVALUES\n")
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 1. USUARIOS COMPRADORES (120 Registros)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("INSERT INTO usuarios (id, nombre, email, password_hash, rol, activo, email_verificado, telefono, proveedor, google_id, tokens_chat, fecha_registro)" + NL + "VALUES" + NL)
     b_rows = []
     for b in buyers:
         nom_esc = b['nombre'].replace("'", "''")
-        b_rows.append(f"({b['id']}, '{nom_esc}', '{b['email']}', '{BCRYPT_HASH}', 'COMPRADOR', TRUE, TRUE, '{b['telefono']}', 'SEED_FERIA', 'MOCK_DATA_2026', NOW() - INTERVAL '{b['days_ago']} days')")
-    f.write(",\n".join(b_rows) + ";\n\n")
+        b_rows.append(f"({b['id']}, '{nom_esc}', '{b['email']}', '{BCRYPT_HASH}', 'COMPRADOR', TRUE, TRUE, '{b['telefono']}', 'LOCAL', 'MOCK_DATA_2026', 5, NOW() - INTERVAL '{b['days_ago']} days')")
+    f.write(SEP.join(b_rows) + ";" + NL + NL)
 
     # 2. DIRECCIONES COMPRADORES
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 2. DIRECCIONES COMPRADORES (120 Registros)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("INSERT INTO direcciones (id, usuario_id, nombre_completo, telefono, direccion, barrio, ciudad, departamento, codigo_postal, es_principal)\nVALUES\n")
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 2. DIRECCIONES COMPRADORES (120 Registros)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("INSERT INTO direcciones (id, usuario_id, nombre_completo, telefono, direccion, barrio, ciudad, departamento, codigo_postal, notas_entrega, es_principal)" + NL + "VALUES" + NL)
     d_rows = []
     for b in buyers:
         nom_esc = b['nombre'].replace("'", "''")
-        d_rows.append(f"({b['id']}, {b['id']}, '{nom_esc}', '{b['telefono']}', '{b['direccion']}', '{b['barrio']}', 'Cartagena de Indias', 'Bolívar', '130001', TRUE)")
-    f.write(",\n".join(d_rows) + ";\n\n")
+        d_rows.append(f"({b['id']}, {b['id']}, '{nom_esc}', '{b['telefono']}', '{b['direccion']}', '{b['barrio']}', 'Cartagena de Indias', 'Bolívar', '130001', 'Entregar en portería / recepción', TRUE)")
+    f.write(SEP.join(d_rows) + ";" + NL + NL)
 
     # 3. USUARIOS VENDEDORES
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 3. USUARIOS VENDEDORES (40 Registros)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("INSERT INTO usuarios (id, nombre, email, password_hash, rol, activo, email_verificado, telefono, proveedor, google_id, fecha_registro)\nVALUES\n")
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 3. USUARIOS VENDEDORES (40 Registros)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("INSERT INTO usuarios (id, nombre, email, password_hash, rol, activo, email_verificado, telefono, proveedor, google_id, tokens_chat, fecha_registro)" + NL + "VALUES" + NL)
     s_rows = []
     for s in sellers:
         nom_esc = s['nombre'].replace("'", "''")
-        s_rows.append(f"({s['id']}, '{nom_esc}', '{s['email']}', '{BCRYPT_HASH}', 'VENDEDOR', TRUE, TRUE, '{s['telefono']}', 'SEED_FERIA', 'MOCK_DATA_2026', NOW() - INTERVAL '{s['days_ago']} days')")
-    f.write(",\n".join(s_rows) + ";\n\n")
+        s_rows.append(f"({s['id']}, '{nom_esc}', '{s['email']}', '{BCRYPT_HASH}', 'VENDEDOR', TRUE, TRUE, '{s['telefono']}', 'LOCAL', 'MOCK_DATA_2026', 5, NOW() - INTERVAL '{s['days_ago']} days')")
+    f.write(SEP.join(s_rows) + ";" + NL + NL)
 
     # 4. TIENDAS VIRTUALES (40 Registros)
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 4. TIENDAS VIRTUALES / VENDEDORES (40 Registros)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("INSERT INTO vendedores (id, usuario_id, tipo, nombre_tienda, descripcion, logo_url, estado, nit_cedula, razon_social, ciudad, direccion, cuenta_bancaria, banco, calificacion, total_ventas, tipo_suscripcion, fecha_registro)\nVALUES\n")
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 4. TIENDAS VIRTUALES / VENDEDORES (40 Registros)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("INSERT INTO vendedores (id, usuario_id, tipo, nombre_tienda, descripcion, logo_url, estado, nit_cedula, razon_social, ciudad, direccion, cuenta_bancaria, banco, calificacion, total_ventas, tipo_suscripcion, fecha_registro)" + NL + "VALUES" + NL)
     st_rows = []
     for st in stores:
         t_esc = st['nombre_tienda'].replace("'", "''")
         d_esc = st['descripcion'].replace("'", "''")
         st_rows.append(f"({st['id']}, {st['usuario_id']}, 'EMPRESA', '{t_esc}', '{d_esc}', '{st['logo_url']}', 'APROBADO', '{st['nit_cedula']}', '{t_esc} S.A.S.', 'Cartagena de Indias', '{st['direccion']}', '{st['cuenta_bancaria']}', '{st['banco']}', {st['calificacion']}, {st['total_ventas']}, '{st['tipo_suscripcion']}', NOW() - INTERVAL '{st['days_ago']} days')")
-    f.write(",\n".join(st_rows) + ";\n\n")
+    f.write(SEP.join(st_rows) + ";" + NL + NL)
 
     # 5. PRODUCTOS (540 Registros)
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 5. PRODUCTOS (540 Registros con Fondo Blanco Puro #FFFFFF)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    # Write in batches of 50
-    for chunk_start in range(0, len(products), 50):
-        chunk = products[chunk_start:chunk_start + 50]
-        f.write("INSERT INTO productos (id, vendedor_id, categoria_id, titulo, slug, descripcion, precio, precio_oferta, stock, sku, marca, estado, activo, destacado, calificacion, total_resenas, total_ventas, fecha_creacion)\nVALUES\n")
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 5. PRODUCTOS CON FOTOGRAFÍA ESTUDIO FONDO BLANCO PURO #FFFFFF (540 Registros)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    for i in range(0, len(products), 50):
+        chunk = products[i:i+50]
+        f.write("INSERT INTO productos (id, vendedor_id, categoria_id, titulo, slug, descripcion, precio, precio_oferta, stock, sku, marca, estado, activo, destacado, calificacion, total_resenas, total_ventas, fecha_creacion, fecha_actualizacion)" + NL + "VALUES" + NL)
         p_rows = []
         for p in chunk:
             t_esc = p['titulo'].replace("'", "''")
             d_esc = p['descripcion'].replace("'", "''")
             off_val = f"{p['precio_oferta']}" if p['precio_oferta'] else "NULL"
             dest_val = "TRUE" if p['id'] % 5 == 0 else "FALSE"
-            p_rows.append(f"({p['id']}, {p['vendedor_id']}, {p['categoria_id']}, '{t_esc}', '{p['slug']}', '{d_esc}', {p['precio']}, {off_val}, {p['stock']}, '{p['sku']}', '{p['marca']}', 'NUEVO', TRUE, {dest_val}, {p['calificacion']}, {p['total_resenas']}, {p['total_ventas']}, NOW() - INTERVAL '{p['days_ago']} days')")
-        f.write(",\n".join(p_rows) + ";\n\n")
+            p_rows.append(f"({p['id']}, {p['vendedor_id']}, {p['categoria_id']}, '{t_esc}', '{p['slug']}', '{d_esc}', {p['precio']}, {off_val}, {p['stock']}, '{p['sku']}', '{p['marca']}', 'NUEVO', TRUE, {dest_val}, {p['calificacion']}, {p['total_resenas']}, {p['total_ventas']}, NOW() - INTERVAL '{p['days_ago']} days', NOW() - INTERVAL '{p['days_ago']} days')")
+        f.write(SEP.join(p_rows) + ";" + NL + NL)
 
     # 6. PRODUCTO IMAGENES (540 Registros)
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 6. PRODUCTO IMAGENES (540 Registros)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    for chunk_start in range(0, len(images), 100):
-        chunk = images[chunk_start:chunk_start + 100]
-        f.write("INSERT INTO producto_imagenes (id, producto_id, url, principal, es_principal, orden_visual)\nVALUES\n")
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 6. PRODUCTO IMAGENES (540 Registros - Catálogo Centrado Fondo Blanco Puro)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    for i in range(0, len(images), 50):
+        chunk = images[i:i+50]
+        f.write("INSERT INTO producto_imagenes (id, producto_id, url, principal, es_principal, orden_visual)" + NL + "VALUES" + NL)
         im_rows = []
         for im in chunk:
             im_rows.append(f"({im['id']}, {im['producto_id']}, '{im['url']}', TRUE, TRUE, 0)")
-        f.write(",\n".join(im_rows) + ";\n\n")
+        f.write(SEP.join(im_rows) + ";" + NL + NL)
 
-    # 7. PRODUCTO VARIANTES (1080 Registros)
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 7. PRODUCTO VARIANTES (1080 Registros)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    for chunk_start in range(0, len(variants), 100):
-        chunk = variants[chunk_start:chunk_start + 100]
-        f.write("INSERT INTO producto_variantes (id, producto_id, sku, nombre, precio, precio_oferta, stock, imagen_url)\nVALUES\n")
-        v_rows = []
-        for v in chunk:
-            nom_esc = v['nombre'].replace("'", "''")
-            off_val = f"{v['precio_oferta']}" if v['precio_oferta'] else "NULL"
-            v_rows.append(f"({v['id']}, {v['producto_id']}, '{v['sku']}', '{nom_esc}', {v['precio']}, {off_val}, {v['stock']}, '{v['imagen_url']}')")
-        f.write(",\n".join(v_rows) + ";\n\n")
-
-    # 8. VARIANTE ATRIBUTOS (1080 Registros)
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 8. VARIANTE ATRIBUTOS (1080 Registros)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    for chunk_start in range(0, len(var_attrs), 100):
-        chunk = var_attrs[chunk_start:chunk_start + 100]
-        f.write("INSERT INTO variante_atributos (id, variante_id, nombre, valor)\nVALUES\n")
+    # 7. PRODUCTO VARIANTES (953 Registros)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 7. PRODUCTO VARIANTES (Tallas / Colores - 953 Registros)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    for i in range(0, len(variants), 50):
+        chunk = variants[i:i+50]
+        f.write("INSERT INTO producto_variantes (id, producto_id, sku, nombre, precio, precio_oferta, stock, imagen_url, activo)" + NL + "VALUES" + NL)
         va_rows = []
         for va in chunk:
-            nom_esc = va['nombre'].replace("'", "''")
-            val_esc = va['valor'].replace("'", "''")
-            va_rows.append(f"({va['id']}, {va['variante_id']}, '{nom_esc}', '{val_esc}')")
-        f.write(",\n".join(va_rows) + ";\n\n")
+            n_esc = va['nombre'].replace("'", "''")
+            off_val = f"{va['precio_oferta']}" if va['precio_oferta'] else "NULL"
+            va_rows.append(f"({va['id']}, {va['producto_id']}, '{va['sku']}', '{n_esc}', {va['precio']}, {off_val}, {va['stock']}, '{va['imagen_url']}', TRUE)")
+        f.write(SEP.join(va_rows) + ";" + NL + NL)
+
+    # 8. VARIANTE ATRIBUTOS (953 Registros)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 8. VARIANTE ATRIBUTOS (953 Registros)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    for i in range(0, len(var_attrs), 50):
+        chunk = var_attrs[i:i+50]
+        f.write("INSERT INTO variante_atributos (id, variante_id, nombre, valor)" + NL + "VALUES" + NL)
+        at_rows = []
+        for at in chunk:
+            n_esc = at['nombre'].replace("'", "''")
+            v_esc = at['valor'].replace("'", "''")
+            at_rows.append(f"({at['id']}, {at['variante_id']}, '{n_esc}', '{v_esc}')")
+        f.write(SEP.join(at_rows) + ";" + NL + NL)
 
     # 9. PEDIDOS (300 Registros)
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 9. PEDIDOS (300 Registros distribuidos en últimos 45 días)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    for chunk_start in range(0, len(orders), 50):
-        chunk = orders[chunk_start:chunk_start + 50]
-        f.write("INSERT INTO pedidos (id, codigo, comprador_id, estado, subtotal, descuento, costo_envio, total, notas, fecha_creacion, fecha_actualizacion)\nVALUES\n")
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 9. PEDIDOS HISTÓRICOS Y ACTIVOS (300 Registros)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    for i in range(0, len(orders), 50):
+        chunk = orders[i:i+50]
+        f.write("INSERT INTO pedidos (id, codigo, comprador_id, direccion_id, estado, subtotal, descuento, costo_envio, total, notas, fecha_creacion, fecha_actualizacion)" + NL + "VALUES" + NL)
         o_rows = []
         for o in chunk:
-            o_rows.append(f"({o['id']}, '{o['codigo']}', {o['comprador_id']}, '{o['estado']}', {o['subtotal']}, 0.0, {o['costo_envio']}, {o['total']}, 'MOCK_FERIA_CARTAGENA', NOW() - INTERVAL '{o['days_ago']} days', NOW() - INTERVAL '{o['days_ago']} days')")
-        f.write(",\n".join(o_rows) + ";\n\n")
+            o_rows.append(f"({o['id']}, '{o['codigo']}', {o['comprador_id']}, {o['comprador_id']}, '{o['estado']}', {o['subtotal']}, 0.0, {o['costo_envio']}, {o['total']}, 'MOCK_FERIA_CARTAGENA', NOW() - INTERVAL '{o['days_ago']} days', NOW() - INTERVAL '{o['days_ago']} days')")
+        f.write(SEP.join(o_rows) + ";" + NL + NL)
 
     # 10. PEDIDO ITEMS (400+ Registros)
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 10. PEDIDO ITEMS\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    for chunk_start in range(0, len(order_items), 100):
-        chunk = order_items[chunk_start:chunk_start + 100]
-        f.write("INSERT INTO pedido_items (id, pedido_id, producto_id, vendedor_id, nombre_producto, precio_unitario, cantidad, subtotal)\nVALUES\n")
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 10. PEDIDO ITEMS" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    for i in range(0, len(order_items), 50):
+        chunk = order_items[i:i+50]
+        f.write("INSERT INTO pedido_items (id, pedido_id, producto_id, vendedor_id, nombre_producto, precio_unitario, cantidad, subtotal)" + NL + "VALUES" + NL)
         oi_rows = []
         for oi in chunk:
             nom_esc = oi['nombre_producto'].replace("'", "''")
             oi_rows.append(f"({oi['id']}, {oi['pedido_id']}, {oi['producto_id']}, {oi['vendedor_id']}, '{nom_esc}', {oi['precio_unitario']}, {oi['cantidad']}, {oi['subtotal']})")
-        f.write(",\n".join(oi_rows) + ";\n\n")
+        f.write(SEP.join(oi_rows) + ";" + NL + NL)
 
     # 11. PAGOS (300 Registros)
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 11. PAGOS (300 Registros)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    for chunk_start in range(0, len(payments), 100):
-        chunk = payments[chunk_start:chunk_start + 100]
-        f.write("INSERT INTO pagos (id, pedido_id, metodo, estado, monto, moneda, fecha_pago, fecha_creacion)\nVALUES\n")
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 11. PAGOS RELACIONADOS (300 Registros)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    for i in range(0, len(payments), 50):
+        chunk = payments[i:i+50]
+        f.write("INSERT INTO pagos (id, pedido_id, metodo, estado, monto, moneda, fecha_pago, fecha_confirmacion, fecha_creacion)" + NL + "VALUES" + NL)
         pay_rows = []
         for pay in chunk:
-            pay_rows.append(f"({pay['id']}, {pay['pedido_id']}, '{pay['metodo']}', '{pay['estado']}', {pay['monto']}, 'cop', NOW() - INTERVAL '{pay['days_ago']} days', NOW() - INTERVAL '{pay['days_ago']} days')")
-        f.write(",\n".join(pay_rows) + ";\n\n")
+            pay_rows.append(f"({pay['id']}, {pay['pedido_id']}, '{pay['metodo']}', '{pay['estado']}', {pay['monto']}, 'COP', NOW() - INTERVAL '{pay['days_ago']} days', NOW() - INTERVAL '{pay['days_ago']} days', NOW() - INTERVAL '{pay['days_ago']} days')")
+        f.write(SEP.join(pay_rows) + ";" + NL + NL)
 
     # 12. AJUSTE DE SECUENCIAS
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("-- 12. REAJUSTE DE SECUENCIAS POSTGRESQL (Auto-Increment)\n")
-    f.write("-- ----------------------------------------------------------------------------\n")
-    f.write("SELECT setval(pg_get_serial_sequence('usuarios', 'id'), COALESCE((SELECT MAX(id) FROM usuarios), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('direcciones', 'id'), COALESCE((SELECT MAX(id) FROM direcciones), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('vendedores', 'id'), COALESCE((SELECT MAX(id) FROM vendedores), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('productos', 'id'), COALESCE((SELECT MAX(id) FROM productos), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('producto_imagenes', 'id'), COALESCE((SELECT MAX(id) FROM producto_imagenes), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('producto_variantes', 'id'), COALESCE((SELECT MAX(id) FROM producto_variantes), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('variante_atributos', 'id'), COALESCE((SELECT MAX(id) FROM variante_atributos), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('pedidos', 'id'), COALESCE((SELECT MAX(id) FROM pedidos), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('pedido_items', 'id'), COALESCE((SELECT MAX(id) FROM pedido_items), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('pagos', 'id'), COALESCE((SELECT MAX(id) FROM pagos), 1));\n\n")
-    f.write("COMMIT;\n")
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("-- 12. REAJUSTE DE SECUENCIAS POSTGRESQL (Auto-Increment)" + NL)
+    f.write("-- ----------------------------------------------------------------------------" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('usuarios', 'id'), COALESCE((SELECT MAX(id) FROM usuarios), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('direcciones', 'id'), COALESCE((SELECT MAX(id) FROM direcciones), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('vendedores', 'id'), COALESCE((SELECT MAX(id) FROM vendedores), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('productos', 'id'), COALESCE((SELECT MAX(id) FROM productos), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('producto_imagenes', 'id'), COALESCE((SELECT MAX(id) FROM producto_imagenes), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('producto_variantes', 'id'), COALESCE((SELECT MAX(id) FROM producto_variantes), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('variante_atributos', 'id'), COALESCE((SELECT MAX(id) FROM variante_atributos), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('pedidos', 'id'), COALESCE((SELECT MAX(id) FROM pedidos), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('pedido_items', 'id'), COALESCE((SELECT MAX(id) FROM pedido_items), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('pagos', 'id'), COALESCE((SELECT MAX(id) FROM pagos), 1));" + NL + NL)
+    f.write("COMMIT;" + NL)
 
 # NOW WRITE PURGE SCRIPT: supabase_purge_mock_data.sql
 with open(r"c:\Users\gjgh2\Downloads\mercatto\supabase_purge_mock_data.sql", "w", encoding="utf-8") as f:
-    f.write("-- ============================================================================\n")
-    f.write("-- PURGA SEGURA DE DATOS MOCK DE LA FERIA - MERCATTO\n")
-    f.write("-- Borra ÚNICAMENTE los registros generados con tag SEED_FERIA / MOCK_DATA_2026\n")
-    f.write("-- TUS TIENDAS Y PRODUCTOS MANUALES QUEDAN 100% INTACTOS\n")
-    f.write("-- ============================================================================\n\n")
-    f.write("BEGIN;\n\n")
-    f.write("-- 1. Eliminar pagos de prueba\n")
-    f.write("DELETE FROM pagos WHERE pedido_id IN (SELECT id FROM pedidos WHERE codigo LIKE 'PED-MOCK-%' OR notas LIKE '%MOCK_FERIA%');\n\n")
-    f.write("-- 2. Eliminar pedido_items de prueba\n")
-    f.write("DELETE FROM pedido_items WHERE pedido_id IN (SELECT id FROM pedidos WHERE codigo LIKE 'PED-MOCK-%' OR notas LIKE '%MOCK_FERIA%');\n\n")
-    f.write("-- 3. Eliminar pedidos de prueba\n")
-    f.write("DELETE FROM pedidos WHERE codigo LIKE 'PED-MOCK-%' OR notas LIKE '%MOCK_FERIA%';\n\n")
-    f.write("-- 4. Eliminar productos generados por seed (sus variantes e imágenes caen en cascada)\n")
-    f.write("DELETE FROM productos WHERE sku LIKE 'SEED-%' OR vendedor_id IN (SELECT v.id FROM vendedores v JOIN usuarios u ON v.usuario_id = u.id WHERE u.proveedor = 'SEED_FERIA' OR u.google_id = 'MOCK_DATA_2026');\n\n")
-    f.write("-- 5. Eliminar tiendas de prueba\n")
-    f.write("DELETE FROM vendedores WHERE usuario_id IN (SELECT id FROM usuarios WHERE proveedor = 'SEED_FERIA' OR google_id = 'MOCK_DATA_2026');\n\n")
-    f.write("-- 6. Eliminar direcciones de compradores de prueba\n")
-    f.write("DELETE FROM direcciones WHERE usuario_id IN (SELECT id FROM usuarios WHERE proveedor = 'SEED_FERIA' OR google_id = 'MOCK_DATA_2026');\n\n")
-    f.write("-- 7. Eliminar usuarios de prueba (compradores y vendedores)\n")
-    f.write("DELETE FROM usuarios WHERE proveedor = 'SEED_FERIA' OR google_id = 'MOCK_DATA_2026' OR email LIKE '%@mock.mercatto.co';\n\n")
-    f.write("-- 8. Sincronizar secuencias con los datos reales restantes\n")
-    f.write("SELECT setval(pg_get_serial_sequence('usuarios', 'id'), COALESCE((SELECT MAX(id) FROM usuarios), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('direcciones', 'id'), COALESCE((SELECT MAX(id) FROM direcciones), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('vendedores', 'id'), COALESCE((SELECT MAX(id) FROM vendedores), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('productos', 'id'), COALESCE((SELECT MAX(id) FROM productos), 1));\n")
-    f.write("SELECT setval(pg_get_serial_sequence('pedidos', 'id'), COALESCE((SELECT MAX(id) FROM pedidos), 1));\n\n")
-    f.write("COMMIT;\n")
+    f.write("-- ============================================================================" + NL)
+    f.write("-- PURGA SEGURA DE DATOS MOCK DE LA FERIA - MERCATTO" + NL)
+    f.write("-- Borra ÚNICAMENTE los registros generados con tag MOCK_DATA_2026" + NL)
+    f.write("-- TUS TIENDAS Y PRODUCTOS MANUALES QUEDAN 100% INTACTOS" + NL)
+    f.write("-- ============================================================================" + NL + NL)
+    f.write("BEGIN;" + NL + NL)
+    f.write("-- 1. Eliminar pagos de prueba" + NL)
+    f.write("DELETE FROM pagos WHERE pedido_id IN (SELECT id FROM pedidos WHERE codigo LIKE 'PED-MOCK-%' OR notas LIKE '%MOCK_FERIA%');" + NL + NL)
+    f.write("-- 2. Eliminar pedido_items de prueba" + NL)
+    f.write("DELETE FROM pedido_items WHERE pedido_id IN (SELECT id FROM pedidos WHERE codigo LIKE 'PED-MOCK-%' OR notas LIKE '%MOCK_FERIA%');" + NL + NL)
+    f.write("-- 3. Eliminar pedidos de prueba" + NL)
+    f.write("DELETE FROM pedidos WHERE codigo LIKE 'PED-MOCK-%' OR notas LIKE '%MOCK_FERIA%';" + NL + NL)
+    f.write("-- 4. Eliminar productos generados por seed (sus variantes e imágenes caen en cascada)" + NL)
+    f.write("DELETE FROM productos WHERE sku LIKE 'SEED-%' OR vendedor_id IN (SELECT v.id FROM vendedores v JOIN usuarios u ON v.usuario_id = u.id WHERE u.google_id = 'MOCK_DATA_2026' OR u.email LIKE '%@mock.mercatto.co');" + NL + NL)
+    f.write("-- 5. Eliminar tiendas de prueba" + NL)
+    f.write("DELETE FROM vendedores WHERE usuario_id IN (SELECT id FROM usuarios WHERE google_id = 'MOCK_DATA_2026' OR email LIKE '%@mock.mercatto.co');" + NL + NL)
+    f.write("-- 6. Eliminar direcciones de compradores de prueba" + NL)
+    f.write("DELETE FROM direcciones WHERE usuario_id IN (SELECT id FROM usuarios WHERE google_id = 'MOCK_DATA_2026' OR email LIKE '%@mock.mercatto.co');" + NL + NL)
+    f.write("-- 7. Eliminar usuarios de prueba (compradores y vendedores)" + NL)
+    f.write("DELETE FROM usuarios WHERE google_id = 'MOCK_DATA_2026' OR email LIKE '%@mock.mercatto.co';" + NL + NL)
+    f.write("-- 8. Sincronizar secuencias con los datos reales restantes" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('usuarios', 'id'), COALESCE((SELECT MAX(id) FROM usuarios), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('direcciones', 'id'), COALESCE((SELECT MAX(id) FROM direcciones), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('vendedores', 'id'), COALESCE((SELECT MAX(id) FROM vendedores), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('productos', 'id'), COALESCE((SELECT MAX(id) FROM productos), 1));" + NL)
+    f.write("SELECT setval(pg_get_serial_sequence('pedidos', 'id'), COALESCE((SELECT MAX(id) FROM pedidos), 1));" + NL + NL)
+    f.write("COMMIT;" + NL)
 
 print("Files generated successfully!")
