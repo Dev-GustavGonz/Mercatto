@@ -32,8 +32,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
            "LOWER(p.marca) LIKE LOWER(CONCAT('%', :termino, '%')))")
     Page<Producto> buscarPorTexto(@Param("termino") String termino, Pageable pageable);
 
-    @Query("SELECT p FROM Producto p WHERE p.activo = true AND " +
-           "(CAST(:categoriaId AS long) IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
+    @Query("SELECT p FROM Producto p LEFT JOIN p.categoria c LEFT JOIN c.padre cp WHERE p.activo = true AND " +
+           "(CAST(:categoriaId AS long) IS NULL OR c.id = :categoriaId OR cp.id = :categoriaId) AND " +
            "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
            "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
            "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
@@ -47,8 +47,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
         Pageable pageable
     );
 
-    @Query("SELECT p FROM Producto p WHERE p.activo = true AND " +
-           "(CAST(:categoriaId AS long) IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
+    @Query("SELECT p FROM Producto p LEFT JOIN p.categoria c LEFT JOIN c.padre cp WHERE p.activo = true AND " +
+           "(CAST(:categoriaId AS long) IS NULL OR c.id = :categoriaId OR cp.id = :categoriaId) AND " +
            "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
            "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
            "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
@@ -73,8 +73,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
         Pageable pageable
     );
 
-    @Query("SELECT p FROM Producto p WHERE p.activo = true AND " +
-           "(CAST(:categoriaId AS long) IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
+    @Query("SELECT p FROM Producto p LEFT JOIN p.categoria c LEFT JOIN c.padre cp WHERE p.activo = true AND " +
+           "(CAST(:categoriaId AS long) IS NULL OR c.id = :categoriaId OR cp.id = :categoriaId) AND " +
            "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
            "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
            "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
@@ -113,8 +113,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
     Long sumTotalResenasArticulos(@Param("vendedor") Vendedor vendedor);
 
     // Filtrar productos exclusivos de una tienda
-    @Query("SELECT p FROM Producto p WHERE p.vendedor.id = :vendedorId AND p.activo = true AND " +
-           "(CAST(:categoriaId AS long) IS NULL OR p.categoria.id = :categoriaId OR p.categoria.padre.id = :categoriaId) AND " +
+    @Query("SELECT p FROM Producto p LEFT JOIN p.categoria c LEFT JOIN c.padre cp WHERE p.vendedor.id = :vendedorId AND p.activo = true AND " +
+           "(CAST(:categoriaId AS long) IS NULL OR c.id = :categoriaId OR cp.id = :categoriaId) AND " +
            "(CAST(:marca AS string) IS NULL OR LOWER(p.marca) = LOWER(CAST(:marca AS string))) AND " +
            "(CAST(:precioMin AS double) IS NULL OR p.precio >= :precioMin) AND " +
            "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
