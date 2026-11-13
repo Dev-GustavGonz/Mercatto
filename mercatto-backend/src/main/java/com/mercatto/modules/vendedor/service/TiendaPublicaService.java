@@ -37,6 +37,9 @@ public class TiendaPublicaService {
         return vendedores.stream()
                 .map(this::convertirATiendaResponse)
                 .sorted((a, b) -> {
+                    boolean aManual = a.getId() != null && a.getId() < 5000;
+                    boolean bManual = b.getId() != null && b.getId() < 5000;
+                    if (aManual != bManual) return aManual ? -1 : 1;
                     int pesoA = pesoPlan(a.getTipoSuscripcion());
                     int pesoB = pesoPlan(b.getTipoSuscripcion());
                     if (pesoB != pesoA) return Integer.compare(pesoB, pesoA);

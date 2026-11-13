@@ -254,6 +254,70 @@ def process_packshot_to_white_canvas(source_url, output_filename):
         print(f"Warning processing {source_url}: {e}")
         return source_url
 
+# Helper to resolve exact category dynamically in Supabase/PostgreSQL
+def resolve_cat_sql(cat_key, title):
+    tl = (title or "").lower()
+    ck = (cat_key or "").lower()
+    
+    # 1. Videojuegos / Consolas / Gaming
+    if any(k in tl for k in ["switch", "playstation", "gamer", "gaming", "consola", "nintendo", "xbox"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%videojuego%' OR LOWER(nombre) LIKE '%juguete%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), 1)"
+    
+    # 2. Celulares / Smartphones
+    if ck == "smartphones" or any(k in tl for k in ["iphone", "galaxy", "celular", "smartphone", "xiaomi", "motorola"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%smartphone%' OR LOWER(nombre) LIKE '%celular%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), 1)"
+    
+    # 3. Computadores / Laptops / Portátiles
+    if ck == "laptops" or any(k in tl for k in ["macbook", "laptop", "computador", "portátil", "portatil", "pc"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%computador%' OR LOWER(nombre) LIKE '%laptop%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), 1)"
+    
+    # 4. Audio / Audífonos
+    if any(k in tl for k in ["audífono", "audifono", "auricular", "headphone", "earphone", "bafle", "parlante", "sonido"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%audio%' OR LOWER(nombre) LIKE '%audífono%' OR LOWER(nombre) LIKE '%audifono%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), 1)"
+    
+    # 5. Calzado Deportivo / Urbano / Zapatos
+    if ck in ["mens-shoes", "womens-shoes"] or any(k in tl for k in ["tenis", "sandalia", "chancla", "zapat", "calzado", "havaianas", "sneaker", "cleats"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%calzado%' OR LOWER(nombre) LIKE '%zapato%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%moda%' LIMIT 1), 2)"
+    
+    # 6. Ropa Hombre
+    if ck == "mens-shirts" or any(k in tl for k in ["hombre", "men's", "camisa hombre", "jogger"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%ropa hombre%' OR LOWER(nombre) LIKE '%moda hombre%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%moda%' LIMIT 1), 2)"
+    
+    # 7. Ropa Mujer
+    if ck in ["womens-dresses", "womens-bags", "tops"] or any(k in tl for k in ["mujer", "women", "vestido", "blusa", "falda", "cartera", "bolso"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%ropa mujer%' OR LOWER(nombre) LIKE '%moda mujer%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%moda%' LIMIT 1), 2)"
+    
+    # 8. Deportes / Gimnasio / Fitness / Ciclismo
+    if ck == "sports-accessories" or any(k in tl for k in ["running", "fitness", "gimnasio", "deport", "pesas", "mancuerna", "bicicleta", "ciclismo", "watch"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%gimnasio%' OR LOWER(nombre) LIKE '%ciclismo%' OR LOWER(nombre) LIKE '%deporte%' OR LOWER(nombre) LIKE '%fitness%' ORDER BY id DESC LIMIT 1), 4)"
+    
+    # 9. Cocina / Menaje / Pequeños electrodomésticos
+    if ck == "kitchen-accessories" or any(k in tl for k in ["oster", "freidora", "licuadora", "cocina", "olla", "sartén", "sarten", "menaje", "taza", "plato"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%cocina%' OR LOWER(nombre) LIKE '%menaje%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%hogar%' LIMIT 1), 3)"
+    
+    # 10. Muebles / Sala / Hogar
+    if ck in ["home-decoration", "furniture"] or any(k in tl for k in ["mueble", "sofá", "sofa", "sala", "cama", "colchón", "colchon", "mesa", "lámpara", "lampara"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%muebles y sala%' OR LOWER(nombre) LIKE '%mueble%' OR LOWER(nombre) LIKE '%hogar%' ORDER BY id DESC LIMIT 1), 3)"
+    
+    # 11. Belleza / Cuidado Personal / Piel
+    if ck in ["beauty", "skin-care", "fragrances", "womens-jewellery"] or any(k in tl for k in ["skincare", "piel", "crema", "suero", "sérum", "serum", "perfum", "maquillaje", "labial", "cosmético"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%cuidado de la piel%' OR LOWER(nombre) LIKE '%piel%' OR LOWER(nombre) LIKE '%belleza%' OR LOWER(nombre) LIKE '%cuidado%' ORDER BY id DESC LIMIT 1), 5)"
+    
+    # 12. Herramientas / Industria / Automotriz
+    if ck in ["motorcycle", "vehicle"] or any(k in tl for k in ["taladro", "herramienta", "tornillo", "batería", "bateria", "llave", "pulidora"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%herramientas eléctricas%' OR LOWER(nombre) LIKE '%herramienta%' OR LOWER(nombre) LIKE '%automotriz%' ORDER BY id DESC LIMIT 1), 6)"
+    
+    # 13. Supermercado / Alimentos
+    if ck == "groceries" or any(k in tl for k in ["alimento", "snack", "café", "cafe", "bebida"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%supermercado%' OR LOWER(nombre) LIKE '%alimento%' ORDER BY id DESC LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%hogar%' LIMIT 1), 3)"
+    
+    # 14. Juguetes / Niños / Bebés
+    if any(k in tl for k in ["juguete", "bebé", "bebe", "niño", "nino", "infantil", "montessori", "biberón", "biberon"]):
+        return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%juguete%' OR LOWER(nombre) LIKE '%bebé%' OR LOWER(nombre) LIKE '%bebe%' ORDER BY id DESC LIMIT 1), 1)"
+    
+    # Fallback general
+    return "COALESCE((SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%tecnolog%' LIMIT 1), (SELECT id FROM categorias WHERE LOWER(nombre) LIKE '%moda%' LIMIT 1), 1)"
+
 # 3. BUILD UNIQUE MASTER PRODUCT CATALOG
 print("Processing and composing packshots onto 800x800 #FFFFFF canvas...")
 
@@ -266,7 +330,7 @@ for idx, item in enumerate(ICONIC_PACKSHOTS):
     master_products.append({
         "title": item["title"],
         "brand": item["brand"],
-        "category_id": item["category_id"],
+        "categoria_sql": resolve_cat_sql("", item["title"]),
         "price_cop": item["price_cop"],
         "description": item["desc"],
         "image_url": final_url,
@@ -276,7 +340,8 @@ for idx, item in enumerate(ICONIC_PACKSHOTS):
 
 # Add DummyJSON items
 for p in dj_products:
-    cat_id = CAT_MAP.get(p.get("category", ""), 1)
+    cat_key = p.get("category", "")
+    cat_id = CAT_MAP.get(cat_key, 1)
     # Price USD to realistic COP (1 USD ~ 4,000 COP) rounded to neat thousand
     price_cop = max(45000, round(float(p["price"]) * 3950 / 1000) * 1000)
     brand = p.get("brand") or "Genérica"
@@ -304,7 +369,7 @@ for p in dj_products:
     master_products.append({
         "title": title,
         "brand": brand,
-        "category_id": cat_id,
+        "categoria_sql": resolve_cat_sql(cat_key, title),
         "price_cop": price_cop,
         "description": desc,
         "image_url": final_url,
@@ -358,47 +423,53 @@ for i in range(1, 121):
     })
 
 # 5. GENERATE 40 OFFICIAL STORES IN CARTAGENA
+# Distribución requerida: Menor proporción ELITE (4 - 10%), un poco más PRO (10 - 25%), y la gran mayoría STARTER (26 - 65%)
 TIENDAS_SEED = [
+    # 4 ELITE (10%)
     ("Nexo Shop", "Calzado urbano, zapatillas de colección y moda streetwear con distribución autorizada.", "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=500&auto=format&fit=crop&q=80", "ELITE", 1),
-    ("Havaianas Oficial Cartagena", "Sandalias brasileñas icónicas, chanclas urbanas y accesorios de playa 100% originales.", "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&auto=format&fit=crop&q=80", "ELITE", 2),
-    ("Underwater Electro", "Consolas Nintendo Switch, PlayStation 5, mandos de precisión y videojuegos para coleccionistas.", "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&auto=format&fit=crop&q=80", "ELITE", 3),
-    ("Hakzr Games & Tech", "Hardware gamer de alta gama, tarjetas gráficas Nvidia RTX y periféricos esports profesionales.", "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=500&auto=format&fit=crop&q=80", "PRO", 4),
-    ("Electrónicos El Bosque", "Televisores OLED, barras de sonido Dolby Atmos y electrodomésticos con despacho en Cartagena.", "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&auto=format&fit=crop&q=80", "PRO", 5),
-    ("Aura Café Cartagena", "Cafés especiales de origen colombiano, cafeteras espresso italianas y métodos de filtrado manual.", "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500&auto=format&fit=crop&q=80", "PRO", 6),
-    ("Calzados La Heroica", "Mocasines en cuero legítimo, calzado artesanal y sandalias de exportación hechas a mano.", "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&auto=format&fit=crop&q=80", "PRO", 7),
-    ("CaribeTech Solutions", "Smartphones libres de fábrica, smartwatches, cargadores GaN y accesorios de marcas líderes.", "https://images.unsplash.com/photo-1511707171634-5f897ff02560?w=500&auto=format&fit=crop&q=80", "PRO", 8),
-    ("Moda Bocagrande", "Prendas frescas en lino, camisas guayaberas contemporáneas y vestidos playeros de alta costura.", "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=500&auto=format&fit=crop&q=80", "PRO", 9),
-    ("ElectroHogar Manglar", "Air fryers, batidoras, licuadoras de alta potencia y robots aspiradores con despacho exprés.", "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500&auto=format&fit=crop&q=80", "STARTER", 10),
-    ("Dermatología del Caribe", "Cuidado dermocosmético avanzado, protectores solares ultraligeros y sérums antioxidantes.", "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop&q=80", "ELITE", 11),
-    ("Pretelt Relojería", "Relojes analógicos y cronógrafos clásicos, resistentes al agua salina diseñados para ejecutivos.", "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&auto=format&fit=crop&q=80", "PRO", 12),
-    ("Zenith Óptica", "Lentes de sol polarizados con protección UV400 y monturas livianas en acetato italiano.", "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500&auto=format&fit=crop&q=80", "PRO", 13),
-    ("Chaljub Deportes", "Implementos para running, natación, crossfit, raquetas de pádel y ropa deportiva técnica.", "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&auto=format&fit=crop&q=80", "STARTER", 14),
-    ("Playa & Soleil", "Trajes de baño ecológicos elaborados con botellas recicladas del océano y pareos artísticos.", "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=80", "PRO", 15),
-    ("Audio & Sonido Cartagena", "Bafles portátiles impermeables Bluetooth, micrófonos inalámbricos y barras de sonido cine.", "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=500&auto=format&fit=crop&q=80", "PRO", 16),
-    ("Lorduy Joyería Fina", "Filigrana momposina en plata 950 y esmeraldas colombianas certificadas de alta pureza.", "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&auto=format&fit=crop&q=80", "ELITE", 17),
-    ("De Ávila Motor Repuestos", "Baterías automotrices Bosch, aceites sintéticos y accesorios de seguridad para motos y carros.", "https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=500&auto=format&fit=crop&q=80", "STARTER", 18),
-    ("Meza Beauty Bar", "Cosmética vegana, paletas de sombras profesionales, brochas sintéticas y skincare caribeño.", "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&auto=format&fit=crop&q=80", "PRO", 19),
-    ("Urban Style Cartagena", "Chaquetas livianas, joggers, gorras originales New Era y prendas streetwear oversize.", "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=500&auto=format&fit=crop&q=80", "STARTER", 20),
-    ("Carriazo Home Decor", "Vajillas de cerámica vidriada, mantelería en lino costero y lámparas colgantes en fibra de ratán.", "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format&fit=crop&q=80", "PRO", 21),
-    ("Lecompte Computadores", "Servidores, switches de red, memorias RAM DDR5 y soluciones informáticas corporativas.", "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=500&auto=format&fit=crop&q=80", "PRO", 22),
-    ("Aromas de Indias", "Velas de cera de soja con aromas cítricos y florales de Cartagena, difusores mikado y sprays.", "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=500&auto=format&fit=crop&q=80", "ELITE", 23),
-    ("Cartagena Fit Nutrition", "Proteínas aisladas de suero, creatina monohidratada creapure, aminoácidos y snacks fitness.", "https://images.unsplash.com/photo-1579758629938-03607ccdbaba?w=500&auto=format&fit=crop&q=80", "ELITE", 24),
-    ("Benedetti Boutique", "Prendas exclusivas de diseñadores colombianos para bodas, cocteles y galas en Cartagena.", "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=500&auto=format&fit=crop&q=80", "PRO", 25),
-    ("Pareja Instrumentos", "Guitarras electroacústicas, ukeleles caribeños, percusión menor (congas, bongoes) y amplificadores.", "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&auto=format&fit=crop&q=80", "STARTER", 26),
-    ("Turbay Accesorios", "Bolsos de mano en palma de iraca tejida, aretes artesanales con piedras semipreciosas y turbantes.", "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500&auto=format&fit=crop&q=80", "PRO", 27),
-    ("Marrugo Bikes", "Bicicletas de montaña, cascos certificados, candados de alta seguridad y accesorios ciclistas.", "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&auto=format&fit=crop&q=80", "PRO", 28),
-    ("Angulo Muebles & Confort", "Colchones ortopédicos con tecnología memory foam y sofás modulares resistentes a la humedad tropical.", "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=80", "STARTER", 29),
-    ("Castillo Celulares", "Servicio técnico especializado Apple y Samsung, pantallas OLED originales y baterías durables.", "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=500&auto=format&fit=crop&q=80", "STARTER", 30),
-    ("Pinedo Cosméticos", "Labiales indelebles resistentes al calor caribeño, fijadores de maquillaje y mascarillas capilares.", "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&auto=format&fit=crop&q=80", "PRO", 31),
-    ("Senior Kitchen Gourmet", "Cuchillos forjados en acero damasco japonés, sartenes con revestimiento en granito y tablas teca.", "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=500&auto=format&fit=crop&q=80", "PRO", 32),
-    ("Burgos Calzado Infantil", "Zapatos ortopédicos y sandalias ergonómicas para los primeros pasos de los niños en Cartagena.", "https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=500&auto=format&fit=crop&q=80", "STARTER", 33),
-    ("Lemaitre Smart Security", "Cámaras de seguridad WiFi con visión nocturna a color, timbres inteligentes y cerraduras biométricas.", "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=500&auto=format&fit=crop&q=80", "ELITE", 34),
-    ("Román Juguetes & Bebés", "Juegos de estimulación temprana Montessori, coches plegables de viaje y biberones anticólicos.", "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=500&auto=format&fit=crop&q=80", "PRO", 35),
-    ("Badel Ferretería Industrial", "Taladros percutores inalámbricos, herramientas Stanley, compresores y tornillería naval inoxidable.", "https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?w=500&auto=format&fit=crop&q=80", "STARTER", 36),
-    ("Calvo Sportswear", "Uniformes deportivos personalizados, licras térmicas de compresión y gorras para deportes al aire libre.", "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&auto=format&fit=crop&q=80", "STARTER", 37),
-    ("De La Rosa Laptops", "Laptops Apple MacBook Air M3, Dell XPS, Lenovo ThinkPad con factura legal y garantía local.", "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500&auto=format&fit=crop&q=80", "ELITE", 38),
-    ("Fortich Home & Living", "Hamacas artesanales de San Jacinto, cojines bordados a mano y canastos tejidos en fibras naturales.", "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&auto=format&fit=crop&q=80", "PRO", 39),
-    ("Challenger Oficial Caribe", "Refrigeradores no frost, estufas a gas, hornos empotrables y microondas de ingeniería colombiana.", "https://images.unsplash.com/photo-1584992236310-6edddc08acff?w=500&auto=format&fit=crop&q=80", "ELITE", 40)
+    ("Underwater Electro", "Consolas Nintendo Switch, PlayStation 5, mandos de precisión y videojuegos para coleccionistas.", "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&auto=format&fit=crop&q=80", "ELITE", 2),
+    ("Dermatología del Caribe", "Cuidado dermocosmético avanzado, protectores solares ultraligeros y sérums antioxidantes.", "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop&q=80", "ELITE", 3),
+    ("Lorduy Joyería Fina", "Filigrana momposina en plata 950 y esmeraldas colombianas certificadas de alta pureza.", "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500&auto=format&fit=crop&q=80", "ELITE", 4),
+
+    # 10 PRO (25%)
+    ("Havaianas Oficial Cartagena", "Sandalias brasileñas icónicas, chanclas urbanas y accesorios de playa 100% originales.", "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&auto=format&fit=crop&q=80", "PRO", 5),
+    ("Hakzr Games & Tech", "Hardware gamer de alta gama, tarjetas gráficas Nvidia RTX y periféricos esports profesionales.", "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=500&auto=format&fit=crop&q=80", "PRO", 6),
+    ("Electrónicos El Bosque", "Televisores OLED, barras de sonido Dolby Atmos y electrodomésticos con despacho en Cartagena.", "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=500&auto=format&fit=crop&q=80", "PRO", 7),
+    ("Aura Café Cartagena", "Cafés especiales de origen colombiano, cafeteras espresso italianas y métodos de filtrado manual.", "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=500&auto=format&fit=crop&q=80", "PRO", 8),
+    ("CaribeTech Solutions", "Smartphones libres de fábrica, smartwatches, cargadores GaN y accesorios de marcas líderes.", "https://images.unsplash.com/photo-1511707171634-5f897ff02560?w=500&auto=format&fit=crop&q=80", "PRO", 9),
+    ("Pretelt Relojería", "Relojes analógicos y cronógrafos clásicos, resistentes al agua salina diseñados para ejecutivos.", "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&auto=format&fit=crop&q=80", "PRO", 10),
+    ("Zenith Óptica", "Lentes de sol polarizados con protección UV400 y monturas livianas en acetato italiano.", "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500&auto=format&fit=crop&q=80", "PRO", 11),
+    ("Audio & Sonido Cartagena", "Bafles portátiles impermeables Bluetooth, micrófonos inalámbricos y barras de sonido cine.", "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=500&auto=format&fit=crop&q=80", "PRO", 12),
+    ("Cartagena Fit Nutrition", "Proteínas aisladas de suero, creatina monohidratada creapure, aminoácidos y snacks fitness.", "https://images.unsplash.com/photo-1579758629938-03607ccdbaba?w=500&auto=format&fit=crop&q=80", "PRO", 13),
+    ("Challenger Oficial Caribe", "Refrigeradores no frost, estufas a gas, hornos empotrables y microondas de ingeniería colombiana.", "https://images.unsplash.com/photo-1584992236310-6edddc08acff?w=500&auto=format&fit=crop&q=80", "PRO", 14),
+
+    # 26 STARTER (65%)
+    ("Calzados La Heroica", "Mocasines en cuero legítimo, calzado artesanal y sandalias de exportación hechas a mano.", "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&auto=format&fit=crop&q=80", "STARTER", 15),
+    ("Moda Bocagrande", "Prendas frescas en lino, camisas guayaberas contemporáneas y vestidos playeros de alta costura.", "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=500&auto=format&fit=crop&q=80", "STARTER", 16),
+    ("ElectroHogar Manglar", "Air fryers, batidoras, licuadoras de alta potencia y robots aspiradores con despacho exprés.", "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500&auto=format&fit=crop&q=80", "STARTER", 17),
+    ("Chaljub Deportes", "Implementos para running, natación, crossfit, raquetas de pádel y ropa deportiva técnica.", "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&auto=format&fit=crop&q=80", "STARTER", 18),
+    ("Playa & Soleil", "Trajes de baño ecológicos elaborados con botellas recicladas del océano y pareos artísticos.", "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=80", "STARTER", 19),
+    ("De Ávila Motor Repuestos", "Baterías automotrices Bosch, aceites sintéticos y accesorios de seguridad para motos y carros.", "https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=500&auto=format&fit=crop&q=80", "STARTER", 20),
+    ("Meza Beauty Bar", "Cosmética vegana, paletas de sombras profesionales, brochas sintéticas y skincare caribeño.", "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&auto=format&fit=crop&q=80", "STARTER", 21),
+    ("Urban Style Cartagena", "Chaquetas livianas, joggers, gorras originales New Era y prendas streetwear oversize.", "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=500&auto=format&fit=crop&q=80", "STARTER", 22),
+    ("Carriazo Home Decor", "Vajillas de cerámica vidriada, mantelería en lino costero y lámparas colgantes en fibra de ratán.", "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format&fit=crop&q=80", "STARTER", 23),
+    ("Lecompte Computadores", "Servidores, switches de red, memorias RAM DDR5 y soluciones informáticas corporativas.", "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=500&auto=format&fit=crop&q=80", "STARTER", 24),
+    ("Aromas de Indias", "Velas de cera de soja con aromas cítricos y florales de Cartagena, difusores mikado y sprays.", "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=500&auto=format&fit=crop&q=80", "STARTER", 25),
+    ("Benedetti Boutique", "Prendas exclusivas de diseñadores colombianos para bodas, cocteles y galas en Cartagena.", "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=500&auto=format&fit=crop&q=80", "STARTER", 26),
+    ("Pareja Instrumentos", "Guitarras electroacústicas, ukeleles caribeños, percusión menor (congas, bongoes) y amplificadores.", "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=500&auto=format&fit=crop&q=80", "STARTER", 27),
+    ("Turbay Accesorios", "Bolsos de mano en palma de iraca tejida, aretes artesanales con piedras semipreciosas y turbantes.", "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500&auto=format&fit=crop&q=80", "STARTER", 28),
+    ("Marrugo Bikes", "Bicicletas de montaña, cascos certificados, candados de alta seguridad y accesorios ciclistas.", "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&auto=format&fit=crop&q=80", "STARTER", 29),
+    ("Angulo Muebles & Confort", "Colchones ortopédicos con tecnología memory foam y sofás modulares resistentes a la humedad tropical.", "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=80", "STARTER", 30),
+    ("Castillo Celulares", "Servicio técnico especializado Apple y Samsung, pantallas OLED originales y baterías durables.", "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=500&auto=format&fit=crop&q=80", "STARTER", 31),
+    ("Pinedo Cosméticos", "Labiales indelebles resistentes al calor caribeño, fijadores de maquillaje y mascarillas capilares.", "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&auto=format&fit=crop&q=80", "STARTER", 32),
+    ("Senior Kitchen Gourmet", "Cuchillos forjados en acero damasco japonés, sartenes con revestimiento en granito y tablas teca.", "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=500&auto=format&fit=crop&q=80", "STARTER", 33),
+    ("Burgos Calzado Infantil", "Zapatos ortopédicos y sandalias ergonómicas para los primeros pasos de los niños en Cartagena.", "https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=500&auto=format&fit=crop&q=80", "STARTER", 34),
+    ("Lemaitre Smart Security", "Cámaras de seguridad WiFi con visión nocturna a color, timbres inteligentes y cerraduras biométricas.", "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=500&auto=format&fit=crop&q=80", "STARTER", 35),
+    ("Román Juguetes & Bebés", "Juegos de estimulación temprana Montessori, coches plegables de viaje y biberones anticólicos.", "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=500&auto=format&fit=crop&q=80", "STARTER", 36),
+    ("Badel Ferretería Industrial", "Taladros percutores inalámbricos, herramientas Stanley, compresores y tornillería naval inoxidable.", "https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?w=500&auto=format&fit=crop&q=80", "STARTER", 37),
+    ("Calvo Sportswear", "Uniformes deportivos personalizados, licras térmicas de compresión y gorras para deportes al aire libre.", "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=500&auto=format&fit=crop&q=80", "STARTER", 38),
+    ("De La Rosa Laptops", "Laptops Apple MacBook Air M3, Dell XPS, Lenovo ThinkPad con factura legal y garantía local.", "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500&auto=format&fit=crop&q=80", "STARTER", 39),
+    ("Fortich Home & Living", "Hamacas artesanales de San Jacinto, cojines bordados a mano y canastos tejidos en fibras naturales.", "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&auto=format&fit=crop&q=80", "STARTER", 40)
 ]
 
 BANCOS_COL = ["Bancolombia", "Nequi", "Daviplata", "Davivienda", "Banco de Bogotá"]
@@ -414,7 +485,7 @@ for idx, (t_name, t_desc, t_logo, t_plan, s_id) in enumerate(TIENDAS_SEED):
     banco = random.choice(BANCOS_COL)
     cuenta = f"30{random.randint(10000000, 99999999)}" if banco in ["Nequi", "Daviplata"] else f"{random.randint(10000000000, 99999999999)}"
     nit = f"901{random.randint(100000, 999999)}-{random.randint(1, 9)}"
-    calif = round(random.uniform(4.7, 5.0), 1)
+    calif = round(random.uniform(4.5, 4.8), 1)
     dias = random.randint(1, 45)
 
     sellers.append({
@@ -436,7 +507,7 @@ for idx, (t_name, t_desc, t_logo, t_plan, s_id) in enumerate(TIENDAS_SEED):
         "cuenta_bancaria": cuenta,
         "banco": banco,
         "calificacion": calif,
-        "total_ventas": random.randint(30, 420),
+        "total_ventas": random.randint(0, 15),
         "direccion": f"Cartagena de Indias, Bolívar - Cra {random.randint(2, 60)} # {random.randint(10, 80)}-{random.randint(1, 99)}",
         "days_ago": dias
     })
@@ -470,15 +541,15 @@ for p_idx in range(TARGET_TOTAL_PRODUCTS):
     offer_price = int(norm_price * (1.0 - discount_pct)) if has_discount else None
     
     stock = random.randint(8, 48)
-    calif = round(random.uniform(4.6, 5.0), 1)
-    reviews = random.randint(3, 45)
-    sales = random.randint(5, 80)
+    calif = round(random.uniform(4.6, 4.9), 1)
+    reviews = random.randint(2, 20)
+    sales = random.randint(0, 3)
     days_ago = random.randint(1, 45)
 
     products.append({
         "id": pid,
         "vendedor_id": store_id,
-        "categoria_id": master_item["category_id"],
+        "categoria_sql": master_item["categoria_sql"],
         "titulo": master_item["title"],
         "slug": slug,
         "descripcion": master_item["description"],
@@ -678,8 +749,8 @@ with open(sql_path, "w", encoding="utf-8") as f:
             t_esc = p['titulo'].replace("'", "''")
             d_esc = p['descripcion'].replace("'", "''")
             off_val = f"{p['precio_oferta']}" if p['precio_oferta'] else "NULL"
-            dest_val = "TRUE" if p['id'] % 5 == 0 else "FALSE"
-            p_rows.append(f"({p['id']}, {p['vendedor_id']}, {p['categoria_id']}, '{t_esc}', '{p['slug']}', '{d_esc}', {p['precio']}, {off_val}, {p['stock']}, '{p['sku']}', '{p['marca']}', 'NUEVO', TRUE, {dest_val}, {p['calificacion']}, {p['total_resenas']}, {p['total_ventas']}, NOW() - INTERVAL '{p['days_ago']} days', NOW() - INTERVAL '{p['days_ago']} days')")
+            dest_val = "FALSE"
+            p_rows.append(f"({p['id']}, {p['vendedor_id']}, {p['categoria_sql']}, '{t_esc}', '{p['slug']}', '{d_esc}', {p['precio']}, {off_val}, {p['stock']}, '{p['sku']}', '{p['marca']}', 'NUEVO', TRUE, {dest_val}, {p['calificacion']}, {p['total_resenas']}, {p['total_ventas']}, NOW() - INTERVAL '{p['days_ago']} days', NOW() - INTERVAL '{p['days_ago']} days')")
         f.write(SEP.join(p_rows) + ";" + NL + NL)
 
     # 6. PRODUCTO IMAGENES (540 Registros)

@@ -54,6 +54,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long>, JpaSp
            "(CAST(:precioMax AS double) IS NULL OR p.precio <= :precioMax) AND " +
            "(CAST(:termino AS string) IS NULL OR LOWER(p.titulo) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%')) OR LOWER(p.descripcion) LIKE LOWER(CONCAT('%', CAST(:termino AS string), '%'))) " +
            "ORDER BY " +
+           "CASE WHEN p.id < 5000 OR p.vendedor.id < 5000 THEN 1 ELSE 0 END DESC, " +
            "CASE " +
            "  WHEN p.vendedor.tipoSuscripcion = :eliteEnum THEN 3 " +
            "  WHEN p.vendedor.tipoSuscripcion = :proEnum THEN 2 " +
