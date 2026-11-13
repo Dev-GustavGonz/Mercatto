@@ -99,6 +99,32 @@ public class AuthController {
         ));
     }
 
+    // POST /api/auth/recuperar-password
+    @PostMapping("/recuperar-password")
+    public ResponseEntity<?> recuperarPassword(@RequestBody Map<String, Object> body) {
+        String email = body != null ? (String) body.get("email") : null;
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("exito", false, "mensaje", "El correo electrónico es requerido."));
+        }
+        Map<String, Object> res = authService.solicitarRecuperacionPassword(email);
+        int status = Boolean.TRUE.equals(res.get("exito")) ? 200 : 400;
+        return ResponseEntity.status(status).body(res);
+    }
+
+    // POST /api/auth/reset-password
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, Object> body) {
+        if (body == null) {
+            return ResponseEntity.badRequest().body(Map.of("exito", false, "mensaje", "Datos inválidos."));
+        }
+        String email = (String) body.get("email");
+        String codigo = (String) body.get("codigo");
+        String nuevaPassword = (String) body.get("nuevaPassword");
+        Map<String, Object> res = authService.restablecerPassword(email, codigo, nuevaPassword);
+        int status = Boolean.TRUE.equals(res.get("exito")) ? 200 : 400;
+        return ResponseEntity.status(status).body(res);
+    }
+
     // ── Helpers de cookie ────────────────────────────────────────────
 
     // Saca "refreshToken"/"recordarme" del cuerpo de la respuesta y los convierte

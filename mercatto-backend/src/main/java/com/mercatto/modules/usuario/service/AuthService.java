@@ -8,6 +8,7 @@ import com.mercatto.modules.usuario.repository.UsuarioRepository;
 import com.mercatto.modules.vendedor.model.Vendedor;
 import com.mercatto.modules.vendedor.repository.VendedorRepository;
 
+import com.mercatto.modules.soporte.service.EmailService;
 import com.mercatto.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +29,7 @@ public class AuthService {
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private JwtUtil jwtUtil;
     @Autowired private GoogleTokenService googleTokenService;
+    @Autowired(required = false) private EmailService emailService;
 
     // ── Brute-force protection ────────────────────────────────────
     private static final int  MAX_INTENTOS = 5;
@@ -269,6 +271,117 @@ public class AuthService {
     public void logout(String email) {
         usuarioRepo.findByEmail(email)
             .ifPresent(u -> refreshRepo.revocarTokensDeUsuario(u));
+    }
+
+    // ── RECUPERACIÓN DE CONTRASEÑA ────────────────────────────────
+    public static class InfoRecuperacion {
+        private final String codigo;
+        private final LocalDateTime expiracion;
+
+        public InfoRecuperacion(String codigo, LocalDateTime expiracion) {
+            this.codigo = codigo;
+            this.expiracion = expiracion;
+        }
+
+        public boolean esValido(String input) {
+            return input != null && input.trim().equalsIgnoreCase(codigo) && LocalDateTime.now().isBefore(expiracion);
+        }
+    }
+
+    private final Map<String, InfoRecuperacion> codigosRecuperacion = new ConcurrentHashMap<>();
+
+    public Map<String, Object> solicitarRecuperacionPassword(String email) {
+        Map<String, Object> res = new LinkedHashMap<>();
+        if (email == null || email.isBlank()) {
+            res.put("exito", false);
+            res.put("mensaje", "Por favor ingresa tu correo electrónico.");
+            return res;
+        }
+
+        String emailNorm = email.trim().toLowerCase();
+        Optional<Usuario> usuarioOpt = usuarioRepo.findByEmail(emailNorm);
+        if (usuarioOpt.isEmpty()) {
+            res.put("exito", false);
+            res.put("mensaje", "No encontramos ninguna cuenta registrada con el correo: " + emailNorm);
+            return res;
+        }
+
+        Usuario usuario = usuarioOpt.get();
+        if (!usuario.isActivo()) {
+            res.put("exito", false);
+            res.put("mensaje", "Esta cuenta se encuentra inactiva o suspendida. Contacta a soporte.");
+            return res;
+        }
+
+        // Código numérico de 6 dígitos
+        String codigo = String.format("%06d", new java.security.SecureRandom().nextInt(1_000_000));
+        codigosRecuperacion.put(emailNorm, new InfoRecuperacion(codigo, LocalDateTime.now().plusMinutes(15)));
+
+        // Envío de correo
+        try {
+            if (emailService != null) {
+                emailService.enviarCodigoRecuperacion(emailNorm, usuario.getNombre(), codigo);
+            }
+        } catch (Exception e) {
+            // No interrumpir si el servicio de correo tiene advertencias
+        }
+
+        res.put("exito", true);
+        res.put("mensaje", "Hemos enviado un código de verificación de 6 dígitos a " + emailNorm + ".");
+        return res;
+    }
+
+    @Transactional
+    public Map<String, Object> restablecerPassword(String email, String codigo, String nuevaPassword) {
+        Map<String, Object> res = new LinkedHashMap<>();
+        if (email == null || email.isBlank()) {
+            res.put("exito", false);
+            res.put("mensaje", "El correo electrónico es requerido.");
+            return res;
+        }
+        if (codigo == null || codigo.isBlank()) {
+            res.put("exito", false);
+            res.put("mensaje", "El código de verificación es requerido.");
+            return res;
+        }
+        if (nuevaPassword == null || nuevaPassword.length() < 6) {
+            res.put("exito", false);
+            res.put("mensaje", "La nueva contraseña debe tener al menos 6 caracteres.");
+            return res;
+        }
+
+        String emailNorm = email.trim().toLowerCase();
+        InfoRecuperacion info = codigosRecuperacion.get(emailNorm);
+        if (info == null || !info.esValido(codigo)) {
+            res.put("exito", false);
+            res.put("mensaje", "El código de verificación es incorrecto o ya ha expirado. Por favor solicita uno nuevo.");
+            return res;
+        }
+
+        Optional<Usuario> usuarioOpt = usuarioRepo.findByEmail(emailNorm);
+        if (usuarioOpt.isEmpty()) {
+            res.put("exito", false);
+            res.put("mensaje", "Usuario no encontrado.");
+            return res;
+        }
+
+        Usuario usuario = usuarioOpt.get();
+        usuario.setPassword(passwordEncoder.encode(nuevaPassword));
+        usuarioRepo.save(usuario);
+
+        // Invalidar código para evitar reuso
+        codigosRecuperacion.remove(emailNorm);
+
+        // Revocar sesiones activas antiguas por seguridad
+        refreshRepo.revocarTokensDeUsuario(usuario);
+
+        // Desbloquear brute-force si estaba bloqueado
+        intentos.remove(emailNorm);
+        bloqueadoHasta.remove(emailNorm);
+
+        res.put("exito", true);
+        res.put("mensaje", "Tu contraseña ha sido actualizada exitosamente. Ya puedes iniciar sesión con tu nueva contraseña.");
+        return res;
     }
 
     // ── Helpers ───────────────────────────────────────────────────
