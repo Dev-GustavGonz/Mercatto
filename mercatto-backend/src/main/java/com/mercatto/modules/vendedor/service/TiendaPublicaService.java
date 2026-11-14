@@ -37,8 +37,8 @@ public class TiendaPublicaService {
         return vendedores.stream()
                 .map(this::convertirATiendaResponse)
                 .sorted((a, b) -> {
-                    boolean aManual = a.getId() != null && a.getId() < 5000;
-                    boolean bManual = b.getId() != null && b.getId() < 5000;
+                    boolean aManual = !a.isDemo();
+                    boolean bManual = !b.isDemo();
                     if (aManual != bManual) return aManual ? -1 : 1;
                     int pesoA = pesoPlan(a.getTipoSuscripcion());
                     int pesoB = pesoPlan(b.getTipoSuscripcion());
@@ -87,6 +87,9 @@ public class TiendaPublicaService {
         res.setLogoUrl(v.getLogoUrl());
         res.setPortadaUrl(v.getPortadaUrl());
         res.setCiudad(v.getCiudad());
+        res.setDemo(v.getUsuario() != null && (
+                "MOCK_DATA_2026".equals(v.getUsuario().getGoogleId()) ||
+                (v.getUsuario().getEmail() != null && v.getUsuario().getEmail().endsWith("@mock.mercatto.co"))));
 
         // La calificación de la tienda es el promedio de las reseñas de todos sus artículos
         Double promResenas = resenaRepo.calcularPromedioCalificacionVendedor(v);

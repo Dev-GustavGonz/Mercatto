@@ -39,7 +39,7 @@ public class CacheConfig {
 
         // Configuración por defecto de Caffeine: expiración a los 10 minutos, máx 1000 entradas
         cacheManager.setCaffeine(Caffeine.newBuilder()
-                .expireAfterWrite(10, TimeUnit.MINUTES)
+                .expireAfterWrite(30, TimeUnit.SECONDS)
                 .maximumSize(1000)
                 .recordStats());
 

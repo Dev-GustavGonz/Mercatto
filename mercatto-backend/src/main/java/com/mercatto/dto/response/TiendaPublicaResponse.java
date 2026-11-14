@@ -57,4 +57,9 @@ public class TiendaPublicaResponse {
 
     public Integer getTotalResenas() { return totalResenas; }
     public void setTotalResenas(Integer totalResenas) { this.totalResenas = totalResenas; }
+
+    // true cuando la tienda pertenece al dataset demo de la feria (se lista después de las tiendas reales)
+    private boolean demo;
+    public boolean isDemo() { return demo; }
+    public void setDemo(boolean demo) { this.demo = demo; }
 }
