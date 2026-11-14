@@ -78,10 +78,12 @@ public class Producto {
     private LocalDateTime fechaActualizacion;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 100)
     @JsonManagedReference
     private List<ProductoImagen> imagenes = new ArrayList<>();
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.BatchSize(size = 100)
     @JsonManagedReference
     private List<ProductoVariante> variantes = new ArrayList<>();
 
