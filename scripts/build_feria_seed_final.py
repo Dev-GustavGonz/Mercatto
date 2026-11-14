@@ -878,7 +878,7 @@ for o_idx in range(300):
     })
     
     pago_estado = "APROBADO" if estado in ["ENTREGADO", "PAGADO", "ENVIADO"] else "PENDIENTE"
-    metodo = random.choice(["WOMPI_CARD", "WOMPI_NEQUI", "WOMPI_PSE", "CONTRA_ENTREGA"])
+    metodo = random.choice(["WOMPI", "PSE", "NEQUI", "TARJETA_CREDITO", "CONTRA_ENTREGA"])
     payments.append({
         "id": oid,
         "pedido_id": oid,
