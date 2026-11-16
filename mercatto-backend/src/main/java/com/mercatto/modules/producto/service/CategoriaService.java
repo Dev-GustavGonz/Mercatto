@@ -22,22 +22,26 @@ public class CategoriaService {
     @Autowired
     private CategoriaRepository categoriaRepo;
 
+    @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_CATEGORIAS, key = "'principales'")
     public List<Categoria> listarPrincipales() {
         return categoriaRepo.findByPadreIsNullAndActivoTrueOrderByOrdenVisualAsc();
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_CATEGORIAS, key = "'todas'")
     public List<Categoria> listarTodas() {
         return categoriaRepo.findByActivoTrueOrderByOrdenVisualAsc();
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_CATEGORIAS, key = "'id_' + #id")
     public Categoria obtenerPorId(Long id) {
         return categoriaRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_CATEGORIAS, key = "'slug_' + #slug")
     public Categoria obtenerPorSlug(String slug) {
         return categoriaRepo.findBySlug(slug)
