@@ -29,7 +29,6 @@ public class TiendaPublicaService {
     private ResenaRepository resenaRepo;
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConfig.CACHE_TIENDAS_PUBLICAS, key = "'todas'")
     public List<TiendaPublicaResponse> listarTiendas() {
         List<Vendedor> vendedores = vendedorRepo.findAll().stream()
                 .filter(v -> v.getEstado() != Vendedor.Estado.SUSPENDIDO && v.getEstado() != Vendedor.Estado.RECHAZADO)
@@ -53,7 +52,6 @@ public class TiendaPublicaService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConfig.CACHE_TIENDA_DETALLE, key = "#id")
     public TiendaPublicaResponse obtenerTienda(Long id) {
         Vendedor vendedor = vendedorRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tienda no encontrada"));

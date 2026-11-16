@@ -61,7 +61,7 @@ public class TiendaPublicaController {
                 id, categoriaId, marca, precioMin, precioMax, q, pagina, tamano, orden);
 
         return ResponseEntity.ok()
-                .header("Cache-Control", "public, max-age=120, stale-while-revalidate=240")
+                .header("Cache-Control", "no-store")
                 .body(productos);
     }
 

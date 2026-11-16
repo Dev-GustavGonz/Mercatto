@@ -133,7 +133,7 @@ public class ProductoService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConfig.CACHE_PRODUCTOS_DESTACADOS)
+
     public List<ProductoResponse> obtenerDestacados() {
         List<Producto> list = productoRepo.findTop12ByActivoTrueOrderByTotalVentasDesc();
         if (list.isEmpty()) {
@@ -156,21 +156,21 @@ public class ProductoService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS)
+
     public List<ProductoResponse> obtenerMasVendidos() {
         return productoRepo.findTop8ByActivoTrueOrderByTotalVentasDesc()
                 .stream().map(this::convertirAResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConfig.CACHE_PRODUCTOS_NUEVOS)
+
     public List<ProductoResponse> obtenerNuevos() {
         return productoRepo.findTop8ByActivoTrueOrderByFechaCreacionDesc()
                 .stream().map(this::convertirAResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConfig.CACHE_PRODUCTO_DETALLE, key = "'id_' + #id")
+
     public ProductoResponse obtenerPorId(Long id) {
         Producto producto = productoRepo.findByIdAndActivoTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no disponible o inactivo"));
@@ -178,7 +178,7 @@ public class ProductoService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = CacheConfig.CACHE_PRODUCTO_DETALLE, key = "'slug_' + #slug")
+
     public ProductoResponse obtenerPorSlug(String slug) {
         Producto producto = productoRepo.findBySlugAndActivoTrue(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado"));
