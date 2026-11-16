@@ -54,7 +54,15 @@ public class VendedorService {
     }
 
     @Transactional
-    @CacheEvict(value = {CacheConfig.CACHE_TIENDAS_PUBLICAS, CacheConfig.CACHE_TIENDA_DETALLE}, allEntries = true)
+    @CacheEvict(value = {
+        CacheConfig.CACHE_TIENDAS_PUBLICAS,
+        CacheConfig.CACHE_TIENDA_DETALLE,
+        CacheConfig.CACHE_PRODUCTOS_DESTACADOS,
+        CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS,
+        CacheConfig.CACHE_PRODUCTOS_NUEVOS,
+        CacheConfig.CACHE_PRODUCTO_DETALLE,
+        CacheConfig.CACHE_MARCAS_PUBLICAS
+    }, allEntries = true)
     public VendedorResponse actualizarPerfil(Usuario usuario, Map<String, String> datos) {
         Vendedor v = obtenerPorUsuario(usuario);
         if (datos.containsKey("nombreTienda")) v.setNombreTienda(datos.get("nombreTienda"));
@@ -70,7 +78,15 @@ public class VendedorService {
     }
 
     @Transactional
-    @CacheEvict(value = {CacheConfig.CACHE_TIENDAS_PUBLICAS, CacheConfig.CACHE_TIENDA_DETALLE}, allEntries = true)
+    @CacheEvict(value = {
+        CacheConfig.CACHE_TIENDAS_PUBLICAS,
+        CacheConfig.CACHE_TIENDA_DETALLE,
+        CacheConfig.CACHE_PRODUCTOS_DESTACADOS,
+        CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS,
+        CacheConfig.CACHE_PRODUCTOS_NUEVOS,
+        CacheConfig.CACHE_PRODUCTO_DETALLE,
+        CacheConfig.CACHE_MARCAS_PUBLICAS
+    }, allEntries = true)
     public VendedorResponse actualizarSuscripcion(Usuario usuario, String planStr, String cuentaBancaria, String banco) {
         Vendedor v = obtenerPorUsuario(usuario);
         Vendedor.TipoSuscripcion nuevoPlan;
@@ -106,6 +122,16 @@ public class VendedorService {
         return convertirAResponse(vendedorRepo.save(v));
     }
 
+    @Transactional
+    @CacheEvict(value = {
+        CacheConfig.CACHE_TIENDAS_PUBLICAS,
+        CacheConfig.CACHE_TIENDA_DETALLE,
+        CacheConfig.CACHE_PRODUCTOS_DESTACADOS,
+        CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS,
+        CacheConfig.CACHE_PRODUCTOS_NUEVOS,
+        CacheConfig.CACHE_PRODUCTO_DETALLE,
+        CacheConfig.CACHE_MARCAS_PUBLICAS
+    }, allEntries = true)
     public VendedorResponse actualizarSuscripcion(Usuario usuario, String planStr) {
         return actualizarSuscripcion(usuario, planStr, null, null);
     }

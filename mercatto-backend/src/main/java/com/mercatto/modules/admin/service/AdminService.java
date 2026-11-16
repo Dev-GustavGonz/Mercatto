@@ -350,7 +350,15 @@ public class AdminService {
     }
 
     @Transactional
-    @CacheEvict(value = {CacheConfig.CACHE_TIENDAS_PUBLICAS, CacheConfig.CACHE_TIENDA_DETALLE, CacheConfig.CACHE_MARCAS_PUBLICAS}, allEntries = true)
+    @CacheEvict(value = {
+        CacheConfig.CACHE_TIENDAS_PUBLICAS,
+        CacheConfig.CACHE_TIENDA_DETALLE,
+        CacheConfig.CACHE_PRODUCTOS_DESTACADOS,
+        CacheConfig.CACHE_PRODUCTOS_MAS_VENDIDOS,
+        CacheConfig.CACHE_PRODUCTOS_NUEVOS,
+        CacheConfig.CACHE_PRODUCTO_DETALLE,
+        CacheConfig.CACHE_MARCAS_PUBLICAS
+    }, allEntries = true)
     public VendedorResponse cambiarEstadoVendedor(Long vendedorId, String nuevoEstadoStr) {
         Vendedor v = vendedorRepo.findById(vendedorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vendedor no encontrado"));
